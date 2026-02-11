@@ -30,3 +30,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# The following could be commented out in future if we wanted to track common results/configs for testing etc.
+# However, for now it is probably best we keep the stored data local.
+# Ignore all simulation results
+data/results/*.json
+
+# Keep the folder but ignore personal temp configs
+data/configs/*.json
