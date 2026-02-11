@@ -1,0 +1,1 @@
+For classes that manage the web interface by connecting user inputs to the simulation's backend logic.

@@ -1,0 +1,1 @@
+Holds the core business logic and maths, SimulationEngine etc.
