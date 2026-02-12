@@ -1,0 +1,3 @@
+This is where we keep the Data Transfer Objects.
+This includes the config classes used to deserialise the data from the frontend.
+Also, it will include the classes used to serialise the simulation data to send to the frontend for the real-time and results views.
