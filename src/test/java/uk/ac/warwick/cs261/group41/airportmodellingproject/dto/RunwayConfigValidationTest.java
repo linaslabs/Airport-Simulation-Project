@@ -1,0 +1,153 @@
+package uk.ac.warwick.cs261.group41.airportmodellingproject.dto;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class RunwayConfigValidationTest {
+
+    private static Validator validator;
+
+    @BeforeAll
+    static void setupValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
+
+    private static RunwayConfig validConfig() {
+        return new RunwayConfig(
+                0,
+                RunwayStatus.AVAILABLE,
+                RunwayMode.MIXED
+        );
+    }
+
+    private static Set<ConstraintViolation<RunwayConfig>> validate(RunwayConfig config) {
+        return validator.validate(config);
+    }
+
+    private static boolean hasViolationOn(Set<? extends ConstraintViolation<?>> violations, String property) {
+        return violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals(property));
+    }
+
+    private static String messagesFor(Set<? extends ConstraintViolation<?>> violations, String property) {
+        return violations.stream()
+                .filter(v -> v.getPropertyPath().toString().equals(property))
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.joining(" | "));
+    }
+
+    /**
+     * Verifies that a fully valid RunwayConfig produces no validation errors.
+     * Confirms the "happy path" works correctly.
+     */
+    @Test
+    void validRunwayConfig_shouldHaveNoViolations() {
+        RunwayConfig config = validConfig();
+        Set<ConstraintViolation<RunwayConfig>> violations = validate(config);
+        assertTrue(violations.isEmpty(), "Expected no violations but got: " + violations);
+    }
+
+    /**
+     * Verifies that runwayID below the allowed range (0–9) fails validation.
+     */
+    @Test
+    void runwayId_belowRange_shouldFailValidation() {
+        RunwayConfig config = validConfig();
+        config.setRunwayID(-1);
+
+        Set<ConstraintViolation<RunwayConfig>> violations = validate(config);
+
+        assertFalse(violations.isEmpty(), "Expected violations but got none.");
+        assertTrue(hasViolationOn(violations, "runwayID"));
+        assertTrue(messagesFor(violations, "runwayID").contains("between 0 and 9"));
+    }
+
+    /**
+     * Verifies that runwayID above the allowed range (0–9) fails validation.
+     */
+    @Test
+    void runwayId_aboveRange_shouldFailValidation() {
+        RunwayConfig config = validConfig();
+        config.setRunwayID(10);
+
+        Set<ConstraintViolation<RunwayConfig>> violations = validate(config);
+
+        assertFalse(violations.isEmpty(), "Expected violations but got none.");
+        assertTrue(hasViolationOn(violations, "runwayID"));
+        assertTrue(messagesFor(violations, "runwayID").contains("between 0 and 9"));
+    }
+
+    /**
+     * Verifies that boundary values (0 and 9) are accepted.
+     * Ensures inclusive range validation is correct.
+     */
+    @Test
+    void runwayId_boundaryValues_shouldPassValidation() {
+        RunwayConfig low = validConfig();
+        low.setRunwayID(0);
+
+        RunwayConfig high = validConfig();
+        high.setRunwayID(9);
+
+        assertTrue(validate(low).isEmpty());
+        assertTrue(validate(high).isEmpty());
+    }
+
+    /**
+     * Verifies that runway status cannot be null.
+     */
+    @Test
+    void nullStatus_shouldFailValidation() {
+        RunwayConfig config = validConfig();
+        config.setStatus(null);
+
+        Set<ConstraintViolation<RunwayConfig>> violations = validate(config);
+
+        assertFalse(violations.isEmpty());
+        assertTrue(hasViolationOn(violations, "status"));
+    }
+
+    /**
+     * Verifies that runway mode cannot be null.
+     */
+    @Test
+    void nullMode_shouldFailValidation() {
+        RunwayConfig config = validConfig();
+        config.setMode(null);
+
+        Set<ConstraintViolation<RunwayConfig>> violations = validate(config);
+
+        assertFalse(violations.isEmpty());
+        assertTrue(hasViolationOn(violations, "mode"));
+    }
+
+    /**
+     * Verifies that multiple invalid fields produce multiple validation errors.
+     * Ensures validation does not stop at the first failure.
+     */
+    @Test
+    void multipleInvalidFields_shouldReportMultipleViolations() {
+        RunwayConfig config = validConfig();
+        config.setRunwayID(-1);
+        config.setStatus(null);
+        config.setMode(null);
+
+        Set<ConstraintViolation<RunwayConfig>> violations = validate(config);
+
+        assertFalse(violations.isEmpty());
+        assertTrue(hasViolationOn(violations, "runwayID"));
+        assertTrue(hasViolationOn(violations, "status"));
+        assertTrue(hasViolationOn(violations, "mode"));
+    }
+}
