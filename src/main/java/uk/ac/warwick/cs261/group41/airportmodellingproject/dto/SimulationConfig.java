@@ -21,8 +21,8 @@ public class SimulationConfig {
     // Could also provide a reset to defaults button in the configuration screen?
 
     // We had runway count in the UML class diagram, but since we have a list of the runway DTOs, we don't need this too as we just need to use the size of the list.
-//    @Range(min = 1, max = 10, message = "Number of runways must be between 1 and 10 (inclusive)")
-//    private int runwayCount = 1;
+    // @Range(min = 1, max = 10, message = "Number of runways must be between 1 and 10 (inclusive)")
+    // private int runwayCount = 1;
 
     // This means the UI can allow the user to remove all the runways while they are editing,
     // however if they start the simulation with no runways, it will return an error.
@@ -49,16 +49,21 @@ public class SimulationConfig {
     @Max(value = 10000, message = "Tick time cannont exceed 10,000ms (10 seconds).")
     private Integer tickTime = 1000;
 
+    // Added seed as a Long object.
+    @NotNull(message = "A random seed is required. Please enter a value or randomly generate one.")
+    private Long seed;
+
     // Default constructor required for Jackson to turn the JSON into this object.
     public SimulationConfig() {}
 
     // Parameterised constructor exclusively used for testing purposes.
-    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime) {
+    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime, Long seed) {
         // Copy the runway list in case the original list is modified.
         this.runwaySettings = (runwaySettings != null) ? new ArrayList<>(runwaySettings) : new ArrayList<>();
         this.inboundRate = inboundRate;
         this.outboundRate = outboundRate;
         this.maxWaitTime = maxWaitTime;
+        this.seed = seed;
     }
 
     public List<RunwayConfig> getRunwaySettings() {
@@ -100,6 +105,14 @@ public class SimulationConfig {
 
     public void setTickTime(Integer tickTime) {
         this.tickTime = tickTime;
+    }
+
+    public Long getSeed() {
+        return seed;
+    }
+
+    public void setSeed(Long seed) {
+        this.seed = seed;
     }
 }
 
