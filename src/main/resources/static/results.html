@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Simulation Results</title>
+
+    <style>
+        :root{
+            --bg:#f3f5f9;
+            --card:#ffffff;
+            --text:#0f172a;
+            --muted:#6b7280;
+            --border:#e5e7eb;
+            --primary:#111827;
+            --secondary:#1f2937;
+            --shadow: 0 18px 45px rgba(15,23,42,.10);
+        }
+
+        *{ box-sizing: border-box; }
+
+        body{
+            margin:0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            /* ✅ 正常网页滚动：不要 height:100vh + overflow:hidden */
+        }
+
+        /* ===== Top bar (layout like Figma) ===== */
+        .topbar{
+            position: sticky;   /* 你不想粘住就删掉这行 */
+            top: 0;
+            z-index: 50;
+            background: rgba(243,245,249,.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(229,231,235,.9);
+        }
+
+        .top-inner{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 18px 22px;
+            display: grid;
+            grid-template-columns: 220px 1fr 360px;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .center{
+            text-align:center;
+        }
+
+        .title{
+            font-size: 44px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin: 0;
+            line-height: 1.05;
+        }
+
+        .subtitle{
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .right-actions{
+            display:flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        /* ===== Buttons (bigger + “premium”) ===== */
+        .btn{
+            border: 0;
+            background: var(--primary);
+            color:#fff;
+            border-radius: 999px;
+            padding: 14px 22px;
+            font-size: 16px;
+            font-weight: 850;
+            cursor:pointer;
+            box-shadow: 0 14px 30px rgba(0,0,0,.18);
+            transition: transform .08s ease, opacity .12s ease;
+            min-width: 190px;
+        }
+        .btn.secondary{ background: var(--secondary); }
+        .btn:hover{ opacity: .92; }
+        .btn:active{ transform: translateY(1px); }
+
+        /* ===== Page content ===== */
+        .wrap{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 26px 22px 80px;
+        }
+
+        .panel{
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            box-shadow: var(--shadow);
+            padding: 28px 30px;
+        }
+
+        .throughput{
+            font-size: 30px;
+            font-weight: 900;
+            margin-bottom: 22px;
+            display:flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .throughput small{
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .cols{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+
+        .section{
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 20px 12px;
+        }
+
+        .section-title{
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: .6px;
+            margin: 4px 0 14px;
+        }
+
+        .row{
+            display:flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px dashed #e5e7eb;
+            font-size: 16px;
+        }
+        .row:last-child{ border-bottom: none; }
+
+        .label{
+            font-weight: 650;
+            color: #111827;
+        }
+        .value{
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 980px){
+            .top-inner{
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .right-actions{
+                align-items: stretch;
+            }
+            .btn{
+                width: 100%;
+                min-width: 0;
+            }
+            .center{ order: -1; }
+            .title{ font-size: 34px; }
+
+            .cols{ grid-template-columns: 1fr; }
+            .panel{ padding: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+    <div class="top-inner">
+        <div>
+            <button class="btn" onclick="goHome()">Home</button>
+        </div>
+
+        <div class="center">
+            <div class="title">SIMULATION RESULTS</div>
+            <div class="subtitle">Summary of performance metrics for this run.</div>
+        </div>
+
+        <div class="right-actions">
+            <button class="btn" onclick="saveResults()">Save Configuration &amp; Data</button>
+            <button class="btn secondary" onclick="goCompare()">Comparison Menu</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main content -->
+<div class="wrap">
+    <div class="panel">
+        <div class="throughput">
+            Throughput: <span id="throughput">--</span> /hr
+            <small>(ops per hour)</small>
+        </div>
+
+        <div class="cols">
+            <div class="section">
+                <div class="section-title">DEPARTURES</div>
+
+                <div class="row"><div class="label">Average Wait Time</div><div class="value"><span id="depAvgWait">--</span> mins</div></div>
+                <div class="row"><div class="label">Most Planes in Departure Queue</div><div class="value"><span id="depMaxQueue">--</span></div></div>
+                <div class="row"><div class="label">Maximum Delay Time</div><div class="value"><span id="depMaxDelay">--</span> mins</div></div>
+                <div class="row"><div class="label">Average Delay Time</div><div class="value"><span id="depAvgDelay">--</span> mins</div></div>
+                <div class="row"><div class="label">Number of Cancellations</div><div class="value"><span id="depCancelled">--</span></div></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">ARRIVALS</div>
+
+                <div class="row"><div class="label">Average Hold Time</div><div class="value"><span id="arrAvgHold">--</span> mins</div></div>
+                <div class="row"><div class="label">Most Planes in Holding Pattern</div><div class="value"><span id="arrMaxHolding">--</span></div></div>
+                <div class="row"><div class="label">Maximum Delay Time</div><div class="value"><span id="arrMaxDelay">--</span> mins</div></div>
+                <div class="row"><div class="label">Average Delay Time</div><div class="value"><span id="arrAvgDelay">--</span> mins</div></div>
+                <div class="row"><div class="label">Number of Diversions</div><div class="value"><span id="arrDiverted">--</span></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sprint 1 mock values
+    const mock = {
+        throughput: 17,
+        depAvgWait: 7,
+        depMaxQueue: 8,
+        depMaxDelay: 15,
+        depAvgDelay: 8,
+        depCancelled: 2,
+        arrAvgHold: 11,
+        arrMaxHolding: 6,
+        arrMaxDelay: 17,
+        arrAvgDelay: 10,
+        arrDiverted: 4
+    };
+
+    function loadMock(){
+        document.getElementById("throughput").textContent = mock.throughput;
+
+        document.getElementById("depAvgWait").textContent = mock.depAvgWait;
+        document.getElementById("depMaxQueue").textContent = mock.depMaxQueue;
+        document.getElementById("depMaxDelay").textContent = mock.depMaxDelay;
+        document.getElementById("depAvgDelay").textContent = mock.depAvgDelay;
+        document.getElementById("depCancelled").textContent = mock.depCancelled;
+
+        document.getElementById("arrAvgHold").textContent = mock.arrAvgHold;
+        document.getElementById("arrMaxHolding").textContent = mock.arrMaxHolding;
+        document.getElementById("arrMaxDelay").textContent = mock.arrMaxDelay;
+        document.getElementById("arrAvgDelay").textContent = mock.arrAvgDelay;
+        document.getElementById("arrDiverted").textContent = mock.arrDiverted;
+    }
+
+    function goHome(){ window.location.href = "/"; }
+    function saveResults(){ alert("Sprint 1: Save Configuration & Data (stub)."); }
+    function goCompare(){ alert("Sprint 1: Comparison Menu (stub)."); }
+
+    loadMock();
+</script>
+
+</body>
+</html>
