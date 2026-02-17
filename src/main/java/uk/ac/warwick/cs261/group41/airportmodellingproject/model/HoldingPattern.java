@@ -109,9 +109,7 @@ public class HoldingPattern implements AircraftQueue{
     public String getRandomAircraft(Random random) {
         // Filter out aircraft with emergency statuses other than None.
         List<Aircraft> eligibleAircraft = new ArrayList<>();
-        Iterator<Aircraft> iterator = queue.iterator();
-        while (iterator.hasNext()) {
-            Aircraft aircraft = iterator.next();
+        for (Aircraft aircraft : queue) {
             if (aircraft.getStatus() == EmergencyStatus.NONE) {
                 eligibleAircraft.add(aircraft);
             }
