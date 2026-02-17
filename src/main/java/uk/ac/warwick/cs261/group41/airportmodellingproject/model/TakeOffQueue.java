@@ -5,8 +5,9 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Optional;
 
-public class TakeOffQueue {
+public class TakeOffQueue implements AircraftQueue {
 
     private Deque<Aircraft> queue;
     private int maxWaitTime;
@@ -16,26 +17,37 @@ public class TakeOffQueue {
         this.queue = new ArrayDeque<>();
     }
 
-    public void enqueue(Aircraft a) {
-        queue.add(a);
+    @Override
+    public void addAircraft(Aircraft aircraft) {
+        queue.add(aircraft);
     }
 
-    public Aircraft peek() {
-        return queue.peek();
+    @Override
+    public Optional<Aircraft> peekNextAircraft() {
+        return Optional.ofNullable(queue.peek());
     }
 
-    public Aircraft dequeue() {
-        return queue.poll();
+    @Override
+    public Optional<Aircraft> getNextAircraft() {
+        return Optional.ofNullable(queue.poll());
     }
 
-    public int size() {
+    @Override
+    public void removeAircraft(Aircraft aircraft) {
+        queue.remove(aircraft);
+    }
+
+    @Override
+    public int getSize() {
         return queue.size();
     }
 
+    @Override
     public boolean isEmpty() {
         return queue.isEmpty();
     }
 
+    @Override
     public void update(int currentTick) {
         Iterator<Aircraft> iterator = queue.iterator();
         while (iterator.hasNext()) {
