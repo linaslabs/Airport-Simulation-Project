@@ -1,10 +1,17 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Airport;
 
 public class SimulationEngine implements Runnable {
 
     private final SimulationConfig config;
+    private Airport airport;
+    private AircraftGenerator generator;
+    private EventManager manager;
+    private EventLogger eventLogger;
+    private int currentTick;
+    private int durationTicks;
 
     public SimulationEngine(SimulationConfig config) {
         this.config = config;
