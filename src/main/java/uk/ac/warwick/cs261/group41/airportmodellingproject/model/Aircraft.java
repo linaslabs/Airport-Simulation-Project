@@ -5,14 +5,14 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 
 public class Aircraft implements Comparable<Aircraft> {
-    private String callsign;
-    private String operator;
-    private String origin;
-    private String destination;
+    private final String callsign;
+    private final String operator;
+    private final String origin;
+    private final String destination;
     private double fuel;
-    private int scheduledTick;
-    private int entryTick;
-    private FlightType flightType;
+    private final int scheduledTick;
+    private final int entryTick;
+    private final FlightType flightType;
 
     private EmergencyStatus status; // Currently, this is set to None by default, it will be changed and added to constructor in future when we add Events.
 
