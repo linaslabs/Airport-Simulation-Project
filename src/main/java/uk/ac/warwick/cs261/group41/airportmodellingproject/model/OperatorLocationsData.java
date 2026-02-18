@@ -39,14 +39,16 @@ public class OperatorLocationsData {
         this.random = random;
     }
 
-    // Function to pick a location given an operator, with a default if the operator doesn't exist.
+    // Function to pick a location given an operator, throws an IllegalArgumentException if the operator doesn't exist.
     public String getRandomLocationForOperator(String operator) {
         List<String> locations = operatorLocations.get(operator);
 
-        if (locations == null || locations.isEmpty()) {
-            System.out.println("Error in OperatorLocationsData getRandomLocationForOperator function. Invalid operator or no locations for operator.");
-            return "London Heathrow"; // Return a location that is still technically valid but is different from all the others to make spotting errors easier.
+        if (locations == null) {
+            throw new IllegalArgumentException("Unknown operator name: " + operator);
         }
+
+        // Could consider what happens if locations.isEmpty(), but this shouldn't be needed as
+        // the locations are all hardcoded and clearly all populated.
 
         return locations.get(random.nextInt(locations.size()));
     }

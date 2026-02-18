@@ -70,10 +70,14 @@ public class OperatorData {
         return probabilities.keySet().iterator().next();
     }
 
-    // Ensure you pass valid operator names, otherwise it will output "null1".
+    // Ensure you pass valid operator names, otherwise it will throw an IllegalArgumentException.
     public String getNextCallsign(String operatorName) {
         String prefix = prefixes.get(operatorName);
-        int count = counters.get(operatorName);
+        Integer count = counters.get(operatorName);
+
+        if (prefix == null || count == null) {
+            throw new IllegalArgumentException("Unknown operator name: " + operatorName);
+        }
 
         // Increment for the next flight.
         counters.put(operatorName, count + 1);

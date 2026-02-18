@@ -6,7 +6,7 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus
 import java.util.*;
 
 public class HoldingPattern implements AircraftQueue{
-    private PriorityQueue<Aircraft> queue;
+    private final PriorityQueue<Aircraft> queue;
     private int minFuelLevel;
 
     public HoldingPattern(int minFuelLevel) {
@@ -101,7 +101,8 @@ public class HoldingPattern implements AircraftQueue{
 
             // Queue order likely changed so update altitudes again.
             updateAltitudes();
-        } else {
+        }
+        else {
             System.out.println("Aircraft " + callsign + " not found in Holding Pattern.");
         }
     }
