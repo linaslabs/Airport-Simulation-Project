@@ -82,11 +82,13 @@ public class Statistics {
 
         return new StatisticsSummary(
                 avgHoldingTime,
+                maxHoldingTime,
                 avgTakeOffDelay,
                 maxTakeOffDelay,
                 avgArrivalDelay,
                 maxArrivalDelay,
                 avgWaitTime,
+                maxWaitTime,
                 maxHoldingSize,
                 maxTakeOffQueueSize,
                 diversionCount,
