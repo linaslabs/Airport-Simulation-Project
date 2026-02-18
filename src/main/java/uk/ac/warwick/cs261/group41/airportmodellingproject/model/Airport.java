@@ -22,8 +22,8 @@ public class Airport {
         this.airportName = airportName; // This isn't actually used, but it might in future, and I feel like it should have this attribute.
         stats = new Statistics();
         this.runways = runways;
-        holdingPattern = new HoldingPattern();
-        takeOffQueue = new TakeOffQueue(maxWaitTime);
+        holdingPattern = new HoldingPattern(stats);
+        takeOffQueue = new TakeOffQueue(maxWaitTime, stats);
         this.runwayOccupationTime = runwayOccupationTime;
     }
 
