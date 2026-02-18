@@ -76,15 +76,17 @@ public class AircraftGenerator {
     }
 
     // We initialise the entire schedule of planes up to the duration of the simulation at the start.
+    // I am working off the assumption that one tick is one minute,
+    // and the way we speed up time is by advancing more than one tick per iteration.
     public void initialiseSchedules(int duration) {
-        // Inbound
-        // I am working off the assumption that one tick is one minute,
-        // and the way we speed up time is by advancing more than one tick per iteration.
-        
         double inboundInterval = 60.0 / inboundRate; // This gives the interval between each scheduled tick in minutes.
-        double inboundUnroundedTick = 0.0; // We start at 0 so the first plane is spawned at 0 minutes.
 
-        while (inboundUnroundedTick <= duration) {
+        // Need to write a test to check that the correct number of planes are generated.
+        // Say the duration is 60 minutes, due to rounding errors, the last iteration may be 60.000001, so
+        // the last plane won't get spawned and the actual spawn rate will be 1 less than intended.
+        // So, we need to write a test to check that the correct number of planes are generated.
+        // If they are not then we could change the condition to "inboundUnroundedTick <= duration + 0.0001" for example.
+        for (double inboundUnroundedTick = 0.0; inboundUnroundedTick <= duration; inboundUnroundedTick += inboundInterval) {
             // Round to the nearest integer as all scheduled ticks are integers.
             int scheduledTick = (int) Math.round(inboundUnroundedTick);
 
@@ -99,16 +101,12 @@ public class AircraftGenerator {
 
             // Add new aircraft to this list.
             tickAircraft.add(generateAircraft(scheduledTick, FlightType.ARRIVAL));
-
-            // Increment the inboundUnroundedTick for the next iteration.
-            inboundUnroundedTick += inboundInterval;
         }
 
         // Outbound, repeat the same proces.
         double outboundInterval = 60.0 / outboundRate; // This gives the interval between each scheduled tick in minutes.
-        double outboundUnroundedTick = 0.0; // We start at 0 so the first plane is spawned at 0 minutes.
 
-        while (outboundUnroundedTick <= duration) {
+        for (double outboundUnroundedTick = 0.0; outboundUnroundedTick <= duration; outboundUnroundedTick += outboundInterval) {
             // Round to the nearest integer as all scheduled ticks are integers.
             int scheduledTick = (int) Math.round(outboundUnroundedTick);
 
@@ -123,9 +121,6 @@ public class AircraftGenerator {
 
             // Add new aircraft to this list.
             tickAircraft.add(generateAircraft(scheduledTick, FlightType.DEPARTURE));
-
-            // Increment the outboundUnroundedTick for the next iteration.
-            outboundUnroundedTick += outboundInterval;
         }
     }
 
