@@ -1,37 +1,42 @@
-// Sprint 1 mock values
-const mock = {
-    throughput: 17,
-    depAvgWait: 7,
-    depMaxQueue: 8,
-    depMaxDelay: 15,
-    depAvgDelay: 8,
-    depCancelled: 2,
-    arrAvgHold: 11,
-    arrMaxHolding: 6,
-    arrMaxDelay: 17,
-    arrAvgDelay: 10,
-    arrDiverted: 4
-};
-
 function setText(id, value){
     const el = document.getElementById(id);
     if (el) el.textContent = value;
 }
 
-function loadMock(){
-    setText("throughput", mock.throughput);
+function formatNumber(num) {
+    return typeof num === 'number' ? num.toFixed(2) : '--';
+}
 
-    setText("depAvgWait", mock.depAvgWait);
-    setText("depMaxQueue", mock.depMaxQueue);
-    setText("depMaxDelay", mock.depMaxDelay);
-    setText("depAvgDelay", mock.depAvgDelay);
-    setText("depCancelled", mock.depCancelled);
+function loadResults(){
+    fetch('/api/results/summary')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch results');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Map StatisticsSummary fields to HTML elements
+            setText("throughput", formatNumber(data.hourlyThroughput));
 
-    setText("arrAvgHold", mock.arrAvgHold);
-    setText("arrMaxHolding", mock.arrMaxHolding);
-    setText("arrMaxDelay", mock.arrMaxDelay);
-    setText("arrAvgDelay", mock.arrAvgDelay);
-    setText("arrDiverted", mock.arrDiverted);
+            // Departures
+            setText("depAvgWait", formatNumber(data.avgWaitTime));
+            setText("depMaxQueue", data.maxTakeOffQueueSize);
+            setText("depMaxDelay", formatNumber(data.maxTakeOffDelay));
+            setText("depAvgDelay", formatNumber(data.avgTakeOffDelay));
+            setText("depCancelled", data.cancellationCount);
+
+            // Arrivals
+            setText("arrAvgHold", formatNumber(data.avgHoldingTime));
+            setText("arrMaxHolding", data.maxHoldingSize);
+            setText("arrMaxDelay", formatNumber(data.maxArrivalDelay));
+            setText("arrAvgDelay", formatNumber(data.avgArrivalDelay));
+            setText("arrDiverted", data.diversionCount);
+        })
+        .catch(error => {
+            console.error('Error loading results:', error);
+            // Fallback: display '--' for all fields
+        });
 }
 
 function saveResults(){
@@ -44,7 +49,7 @@ function goCompare(){
 
 // Wire buttons + init
 document.addEventListener("DOMContentLoaded", () => {
-    loadMock();
+    loadResults();
 
     const saveBtn = document.getElementById("saveBtn");
     const compareBtn = document.getElementById("compareBtn");
