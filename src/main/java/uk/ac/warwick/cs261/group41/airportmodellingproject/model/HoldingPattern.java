@@ -7,11 +7,10 @@ import java.util.*;
 
 public class HoldingPattern implements AircraftQueue{
     private final PriorityQueue<Aircraft> queue;
-    private int minFuelLevel;
+    private int minFuelLevel = 10;
     // Maybe add an emergency fuel level, e.g. 20 minutes, below which the plane goes into EmergencyStatus.FUEL.
 
-    public HoldingPattern(int minFuelLevel) {
-        this.minFuelLevel = minFuelLevel;
+    public HoldingPattern() {
         this.queue = new PriorityQueue<>();
     }
 

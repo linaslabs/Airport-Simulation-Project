@@ -18,11 +18,11 @@ public class Airport {
     // I don't think we can actually use the AircraftQueue abstraction here becuase the take-off queue and
     // holding pattern have unique methods and require being constructed differently.
     // So, we would need objects of each type anyway so there's no point in using the Aircraft queue.
-    public Airport(String airportName, Map<Integer, Runway> runways, int minFuelLevel, int maxWaitTime, int runwayOccupationTime) {
-        this.airportName = airportName;
+    public Airport(String airportName, Map<Integer, Runway> runways, int maxWaitTime, int runwayOccupationTime) {
+        this.airportName = airportName; // This isn't actually used, but it might in future, and I feel like it should have this attribute.
         stats = new Statistics();
         this.runways = runways;
-        holdingPattern = new HoldingPattern(minFuelLevel);
+        holdingPattern = new HoldingPattern();
         takeOffQueue = new TakeOffQueue(maxWaitTime);
         this.runwayOccupationTime = runwayOccupationTime;
     }
