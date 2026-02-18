@@ -1,26 +1,51 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
+import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Airport;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Runway;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.model.StatisticsGenerator;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.model.TakeOffQueue;
 
-public class SimulationEngine implements Runnable {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class SimulationEngine {
 
     private final SimulationConfig config;
     private Airport airport;
     private AircraftGenerator generator;
     private EventManager manager;
     private EventLogger eventLogger;
+    private StatisticsGenerator statisticsGenerator;
     private int currentTick;
     private int durationTicks;
 
-    public SimulationEngine(SimulationConfig config) {
+    public SimulationEngine(SimulationConfig config, int durationTicks) {
         this.config = config;
+        this.durationTicks = durationTicks;
     }
 
-    @Override
-    public void run() {
-        // This is the code the thread runs, so it will contain the tick loop.
-        // Note we need the simulation running on its own thread so the other threads can handle user input etc. while the simulation is running.
+    public void initialiseSimulation() {
+
+        this.statisticsGenerator = new StatisticsGenerator();
+
+        // Pass maxWaitTime, runwaySettings, and Statistics to Airport
+        // Its constructor will instantiate the queues and the runways
+        this.airport = new Airport();
+
+        this.eventLogger = new EventLogger();
+        // Pass EventLogger, Airport and Statistics into the EventManager
+        this.manager = new EventManager();
+
+        // Instantiate AircraftGenerator, pass it the random seed
+
+    }
+
+    public boolean performTick() {
+        return true;
     }
 
     public double getProgress() {
