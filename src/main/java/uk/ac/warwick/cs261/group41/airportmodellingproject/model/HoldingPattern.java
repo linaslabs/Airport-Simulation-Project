@@ -8,6 +8,7 @@ import java.util.*;
 public class HoldingPattern implements AircraftQueue{
     private final PriorityQueue<Aircraft> queue;
     private int minFuelLevel;
+    // Maybe add an emergency fuel level, e.g. 20 minutes, below which the plane goes into EmergencyStatus.FUEL.
 
     public HoldingPattern(int minFuelLevel) {
         this.minFuelLevel = minFuelLevel;
@@ -124,5 +125,17 @@ public class HoldingPattern implements AircraftQueue{
         // If not, generate a random index in the eligibleAircraft list.
         int index = random.nextInt(eligibleAircraft.size());
         return eligibleAircraft.get(index).getCallsign();
+    }
+
+    // Returns a list of aircraft, sorted with highest severity first.
+    public List<Aircraft> getEmergencyAircraft() {
+        List<Aircraft> output = new ArrayList<>();
+        for (Aircraft aircraft : queue) {
+            if (aircraft.getStatus() != EmergencyStatus.NONE) {
+                output.add(aircraft);
+            }
+        }
+        Collections.sort(output);
+        return output;
     }
 }
