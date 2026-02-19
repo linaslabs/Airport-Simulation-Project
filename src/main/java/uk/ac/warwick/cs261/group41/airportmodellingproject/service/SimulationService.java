@@ -49,7 +49,7 @@ public class SimulationService {
         }
 
         // Schedule the runTick method (which will call performTick) to execute at the currentTickDelay rate
-        simulationTask = executor.scheduleAtFixedRate(
+        simulationTask = executor.scheduleWithFixedDelay(
                 this::runTick,
                 0, // Start immediately
                 currentTickDelay,
