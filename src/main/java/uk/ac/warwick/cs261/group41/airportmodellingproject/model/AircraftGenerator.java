@@ -86,7 +86,8 @@ public class AircraftGenerator {
         // the last plane won't get spawned and the actual spawn rate will be 1 less than intended.
         // So, we need to write a test to check that the correct number of planes are generated.
         // If they are not then we could change the condition to "inboundUnroundedTick <= duration + 0.0001" for example.
-        for (double inboundUnroundedTick = 0.0; inboundUnroundedTick <= duration; inboundUnroundedTick += inboundInterval) {
+        // Changed comparison to inboundUnroundedTick < duration instead of <= (since ticks are 0 indexed)
+        for (double inboundUnroundedTick = 0.0; inboundUnroundedTick < duration; inboundUnroundedTick += inboundInterval) {
             // Round to the nearest integer as all scheduled ticks are integers.
             int scheduledTick = (int) Math.round(inboundUnroundedTick);
 
