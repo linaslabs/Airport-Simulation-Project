@@ -72,10 +72,10 @@ public class SimulationService {
         if (!continueSimulation){
             stopSimulation();
             // HERE WE PREPARE THE FINAL STATS TO SEND BACK
-            // TODO We can send back final simulation completion progress here
+            // TODO We can send back final simulation completion progress here (via websockets)
         } else{
             // SEND BACK SIMULATION SNAPSHOT TO THE UI
-            // TODO In this case, we will send back the simulation progress (via websockets?)
+            // TODO In this case, we will send back the simulation progress (via websockets)
         }
 
     }
