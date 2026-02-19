@@ -39,6 +39,8 @@ public class SimulationEngine {
         // Instantiate AircraftGenerator, pass it the random seed
         this.generator = new AircraftGenerator(random, config.getInboundRate(), config.getOutboundRate(), "SimulationAirport");
 
+        this.generator.initialiseSchedules(this.durationTicks);
+
     }
 
     public boolean performTick() {
