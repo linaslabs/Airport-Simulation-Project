@@ -1,0 +1,77 @@
+/*remove some*/
+.top-right {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 10px;
+}
+
+.top-left {
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 10px;
+}
+
+
+.simulation-button {
+    position: fixed;
+    top: 0;
+    right: 200px;
+    padding: 10px;
+}
+
+h4 {
+    text-align:center;
+}
+
+h5 {
+    text-align:center;
+}
+
+h6 {
+    text-align:center;
+}
+
+#counter-div {
+  font-size: 50px;
+}
+
+/*- 10 + look, update*/
+.wrapper {
+    display: flex;       /* forces items into a horizontal line */
+    align-items: center; /* Centers them vertically */
+    /*font-size: 30px;*/
+    gap: 10px;
+}
+
+
+
+/* for "Runway X" part */
+.field-label {
+    display: block;
+    font-weight: 700; /* Matches fw-bold */
+    font-size: 0.9rem; /* Matches the 'small' class */
+    color: #212529;   /* Standard dark text color */
+    margin-bottom: 0;
+}
+
+/*. small grey range helper text */
+.field-range {
+    font-size: 0.7rem;
+    color: #6c757d;
+    line-height: 1;
+}
+
+/* 3. INPUT FIELD TWEAKS */
+.field-input {
+    /* Ensures the text inside isn't touching the curved edge of input box*/
+    padding-left: 1rem !important;
+    height: 31px;
+}
+
+/* makes the label and the range text sit closer together */
+.me-3 {
+    line-height: 1.2;
+}
+
