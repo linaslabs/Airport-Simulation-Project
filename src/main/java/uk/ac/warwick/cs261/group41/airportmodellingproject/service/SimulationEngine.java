@@ -19,9 +19,9 @@ public class SimulationEngine {
     private int currentTick;
     private int durationTicks;
 
-    public SimulationEngine(SimulationConfig config, int durationTicks) {
+    public SimulationEngine(SimulationConfig config) {
         this.config = config;
-        this.durationTicks = durationTicks;
+        this.durationTicks = config.getDuration();
     }
 
     public void initialiseSimulation() {
@@ -29,12 +29,11 @@ public class SimulationEngine {
         this.stats = new Statistics();
 
         Random random = new Random(config.getSeed());
-        // Pass maxWaitTime, runwaySettings, and Statistics to Airport
-        // Its constructor will instantiate the queues and the runways
+
         this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3);
 
         this.eventLogger = new EventLogger();
-        // Pass EventLogger, Airport and Statistics and random into the EventManager
+        // Pass EventLogger, Airport and Statistics and random into the EventManager (Sprint 2)
         this.manager = new EventManager();
 
         // Instantiate AircraftGenerator, pass it the random seed
@@ -52,7 +51,7 @@ public class SimulationEngine {
         }
 
         // Get all outbound aircraft to be generated in the current tick and accept outbound into airport
-        List<Aircraft> outboundAircraft = this.generator.getInboundForTick(this.currentTick);
+        List<Aircraft> outboundAircraft = this.generator.getOutboundForTick(this.currentTick);
         for (Aircraft aircraft : outboundAircraft) {
             this.airport.acceptOutboundAircraft(aircraft);
         }

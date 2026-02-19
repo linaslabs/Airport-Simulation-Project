@@ -25,7 +25,7 @@ public class SimulationController {
 
     @GetMapping("/progress")
     public ResponseEntity<SimulationProgress> getProgress() {
-        return ResponseEntity.ok(simulationService.getSimProgress());
+        return ResponseEntity.ok(simulationService.getSimulationProgress());
     }
 
     @PostMapping("/stop")
