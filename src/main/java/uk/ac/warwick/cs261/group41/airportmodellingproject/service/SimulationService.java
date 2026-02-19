@@ -24,6 +24,9 @@ public class SimulationService {
     private ScheduledFuture<?> simulationTask;
 
     public void startSimulation(SimulationConfig config) {
+        // Stop any simulations previously
+        stopSimulation();
+
         this.engine = new SimulationEngine(config);
 
         this.engine.initialiseSimulation();
@@ -83,6 +86,7 @@ public class SimulationService {
 
     public void resumeSimulation() {
         this.isPaused = false;
+        scheduleNextTick();
     }
 
     // Pass in 1 for 1x, 5 for 5x, 20 for 20x
@@ -90,7 +94,7 @@ public class SimulationService {
         if (multiplier <= 0) return;
 
         // Calculate the new delay by dividing the tick time set by the multiplier
-        this.currentTickDelay = this.engine.getConfig().getTickTime() / multiplier;
+        this.currentTickDelay = Math.max(1, this.engine.getConfig().getTickTime() / multiplier);
 
         // Reschedule the task with the new tick delay
         if (!isPaused) {
@@ -136,7 +140,7 @@ public class SimulationService {
         return null;
     }
 
-    public boolean getIsPaused() { return this.isPaused; }
+    public boolean isPaused() { return this.isPaused; }
 
     public boolean isRunning() { return this.engine != null && this.simulationTask != null && !this.simulationTask.isCancelled() && !this.isPaused; }
 }

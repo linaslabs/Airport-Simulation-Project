@@ -16,7 +16,7 @@ public class SimulationEngine {
     private EventManager manager;
     private EventLogger eventLogger;
     private Statistics stats;
-    private int currentTick;
+    private volatile int currentTick;
     private int durationTicks;
 
     public SimulationEngine(SimulationConfig config) {
@@ -30,7 +30,7 @@ public class SimulationEngine {
 
         Random random = new Random(config.getSeed());
 
-        this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3);
+        this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3, this.stats);
 
         this.eventLogger = new EventLogger();
         // Pass EventLogger, Airport and Statistics and random into the EventManager (Sprint 2)
@@ -43,7 +43,7 @@ public class SimulationEngine {
 
     }
 
-    public boolean performTick() {
+    public synchronized boolean performTick() {
         // Call event managers process scheduled events
 
         // Get all inbound aircraft to be generated in the current tick and accept inbound into airport
