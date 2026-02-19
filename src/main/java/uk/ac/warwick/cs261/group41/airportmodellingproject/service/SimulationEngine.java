@@ -86,7 +86,6 @@ public class SimulationEngine {
 //
 //    }
 
-    public SimulationConfig getConfig() { return this.config; }
 
 //    public void triggerRunwayEvent() {
 //
@@ -96,6 +95,20 @@ public class SimulationEngine {
 //
 //    }
 
-    // getters and setters
+
+    public int getCurrentTick() {
+        return currentTick;
+    }
+    public int getDurationTicks() {
+        return durationTicks;
+    }
+
+    public SimulationConfig getConfig() { return this.config; }
+
+    public Statistics getStats() { return this.stats; }
+
+
+
+
 
 }

@@ -132,4 +132,8 @@ public class SimulationService {
         // It is the role of the SimulationService to create the DTOs from the SimulationEngine data.
         return null;
     }
+
+    public boolean getIsPaused() { return this.isPaused; }
+
+    public boolean isRunning() { return this.engine != null && this.simulationTask != null && !this.simulationTask.isCancelled() && !this.isPaused; }
 }
