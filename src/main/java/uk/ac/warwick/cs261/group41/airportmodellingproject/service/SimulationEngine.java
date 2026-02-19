@@ -31,7 +31,7 @@ public class SimulationEngine {
         Random random = new Random(config.getSeed());
         // Pass maxWaitTime, runwaySettings, and Statistics to Airport
         // Its constructor will instantiate the queues and the runways
-        this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 100);
+        this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3);
 
         this.eventLogger = new EventLogger();
         // Pass EventLogger, Airport and Statistics and random into the EventManager

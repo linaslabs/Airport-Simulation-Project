@@ -12,7 +12,7 @@ public class SimulationService {
     private SimulationEngine engine;
 
     public void startSimulation(SimulationConfig config) {
-        this.engine = new SimulationEngine(config);
+        this.engine = new SimulationEngine(config, );
         // Need some logic here to start a thread and run the simulation on it.
     }
 
