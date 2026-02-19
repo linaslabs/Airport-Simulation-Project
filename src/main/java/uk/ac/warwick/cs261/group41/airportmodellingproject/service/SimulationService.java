@@ -111,9 +111,14 @@ public class SimulationService {
         // Store the current engine as a variable, in case this.engine is overwritten with a new engine while this function works
         final SimulationEngine currentEngine = this.engine;
 
+        if (currentEngine == null) {
+            // No simulation engine to fast-forward
+            return;
+        }
+
         // Submit a task to performTick as fast as possible (note, the user cannot stop the simulation while this runs)
         executor.submit(() -> {
-            while (this.engine.performTick()) {
+            while (currentEngine.performTick()) {
                 // Engine runs to the end without delays
             }
             stopSimulation();

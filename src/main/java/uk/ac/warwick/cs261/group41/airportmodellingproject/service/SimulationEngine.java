@@ -1,9 +1,7 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationProgress;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.StatisticsSummary;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.*;
 
 import java.util.*;

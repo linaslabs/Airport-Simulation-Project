@@ -86,28 +86,35 @@ public class AircraftGenerator {
         // the last plane won't get spawned and the actual spawn rate will be 1 less than intended.
         // So, we need to write a test to check that the correct number of planes are generated.
         // If they are not then we could change the condition to "inboundUnroundedTick <= duration + 0.0001" for example.
-        // Changed comparison to inboundUnroundedTick < duration instead of <= (since ticks are 0 indexed)
+        // Changed comparison to inboundUnroundedTick < duration instead of <= (since a plane is generated at tick 0)
         for (double inboundUnroundedTick = 0.0; inboundUnroundedTick < duration; inboundUnroundedTick += inboundInterval) {
             // Round to the nearest integer as all scheduled ticks are integers.
             int scheduledTick = (int) Math.round(inboundUnroundedTick);
 
-            // Get the list at this scheduledTick.
-            List<Aircraft> tickAircraft = inboundSchedule.get(scheduledTick);
+            // Generate the actual aircraft for the simulation so we can access its randomized entryTick
+            Aircraft newAircraft = generateAircraft(scheduledTick, FlightType.ARRIVAL);
+
+            // Use the actual entry tick as the map key
+            int actualSpawnTick = newAircraft.getEntryTick();
+
+            // Get the list at the scheduledTick
+            List<Aircraft> tickAircraft = inboundSchedule.get(actualSpawnTick);
 
             // If it is empty, initialise an empty list first.
             if (tickAircraft == null) {
                 tickAircraft = new ArrayList<>();
-                inboundSchedule.put(scheduledTick, tickAircraft);
+                inboundSchedule.put(actualSpawnTick, tickAircraft);
             }
 
             // Add new aircraft to this list.
-            tickAircraft.add(generateAircraft(scheduledTick, FlightType.ARRIVAL));
+            tickAircraft.add(newAircraft);
         }
 
         // Outbound, repeat the same proces.
         double outboundInterval = 60.0 / outboundRate; // This gives the interval between each scheduled tick in minutes.
 
-        for (double outboundUnroundedTick = 0.0; outboundUnroundedTick <= duration; outboundUnroundedTick += outboundInterval) {
+        // Changed comparison to inboundUnroundedTick < duration instead of <= (since a plane is generated at tick 0)
+        for (double outboundUnroundedTick = 0.0; outboundUnroundedTick < duration; outboundUnroundedTick += outboundInterval) {
             // Round to the nearest integer as all scheduled ticks are integers.
             int scheduledTick = (int) Math.round(outboundUnroundedTick);
 
