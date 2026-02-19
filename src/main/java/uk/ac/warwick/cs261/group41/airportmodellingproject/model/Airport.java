@@ -1,5 +1,6 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
+import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
@@ -18,13 +19,25 @@ public class Airport {
     // I don't think we can actually use the AircraftQueue abstraction here becuase the take-off queue and
     // holding pattern have unique methods and require being constructed differently.
     // So, we would need objects of each type anyway so there's no point in using the Aircraft queue.
-    public Airport(String airportName, Map<Integer, Runway> runways, int maxWaitTime, int runwayOccupationTime) {
+    public Airport(String airportName, List<RunwayConfig> runways, int maxWaitTime, int runwayOccupationTime, Statistics stats) {
         this.airportName = airportName; // This isn't actually used, but it might in future, and I feel like it should have this attribute.
-        stats = new Statistics();
-        this.runways = runways;
+        this.stats = stats;
         holdingPattern = new HoldingPattern(stats);
         takeOffQueue = new TakeOffQueue(maxWaitTime, stats);
         this.runwayOccupationTime = runwayOccupationTime;
+
+        // Loop through the runway configurations set by the user, and instantiate the runways into a linked map (so order of adding is order of searching)
+        this.runways = new LinkedHashMap<>();
+        for (RunwayConfig runwayConfig : runways) {
+            int runwayId = runwayConfig.getRunwayID();
+
+            // Make sure that all runways are unique
+            if (this.runways.containsKey(runwayId)) {
+                throw new IllegalArgumentException("Duplicate runway ID in configuration: " + runwayId);
+            }
+
+            this.runways.put(runwayId, new Runway(runwayId, runwayConfig.getMode(), runwayConfig.getStatus()));
+        }
     }
 
     // First part of Airport in performTick cycle is to call acceptInbound and acceptOutbound functions.

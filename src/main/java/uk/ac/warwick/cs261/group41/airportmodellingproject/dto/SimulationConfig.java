@@ -49,6 +49,10 @@ public class SimulationConfig {
     @Max(value = 10000, message = "Tick time cannont exceed 10,000ms (10 seconds).")
     private Integer tickTime = 1000;
 
+    @NotNull(message = "Simulation duration is required")
+    @Range(min = 60, max = 1440, message = "Simulation duration must be between 60 and 1440 minutes.")
+    private Integer duration = 420;
+
     // Added seed as a Long object.
     @NotNull(message = "A random seed is required. Please enter a value or randomly generate one.")
     private Long seed;
@@ -57,12 +61,13 @@ public class SimulationConfig {
     public SimulationConfig() {}
 
     // Parameterised constructor exclusively used for testing purposes.
-    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime, Long seed) {
+    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime, Integer duration, Long seed) {
         // Copy the runway list in case the original list is modified.
         this.runwaySettings = (runwaySettings != null) ? new ArrayList<>(runwaySettings) : new ArrayList<>();
         this.inboundRate = inboundRate;
         this.outboundRate = outboundRate;
         this.maxWaitTime = maxWaitTime;
+        this.duration = duration;
         this.seed = seed;
     }
 
@@ -106,6 +111,10 @@ public class SimulationConfig {
     public void setTickTime(Integer tickTime) {
         this.tickTime = tickTime;
     }
+
+    public Integer getDuration() { return this.duration; }
+
+    public void setDuration(Integer duration) { this.duration = duration; }
 
     public Long getSeed() {
         return seed;
