@@ -135,14 +135,35 @@ function startSimulation() {
     let runwayData = [];
     const runwayCount = parseInt(runwayCounter.innerText);
 
+    // Helper function to convert status dropdown value to enum
+    function statusToEnum(statusVal) {
+        const mapping = {
+            'available': 'AVAILABLE',
+            'snow': 'SNOW',
+            'inspection': 'INSPECTION',
+            'failure': 'FAILURE'
+        };
+        return mapping[statusVal.toLowerCase()] || 'AVAILABLE';
+    }
+
+    // Helper function to convert mode dropdown value to enum
+    function modeToEnum(modeVal) {
+        const mapping = {
+            'mixed': 'MIXED',
+            'landing': 'LANDING',
+            'takeoff': 'TAKEOFF'
+        };
+        return mapping[modeVal.toLowerCase()] || 'MIXED';
+    }
+
     for (let i = 1; i <= runwayCount; i++) {
         const statusVal = document.getElementById(`status_${i}`).value;
         const modeVal = document.getElementById(`mode_${i}`).value;
 
         runwayData.push({
-            id: i,
-            status: statusVal,
-            mode: modeVal
+            runwayID: i - 1,  // Java expects 0-based index
+            status: statusToEnum(statusVal),
+            mode: modeToEnum(modeVal)
         });
     }
 
@@ -152,6 +173,7 @@ function startSimulation() {
         inboundRate: parseInt(document.querySelector('input[id="input-inbound_rate"]').value) || 15, // || so some value can be read
         outboundRate: parseInt(document.querySelector('input[id="input-outbound_rate"]').value) || 15,
         maxWaitTime: parseInt(document.querySelector('input[id="input-max_delay"]').value) || 30,
+        duration: parseInt(document.querySelector('input[id="input-sim_duration"]').value) || 120,
 
         tickTime: 1000, // like sim duration
 
@@ -180,20 +202,35 @@ function startSimulation() {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to start simulation');
+                throw new Error('Failed to validate configuration');
             }
-            // confirmation message
             return response.text();
         })
         .then(data => {
-            console.log('Success:', data);
-            alert("Simulation Started Successfully!");
-
-            // add redirect to next page
+            console.log('Configuration validated:', data);
+            // Now start the simulation
+            return fetch('/api/simulation/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to start simulation');
+            }
+            return response.text();
+        })
+        .then(data => {
+            console.log('Simulation started:', data);
+            // Redirect to progress page
+            window.location.href = '/progress.html';
         })
         .catch(error => {
-            console.error('Error starting simulation:', error);
-            alert("Error: Could not start simulation. Check console.");
+            console.error('Error:', error);
+            alert("Error: " + error.message);
         });
 }
 
