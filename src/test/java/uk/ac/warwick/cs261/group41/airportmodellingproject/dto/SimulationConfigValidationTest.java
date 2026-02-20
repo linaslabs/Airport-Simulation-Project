@@ -35,6 +35,7 @@ class SimulationConfigValidationTest {
     }
 
     private static boolean hasNestedViolationOn(Set<? extends ConstraintViolation<?>> violations, String prefix) {
+        // e.g. "runwaySettings[0].runwayID"
         return violations.stream().anyMatch(v -> v.getPropertyPath().toString().startsWith(prefix));
     }
 
@@ -48,21 +49,26 @@ class SimulationConfigValidationTest {
     private static SimulationConfig validConfig() {
         SimulationConfig config = new SimulationConfig();
 
+        // Ensure runwaySettings satisfies @NotNull, @Size(min=1), and nested @Valid.
         List<RunwayConfig> runways = new ArrayList<>();
         runways.add(new RunwayConfig(0, RunwayStatus.AVAILABLE, RunwayMode.MIXED));
         config.setRunwaySettings(runways);
 
+        // Ensure numeric fields satisfy declared ranges.
         config.setInboundRate(15);
         config.setOutboundRate(15);
         config.setMaxWaitTime(30);
         config.setTickTime(1000);
+        config.setDuration(420);
+
+        // Seed is required to support reproducible simulation runs.
+        config.setSeed(1L);
 
         return config;
     }
 
     /**
      * Verifies that a fully valid SimulationConfig produces no validation errors.
-     * Confirms the "happy path" works correctly.
      */
     @Test
     void validSimulationConfig_shouldHaveNoViolations() {
@@ -94,6 +100,7 @@ class SimulationConfigValidationTest {
 
         List<RunwayConfig> runways = new ArrayList<>();
         for (int i = 0; i < 11; i++) {
+            // This test is specifically validating @Size(max=10) on the list.
             runways.add(new RunwayConfig(0, RunwayStatus.AVAILABLE, RunwayMode.MIXED));
         }
         config.setRunwaySettings(runways);
@@ -179,31 +186,99 @@ class SimulationConfigValidationTest {
     }
 
     /**
+     * Verifies that duration must be within the allowed range (60–1440 minutes).
+     */
+    @Test
+    void duration_outOfRange_shouldFailValidation() {
+        SimulationConfig tooLow = validConfig();
+        tooLow.setDuration(59);
+
+        Set<ConstraintViolation<SimulationConfig>> vLow = validate(tooLow);
+        assertFalse(vLow.isEmpty());
+        assertTrue(hasViolationOn(vLow, "duration"));
+
+        SimulationConfig tooHigh = validConfig();
+        tooHigh.setDuration(1441);
+
+        Set<ConstraintViolation<SimulationConfig>> vHigh = validate(tooHigh);
+        assertFalse(vHigh.isEmpty());
+        assertTrue(hasViolationOn(vHigh, "duration"));
+    }
+
+    /**
+     * Verifies that seed is required (must not be null).
+     */
+    @Test
+    void seed_null_shouldFailValidation() {
+        SimulationConfig config = validConfig();
+        config.setSeed(null);
+
+        Set<ConstraintViolation<SimulationConfig>> violations = validate(config);
+
+        assertFalse(violations.isEmpty());
+        assertTrue(hasViolationOn(violations, "seed"));
+    }
+
+    /**
+     * Verifies that required fields cannot be null.
+     */
+    @Test
+    void requiredFields_null_shouldFailValidation() {
+        SimulationConfig config = validConfig();
+
+        config.setInboundRate(null);
+        config.setOutboundRate(null);
+        config.setMaxWaitTime(null);
+        config.setTickTime(null);
+        config.setDuration(null);
+        config.setSeed(null);
+
+        Set<ConstraintViolation<SimulationConfig>> violations = validate(config);
+
+        assertFalse(violations.isEmpty());
+        assertTrue(hasViolationOn(violations, "inboundRate"));
+        assertTrue(hasViolationOn(violations, "outboundRate"));
+        assertTrue(hasViolationOn(violations, "maxWaitTime"));
+        assertTrue(hasViolationOn(violations, "tickTime"));
+        assertTrue(hasViolationOn(violations, "duration"));
+        assertTrue(hasViolationOn(violations, "seed"));
+    }
+
+    /**
      * Verifies that boundary values are accepted.
      */
     @Test
     void boundaryValues_shouldPassValidation() {
-        SimulationConfig config = validConfig();
+        SimulationConfig min = validConfig();
+        min.setInboundRate(0);
+        min.setOutboundRate(0);
+        min.setMaxWaitTime(1);
+        min.setTickTime(100);
+        min.setDuration(60);
+        min.setSeed(1L);
 
-        config.setInboundRate(0);
-        config.setOutboundRate(100);
-        config.setMaxWaitTime(1);
-        config.setTickTime(100);
+        SimulationConfig max = validConfig();
+        max.setInboundRate(100);
+        max.setOutboundRate(100);
+        max.setMaxWaitTime(1);
+        max.setTickTime(10000);
+        max.setDuration(1440);
+        max.setSeed(999L);
 
-        Set<ConstraintViolation<SimulationConfig>> violations = validate(config);
-        assertTrue(violations.isEmpty());
+        assertTrue(validate(min).isEmpty(), "Expected lower boundary values to be valid, got: " + validate(min));
+        assertTrue(validate(max).isEmpty(), "Expected upper boundary values to be valid, got: " + validate(max));
     }
 
     /**
      * Verifies that nested validation works:
-     * an invalid RunwayConfig inside the list should invalidate the entire SimulationConfig.
+     * an invalid RunwayConfig inside runwaySettings should invalidate the entire SimulationConfig.
      */
     @Test
     void nestedRunwayConfig_invalid_shouldFailSimulationConfigValidation() {
         SimulationConfig config = validConfig();
 
         List<RunwayConfig> runways = new ArrayList<>();
-        runways.add(new RunwayConfig(-1, RunwayStatus.AVAILABLE, RunwayMode.MIXED));
+        runways.add(new RunwayConfig(-1, RunwayStatus.AVAILABLE, RunwayMode.MIXED)); // invalid runwayID
         config.setRunwaySettings(runways);
 
         Set<ConstraintViolation<SimulationConfig>> violations = validate(config);
@@ -213,7 +288,7 @@ class SimulationConfigValidationTest {
     }
 
     /**
-     * Verifies that runwaySettings cannot be null.
+     * Verifies that runwaySettings cannot be null (setter normalises null to an empty list, which should fail @Size(min=1)).
      */
     @Test
     void nullRunwaySettings_shouldFailValidation() {
@@ -228,7 +303,7 @@ class SimulationConfigValidationTest {
 
     /**
      * Verifies that validation messages are returned for invalid fields.
-     * Ensures error feedback exists (important for UI error handling).
+     * Ensures user-facing error feedback exists for configuration inputs.
      */
     @Test
     void helpfulMessagesExample_forInboundRate() {
