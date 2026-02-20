@@ -143,7 +143,7 @@ public class SimulationService {
 
     public StatisticsSummary getStatisticsSummary() {
         // It is the role of the SimulationService to create the DTOs from the SimulationEngine data.
-        return null;
+        return engine.getFinalSummary();
     }
 
     public boolean isPaused() { return this.isPaused; }
