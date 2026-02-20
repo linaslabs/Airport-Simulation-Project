@@ -71,6 +71,7 @@ public class SimulationService {
 
         if (!continueSimulation){
             stopSimulation();
+            System.out.println("Simulation ended.");
             // HERE WE PREPARE THE FINAL STATS TO SEND BACK
             // TODO We can send back final simulation completion progress here (via websockets)
         } else{
