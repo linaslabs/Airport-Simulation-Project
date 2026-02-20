@@ -58,15 +58,24 @@ public class Airport {
 //            holdingPattern.addAircraft(aircraft);
 //        }
         holdingPattern.addAircraft(aircraft);
+
+        stats.recordHoldingSize(holdingPattern.getSize());
     }
 
     public void acceptOutboundAircraft(Aircraft aircraft) {
+
         takeOffQueue.addAircraft(aircraft);
+        stats.recordTakeOffQueueSize(takeOffQueue.getSize());
     }
 
     // Second part of Airport in performTick cycle is to assign aircraft to runways and update the queues.
 
     public void assignRunways(int currentTick) {
+        // Clear all runways where the planes have finished their operations
+        for (Runway runway : runways.values()) {
+            runway.update(currentTick);
+        }
+
         // Emergency aircraft will be at the front of the holding pattern.
         // However, because of mixed mode runways, we still need to check if there are any emergency aircraft in
         // the holding pattern.
@@ -175,8 +184,8 @@ public class Airport {
 
         // Update the statistics for this landing.
         stats.recordLanding();
-        stats.recordHoldingTime(currentTick - aircraft.getEntryTick());
-        stats.recordArrivalDelay(currentTick - aircraft.getScheduledTick());
+        stats.recordHoldingTime(Math.max(0, currentTick - aircraft.getEntryTick()));
+        stats.recordArrivalDelay(Math.max(0, currentTick - aircraft.getScheduledTick()));
     }
 
     // Helper function for process to take-off aircraft.
@@ -185,8 +194,8 @@ public class Airport {
 
         // Update the statistics for this take-off.
         stats.recordTakeOff();
-        stats.recordTakeOffWaitTime(currentTick - aircraft.getEntryTick());
-        stats.recordTakeOffDelay(currentTick - aircraft.getScheduledTick());
+        stats.recordTakeOffWaitTime(Math.max(0, currentTick - aircraft.getEntryTick()));
+        stats.recordTakeOffDelay(Math.max(0, currentTick - aircraft.getScheduledTick()));
     }
 
     // Helper function to get available runways of a certain mode.
