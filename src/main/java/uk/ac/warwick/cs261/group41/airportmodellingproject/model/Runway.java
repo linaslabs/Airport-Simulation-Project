@@ -23,6 +23,7 @@ public class Runway {
         this.bearing = 90;
         this.occupiedUntil = 0;
         this.currentAircraft = null;
+        this.lastAircraftType = FlightType.DEPARTURE; // Make sure to prioritise arrivals if anything at the start
     }
 
     public boolean isAvailable(int currentTick) {
@@ -33,6 +34,13 @@ public class Runway {
         this.currentAircraft = a;
         this.occupiedUntil = untilTick;
         this.lastAircraftType = a.getFlightType();
+    }
+
+    public void update(int currentTick) {
+        // If the occupation time has expired, clear the aircraft from the runway (make sure it doesn't hold a ghost aircraft)
+        if (currentTick >= occupiedUntil && currentAircraft != null) {
+            this.currentAircraft = null;
+        }
     }
 
     public int getRunwayID() {

@@ -95,15 +95,15 @@ public class AircraftGenerator {
             Aircraft newAircraft = generateAircraft(scheduledTick, FlightType.ARRIVAL);
 
             // Use the actual entry tick as the map key
-            int actualSpawnTick = newAircraft.getEntryTick();
+            int actualArrivalSpawnTick = newAircraft.getEntryTick();
 
             // Get the list at the scheduledTick
-            List<Aircraft> tickAircraft = inboundSchedule.get(actualSpawnTick);
+            List<Aircraft> tickAircraft = inboundSchedule.get(actualArrivalSpawnTick);
 
             // If it is empty, initialise an empty list first.
             if (tickAircraft == null) {
                 tickAircraft = new ArrayList<>();
-                inboundSchedule.put(actualSpawnTick, tickAircraft);
+                inboundSchedule.put(actualArrivalSpawnTick, tickAircraft);
             }
 
             // Add new aircraft to this list.
@@ -118,17 +118,23 @@ public class AircraftGenerator {
             // Round to the nearest integer as all scheduled ticks are integers.
             int scheduledTick = (int) Math.round(outboundUnroundedTick);
 
-            // Get the list at this scheduledTick.
-            List<Aircraft> tickAircraft = outboundSchedule.get(scheduledTick);
+            // Generate the actual aircraft for the simulation so we can access its randomized entryTick
+            Aircraft newAircraft = generateAircraft(scheduledTick, FlightType.DEPARTURE);
+
+            // Use the actual entry tick as the map key
+            int actualDepartureSpawnTick = newAircraft.getEntryTick();
+
+            // Get the list at the scheduledTick
+            List<Aircraft> tickAircraft = outboundSchedule.get(actualDepartureSpawnTick);
 
             // If it is empty, initialise an empty list first.
             if (tickAircraft == null) {
                 tickAircraft = new ArrayList<>();
-                outboundSchedule.put(scheduledTick, tickAircraft);
+                outboundSchedule.put(actualDepartureSpawnTick, tickAircraft);
             }
 
             // Add new aircraft to this list.
-            tickAircraft.add(generateAircraft(scheduledTick, FlightType.DEPARTURE));
+            tickAircraft.add(newAircraft);
         }
     }
 

@@ -59,9 +59,10 @@ public class HoldingPattern implements AircraftQueue{
                 // Handle logging for diverted aircraft here.
                 stats.recordDiversion();
             }
-            // after updating each aircraft, for those still in the queue update their altitudes.
-            updateAltitudes();
+
         }
+        // after updating all aircraft, for those still in the queue update their altitudes.
+        updateAltitudes();
     }
 
     public void updateAltitudes() {
