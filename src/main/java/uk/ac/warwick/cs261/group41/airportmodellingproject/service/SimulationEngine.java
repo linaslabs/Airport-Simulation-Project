@@ -2,6 +2,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationProgress;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.StatisticsSummary;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.*;
 
 import java.util.*;
@@ -78,9 +79,9 @@ public class SimulationEngine {
     }
 
     // Currently not to be used, getSimulationProgress takes its place for initial sprints
-//    public StatisticsSummary getFinalSummary() {
-//        return null;
-//    }
+    public StatisticsSummary getFinalSummary() {
+        return stats.generateSummary(durationTicks);
+    }
 
 
 //    public List<SimulationEvent> getEventLog() {
