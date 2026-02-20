@@ -43,6 +43,8 @@ public class SimulationEngine {
 
     public synchronized boolean performTick() {
         // Call event managers process scheduled events
+        System.out.println("Start of perform tick, tick number: " + currentTick);
+        System.out.println("Duration: " + durationTicks);
 
         // Get all inbound aircraft to be generated in the current tick and accept inbound into airport
         List<Aircraft> inboundAircraft = this.generator.getInboundForTick(this.currentTick);
@@ -71,6 +73,7 @@ public class SimulationEngine {
     }
 
     public SimulationProgress getSimulationProgress() {
+        System.out.println("Simulation progress: " + (double) this.currentTick / this.durationTicks);
         return new SimulationProgress((double) this.currentTick / this.durationTicks);
     }
 

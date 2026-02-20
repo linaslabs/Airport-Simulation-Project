@@ -3,7 +3,8 @@ let pollingInterval;
 let startTime;
 let tickCount = 0;
 
-function updateProgress(progressPercentage) {
+function updateProgress(progressDecimal) {
+    const progressPercentage = progressDecimal * 100;
     // Update progress bar width
     const progressBar = document.getElementById('progressBar');
     progressBar.style.width = progressPercentage + '%';
@@ -37,7 +38,7 @@ function startPolling() {
                 updateProgress(percentage);
 
                 // If simulation is complete, redirect to results
-                if (percentage >= 100) {
+                if (percentage >= 1.0) {
                     stopPolling();
                     // Small delay to show 100%
                     setTimeout(() => {
