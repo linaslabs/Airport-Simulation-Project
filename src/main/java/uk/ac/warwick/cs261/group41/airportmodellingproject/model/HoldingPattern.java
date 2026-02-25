@@ -57,6 +57,9 @@ public class HoldingPattern implements AircraftQueue{
                 aircraft.setState(AircraftState.DIVERTED);
                 iterator.remove();
                 // Report diversion to the event manager
+                if (eventManager == null) {
+                    throw new IllegalStateException("EventManager has not been set for HoldingPattern");
+                }
                 eventManager.reportDiversion(aircraft.getCallsign(), currentTick);
             }
 
