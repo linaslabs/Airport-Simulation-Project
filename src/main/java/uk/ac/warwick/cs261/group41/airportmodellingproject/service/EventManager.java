@@ -120,7 +120,7 @@ public class EventManager {
         List<RunwayEvent> runwayEvents =  scheduledRunwayEvents.get(currentTick);
         if (runwayEvents != null) {
             for (RunwayEvent runwayEvent : runwayEvents) {
-                triggerRunwayEvent(runwayEvent.getRunwayId(), runwayEvent.getRunwayStatus(), runwayEvent.getRunwayMode(), currentTick, runwayEvent.getDuration());
+                triggerRunwayEvent(runwayEvent.getRunwayID(), runwayEvent.getRunwayStatus(), runwayEvent.getRunwayMode(), currentTick, runwayEvent.getDuration());
             }
         }
 
