@@ -10,10 +10,7 @@ import org.hibernate.validator.constraints.Range;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class SimulationConfig {
@@ -92,13 +89,13 @@ public class SimulationConfig {
         this.runwaySettings = (runwaySettings != null) ? new ArrayList<>(runwaySettings) : new ArrayList<>();
     }
 
-    public Map<Integer, List<RunwayEvent>> getScheduledRunwayEvents() { return scheduledRunwayEvents; }
+    public Map<Integer, List<RunwayEvent>> getScheduledRunwayEvents() { return Collections.unmodifiableMap(this.scheduledRunwayEvents); }
 
     public void setScheduledRunwayEvents(Map<Integer, List<RunwayEvent>> scheduledRunwayEvents) {
         this.scheduledRunwayEvents = (scheduledRunwayEvents != null) ? new HashMap<>(scheduledRunwayEvents) : new HashMap<>();
     }
 
-    public Map<Integer, List<AircraftEvent>> getScheduledAircraftEvents() { return scheduledAircraftEvents; }
+    public Map<Integer, List<AircraftEvent>> getScheduledAircraftEvents() { return Collections.unmodifiableMap(this.scheduledAircraftEvents); }
 
     public void setScheduledAircraftEvents(Map<Integer, List<AircraftEvent>> scheduledAircraftEvents) {
         this.scheduledAircraftEvents = (scheduledAircraftEvents != null) ? new HashMap<>(scheduledAircraftEvents) : new HashMap<>();

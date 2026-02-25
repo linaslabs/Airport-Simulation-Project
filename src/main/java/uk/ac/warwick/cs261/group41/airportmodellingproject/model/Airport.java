@@ -251,4 +251,11 @@ public class Airport {
         this.holdingPattern.setEventManager(eventManager);
         this.takeOffQueue.setEventManager(eventManager);
     }
+
+    public HoldingPattern getHoldingPattern() { return this.holdingPattern; }
+
+    public TakeOffQueue  getTakeOffQueue() { return this.takeOffQueue; }
+
+    // Returns an unmodifiable collection of the runways (to protect the actual map)
+    public Collection<Runway> getRunways() { return Collections.unmodifiableCollection(this.runways.values()); }
 }

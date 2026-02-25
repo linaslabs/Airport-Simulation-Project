@@ -145,4 +145,6 @@ public class HoldingPattern implements AircraftQueue{
     public void setEventManager(EventManager eventManager) {
         this.eventManager = eventManager;
     }
+
+    public List<Aircraft> getAircraftInQueue() { return new ArrayList<>(this.queue); }
 }

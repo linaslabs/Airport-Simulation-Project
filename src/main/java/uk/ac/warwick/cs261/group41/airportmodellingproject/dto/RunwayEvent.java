@@ -9,7 +9,7 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.SimulationEvent;
 
 public class RunwayEvent extends SimulationEvent {
-    @Min(value = 1, message = "Runway ID must be 1 or greater")
+    @Min(value = 0, message = "Runway ID must be 0 or greater")
     private final int runwayID;
 
     private final RunwayStatus runwayStatus;

@@ -17,9 +17,9 @@ public class EventManager {
     private final Map<Integer, List<RunwayEvent>> scheduledRunwayEvents;
     private final Map<Integer, List<AircraftEvent>> scheduledAircraftEvents;
 
-    private Random random;
-    private Airport airport;
-    private Statistics statistics;
+    private final Random random;
+    private final Airport airport;
+    private final Statistics statistics;
 
     public EventManager(EventLogger logger, Map<Integer, List<RunwayEvent>> scheduledRunwayEvents, Map<Integer, List<AircraftEvent>> scheduledAircraftEvents, Random random, Airport airport, Statistics statistics) {
         this.logger = logger;
@@ -67,11 +67,11 @@ public class EventManager {
         }
     }
 
-    /*
-        Triggers the runway event from either the user or the schedule, if it's the user, duration is infinite (-1), otherwise duration is set
-        If a duration is set, then the reverse of that change is scheduled for the future at the end of the duration
-        Updates the runway and logs the event as a runway event
-         */
+
+    // Triggers the runway event from either the user or the schedule, if it's the user, duration is infinite (-1), otherwise duration is set
+    // If a duration is set, then the reverse of that change is scheduled for the future at the end of the duration
+    // Updates the runway and logs the event as a runway event
+
     public void triggerRunwayEvent(int runwayID, RunwayStatus status,  RunwayMode mode, int currentTick, int duration) {
         // If duration is valid, and non-zero, set a scheduled event in the future to reverse the changes
         // NOTE: this will currently override any user set runway events for that runway when a reversion happens
@@ -88,10 +88,10 @@ public class EventManager {
         this.logger.addEvent(new RunwayEvent(currentTick, runwayID, status, mode, duration));
     }
 
-    /*
-    Triggers an aircraft emergency from either the user or the schedule, if it's the user, callsign is present, otherwise callsign is null and a random is chosen
-    Updates the aircraft status and logs the event respective to whether it was a scheduled emergency or a manual one
-     */
+
+    // Triggers an aircraft emergency from either the user or the schedule, if it's the user, callsign is present, otherwise callsign is null and a random is chosen
+    // Updates the aircraft status and logs the event respective to whether it was a scheduled emergency or a manual one
+
     public void triggerAircraftEmergency(String callsign, EmergencyStatus status, int currentTick){
         if (callsign == null){
             String randomCallsign = this.airport.getRandomHoldingAircraft(this.random);
@@ -118,9 +118,8 @@ public class EventManager {
         this.statistics.recordCancellation();
     }
 
-    /*
-    For each event scheduled for the current tick, this method triggers them
-     */
+
+    // For each event scheduled for the current tick, this method triggers them
     public void processScheduledEvents(int currentTick){
         List<RunwayEvent> runwayEvents =  scheduledRunwayEvents.get(currentTick);
         if (runwayEvents != null) {
@@ -137,13 +136,9 @@ public class EventManager {
         }
     }
 
-    public Map<Integer, List<RunwayEvent>> getScheduledRunwayEvents() {
-        return this.scheduledRunwayEvents;
-    }
+    public Map<Integer, List<RunwayEvent>> getScheduledRunwayEvents() { return Collections.unmodifiableMap(this.scheduledRunwayEvents); }
 
-    public Map<Integer, List<AircraftEvent>> getScheduledAircraftEvents() {
-        return this.scheduledAircraftEvents;
-    }
+    public Map<Integer, List<AircraftEvent>> getScheduledAircraftEvents() { return Collections.unmodifiableMap(this.scheduledAircraftEvents); }
 
     public EventLogger getLogger() {
         return this.logger;

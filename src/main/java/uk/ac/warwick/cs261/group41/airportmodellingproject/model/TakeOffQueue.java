@@ -3,10 +3,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 
 public class TakeOffQueue implements AircraftQueue {
 
@@ -75,4 +72,6 @@ public class TakeOffQueue implements AircraftQueue {
     public void setMaxWaitTime(int maxWaitTime) {
         this.maxWaitTime = maxWaitTime;
     }
+
+    public List<Aircraft> getAircraftInQueue() { return new ArrayList<>(this.queue); }
 }

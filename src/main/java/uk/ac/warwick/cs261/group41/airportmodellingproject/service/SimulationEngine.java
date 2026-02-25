@@ -17,8 +17,8 @@ public class SimulationEngine {
     private EventLogger eventLogger;
     private Statistics stats;
     private volatile int currentTick;
-    private int durationTicks;
-    private Random random;
+    private final int durationTicks;
+    private final Random random;
 
     public SimulationEngine(@NonNull SimulationConfig config) {
         this.config = config;
@@ -90,19 +90,9 @@ public class SimulationEngine {
     }
 
 
-//    public List<SimulationEvent> getEventLog() {
-//
-//    }
+    public List<SimulationEvent> getEventLog() { return this.eventLogger.getEventLog(); }
 
-
-//    public void triggerRunwayEvent() {
-//
-//    }
-
-//    public void triggerAircraftEmergency() {
-//
-//    }
-
+    public Airport getAirport() { return this.airport; }
 
     public int getCurrentTick() {
         return currentTick;
