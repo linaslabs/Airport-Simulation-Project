@@ -1,5 +1,6 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
+import org.jspecify.annotations.NonNull;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationProgress;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.StatisticsSummary;
@@ -12,31 +13,30 @@ public class SimulationEngine {
     private final SimulationConfig config;
     private Airport airport;
     private AircraftGenerator generator;
-    private EventManager manager;
+    private EventManager eventManager;
     private EventLogger eventLogger;
     private Statistics stats;
     private volatile int currentTick;
     private int durationTicks;
+    private Random random;
 
-    public SimulationEngine(SimulationConfig config) {
+    public SimulationEngine(@NonNull SimulationConfig config) {
         this.config = config;
         this.durationTicks = config.getDuration();
+        this.random = new Random(config.getSeed());
     }
 
     public void initialiseSimulation() {
 
         this.stats = new Statistics();
 
-        Random random = new Random(config.getSeed());
-
-        this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3, this.stats);
+        this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3, this.stats, this.eventManager);
 
         this.eventLogger = new EventLogger();
-        // Pass EventLogger, Airport and Statistics and random into the EventManager
-        this.manager = new EventManager();
 
-        // Instantiate AircraftGenerator, pass it the random seed
-        this.generator = new AircraftGenerator(random, config.getInboundRate(), config.getOutboundRate(), "SimulationAirport");
+        this.eventManager = new EventManager(this.eventLogger, this.config.getScheduledRunwayEvents(), this.config.getScheduledAircraftEvents(), this.random, this.airport, this.stats);
+
+        this.generator = new AircraftGenerator(this.random, config.getInboundRate(), config.getOutboundRate(), "SimulationAirport");
 
         this.generator.initialiseSchedules(this.durationTicks);
 
@@ -46,6 +46,9 @@ public class SimulationEngine {
         // Call event managers process scheduled events
         System.out.println("Start of perform tick, tick number: " + currentTick);
         System.out.println("Duration: " + durationTicks);
+
+        // Process scheduled events for this tick
+        this.eventManager.processScheduledEvents(this.currentTick);
 
         // Get all inbound aircraft to be generated in the current tick and accept inbound into airport
         List<Aircraft> inboundAircraft = this.generator.getInboundForTick(this.currentTick);

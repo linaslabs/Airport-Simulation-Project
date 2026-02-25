@@ -2,6 +2,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.*;
 
@@ -10,10 +11,12 @@ public class HoldingPattern implements AircraftQueue{
     private int minFuelLevel = 10;
     // Maybe add an emergency fuel level, e.g. 20 minutes, below which the plane goes into EmergencyStatus.FUEL.
     private final Statistics stats;
+    private final EventManager eventManager;
 
-    public HoldingPattern(Statistics stats) {
+    public HoldingPattern(Statistics stats, EventManager eventManager) {
         this.queue = new PriorityQueue<>();
         this.stats = stats;
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -58,6 +61,8 @@ public class HoldingPattern implements AircraftQueue{
                 iterator.remove();
                 // Handle logging for diverted aircraft here.
                 stats.recordDiversion();
+                // Report diversion
+                eventManager.reportDiversion(aircraft.getCallsign(), currentTick);
             }
 
         }

@@ -1,6 +1,7 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -12,11 +13,13 @@ public class TakeOffQueue implements AircraftQueue {
     private Deque<Aircraft> queue;
     private int maxWaitTime;
     private final Statistics stats;
+    private final EventManager eventManager;
 
-    public TakeOffQueue(int maxWaitTime, Statistics stats) {
+    public TakeOffQueue(int maxWaitTime, Statistics stats, EventManager eventManager) {
         this.maxWaitTime = maxWaitTime;
         this.queue = new ArrayDeque<>();
         this.stats = stats;
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -60,6 +63,8 @@ public class TakeOffQueue implements AircraftQueue {
                 iterator.remove();
                 // Log cancellation.
                 stats.recordCancellation();
+                // Report diversion
+                this.eventManager.reportCancellation(aircraft.getCallsign(), currentTick);
             }
         }
     }

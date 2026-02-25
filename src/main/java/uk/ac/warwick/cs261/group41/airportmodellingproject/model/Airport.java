@@ -5,6 +5,7 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.*;
 
@@ -19,11 +20,11 @@ public class Airport {
     // I don't think we can actually use the AircraftQueue abstraction here becuase the take-off queue and
     // holding pattern have unique methods and require being constructed differently.
     // So, we would need objects of each type anyway so there's no point in using the Aircraft queue.
-    public Airport(String airportName, List<RunwayConfig> runways, int maxWaitTime, int runwayOccupationTime, Statistics stats) {
+    public Airport(String airportName, List<RunwayConfig> runways, int maxWaitTime, int runwayOccupationTime, Statistics stats, EventManager eventManager) {
         this.airportName = airportName; // This isn't actually used, but it might in future, and I feel like it should have this attribute.
         this.stats = stats;
-        holdingPattern = new HoldingPattern(stats);
-        takeOffQueue = new TakeOffQueue(maxWaitTime, stats);
+        holdingPattern = new HoldingPattern(stats, eventManager);
+        takeOffQueue = new TakeOffQueue(maxWaitTime, stats, eventManager);
         this.runwayOccupationTime = runwayOccupationTime;
 
         // Loop through the runway configurations set by the user, and instantiate the runways into a linked map (so order of adding is order of searching)

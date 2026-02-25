@@ -10,10 +10,7 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Airport;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class EventManager {
     private EventLogger logger;
@@ -26,8 +23,23 @@ public class EventManager {
 
     public EventManager(EventLogger logger, Map<Integer, List<RunwayEvent>> scheduledRunwayEvents, Map<Integer, List<AircraftEvent>> scheduledAircraftEvents, Random random, Airport airport, Statistics statistics) {
         this.logger = logger;
-        this.scheduledRunwayEvents = scheduledRunwayEvents;
-        this.scheduledAircraftEvents = scheduledAircraftEvents;
+
+        // Deep copy for runway events
+        this.scheduledRunwayEvents = new HashMap<>();
+        if (scheduledRunwayEvents != null) {
+            for (Map.Entry<Integer, List<RunwayEvent>> entry : scheduledRunwayEvents.entrySet()) {
+                this.scheduledRunwayEvents.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+            }
+        }
+
+        // Deep copy for aircraft events
+        this.scheduledAircraftEvents = new HashMap<>();
+        if (scheduledAircraftEvents != null) {
+            for (Map.Entry<Integer, List<AircraftEvent>> entry : scheduledAircraftEvents.entrySet()) {
+                this.scheduledAircraftEvents.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+            }
+        }
+
         this.random = random;
         this.airport = airport;
         this.statistics = statistics;
