@@ -13,9 +13,9 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
 import java.util.*;
 
 public class EventManager {
-    private EventLogger logger;
-    private Map<Integer, List<RunwayEvent>> scheduledRunwayEvents;
-    private Map<Integer, List<AircraftEvent>> scheduledAircraftEvents;
+    private final EventLogger logger;
+    private final Map<Integer, List<RunwayEvent>> scheduledRunwayEvents;
+    private final Map<Integer, List<AircraftEvent>> scheduledAircraftEvents;
 
     private Random random;
     private Airport airport;
@@ -79,13 +79,13 @@ public class EventManager {
             RunwayConfig runwayPrevSnapshot = this.airport.getRunwaySnapshot(runwayID);
 
             int endTick = currentTick + duration;
-            RunwayEvent runwayEvent = new RunwayEvent(runwayID, runwayPrevSnapshot.getStatus(), runwayPrevSnapshot.getMode(), endTick, -1);
+            RunwayEvent runwayEvent = new RunwayEvent(endTick, runwayID, runwayPrevSnapshot.getStatus(), runwayPrevSnapshot.getMode(), -1);
 
             addScheduledRunwayEvent(runwayEvent);
         }
 
         this.airport.updateRunway(runwayID, status, mode);
-        this.logger.addEvent(new RunwayEvent(runwayID, status, mode, currentTick, duration));
+        this.logger.addEvent(new RunwayEvent(currentTick, runwayID, status, mode, duration));
     }
 
     /*
@@ -95,21 +95,26 @@ public class EventManager {
     public void triggerAircraftEmergency(String callsign, EmergencyStatus status, int currentTick){
         if (callsign == null){
             String randomCallsign = this.airport.getRandomHoldingAircraft(this.random);
-            this.airport.updateAircraftStatus(randomCallsign, status);
-            this.logger.addEvent(new AircraftEvent(randomCallsign, AircraftEventType.SCHEDULED_EMERGENCY, status, currentTick));
+            // If there is no current aircraft in the holding queue, there are no aircraft to set emergencies to
+            if (randomCallsign != null) {
+                this.airport.updateAircraftStatus(randomCallsign, status);
+                this.logger.addEvent(new AircraftEvent(currentTick, randomCallsign, AircraftEventType.SCHEDULED_EMERGENCY, status));
+            } else {
+                System.out.println("Tick " + currentTick + ": Scheduled emergency skipped, holding pattern is empty.");
+            }
         } else {
             this.airport.updateAircraftStatus(callsign, status);
-            this.logger.addEvent(new AircraftEvent(callsign, AircraftEventType.MANUAL_EMERGENCY, status, currentTick));
+            this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.MANUAL_EMERGENCY, status));
         }
     }
 
     public void reportDiversion(String callsign, int currentTick){
-        this.logger.addEvent(new AircraftEvent(callsign, AircraftEventType.DIVERSION, EmergencyStatus.FUEL, currentTick));
+        this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.DIVERSION, EmergencyStatus.FUEL));
         this.statistics.recordDiversion();
     }
 
     public void reportCancellation(String callsign, int currentTick){
-        this.logger.addEvent(new AircraftEvent(callsign, AircraftEventType.CANCELLATION, EmergencyStatus.NONE, currentTick));
+        this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.CANCELLATION, EmergencyStatus.NONE));
         this.statistics.recordCancellation();
     }
 

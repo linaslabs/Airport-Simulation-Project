@@ -20,11 +20,11 @@ public class Airport {
     // I don't think we can actually use the AircraftQueue abstraction here becuase the take-off queue and
     // holding pattern have unique methods and require being constructed differently.
     // So, we would need objects of each type anyway so there's no point in using the Aircraft queue.
-    public Airport(String airportName, List<RunwayConfig> runways, int maxWaitTime, int runwayOccupationTime, Statistics stats, EventManager eventManager) {
+    public Airport(String airportName, List<RunwayConfig> runways, int maxWaitTime, int runwayOccupationTime, Statistics stats) {
         this.airportName = airportName; // This isn't actually used, but it might in future, and I feel like it should have this attribute.
         this.stats = stats;
-        holdingPattern = new HoldingPattern(stats, eventManager);
-        takeOffQueue = new TakeOffQueue(maxWaitTime, stats, eventManager);
+        holdingPattern = new HoldingPattern();
+        takeOffQueue = new TakeOffQueue(maxWaitTime);
         this.runwayOccupationTime = runwayOccupationTime;
 
         // Loop through the runway configurations set by the user, and instantiate the runways into a linked map (so order of adding is order of searching)
@@ -244,5 +244,11 @@ public class Airport {
         else {
             throw new IllegalArgumentException("Unknown runwayID: " + runwayID);
         }
+    }
+
+    // Used for assigning the event manager to the queues after they are instantiated
+    public void setEventManager(EventManager eventManager) {
+        this.holdingPattern.setEventManager(eventManager);
+        this.takeOffQueue.setEventManager(eventManager);
     }
 }

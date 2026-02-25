@@ -30,11 +30,14 @@ public class SimulationEngine {
 
         this.stats = new Statistics();
 
-        this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3, this.stats, this.eventManager);
+        this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3, this.stats);
 
         this.eventLogger = new EventLogger();
 
         this.eventManager = new EventManager(this.eventLogger, this.config.getScheduledRunwayEvents(), this.config.getScheduledAircraftEvents(), this.random, this.airport, this.stats);
+
+        // Give the queues the event manager to access and report diversions and cancellations
+        this.airport.setEventManager(this.eventManager);
 
         this.generator = new AircraftGenerator(this.random, config.getInboundRate(), config.getOutboundRate(), "SimulationAirport");
 

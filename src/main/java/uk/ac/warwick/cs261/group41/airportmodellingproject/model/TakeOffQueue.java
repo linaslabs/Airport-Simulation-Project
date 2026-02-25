@@ -12,14 +12,11 @@ public class TakeOffQueue implements AircraftQueue {
 
     private Deque<Aircraft> queue;
     private int maxWaitTime;
-    private final Statistics stats;
-    private final EventManager eventManager;
+    private EventManager eventManager;
 
-    public TakeOffQueue(int maxWaitTime, Statistics stats, EventManager eventManager) {
+    public TakeOffQueue(int maxWaitTime) {
         this.maxWaitTime = maxWaitTime;
         this.queue = new ArrayDeque<>();
-        this.stats = stats;
-        this.eventManager = eventManager;
     }
 
     @Override
@@ -61,12 +58,14 @@ public class TakeOffQueue implements AircraftQueue {
             if (waitTime >= maxWaitTime) {
                 aircraft.setState(AircraftState.CANCELLED);
                 iterator.remove();
-                // Log cancellation.
-                stats.recordCancellation();
-                // Report diversion
+                // Report cancellation to the event manager
                 this.eventManager.reportCancellation(aircraft.getCallsign(), currentTick);
             }
         }
+    }
+
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
     }
 
     public int getMaxWaitTime() {

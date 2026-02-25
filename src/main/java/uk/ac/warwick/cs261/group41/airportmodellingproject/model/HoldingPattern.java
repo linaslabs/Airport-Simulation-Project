@@ -10,13 +10,10 @@ public class HoldingPattern implements AircraftQueue{
     private final PriorityQueue<Aircraft> queue;
     private int minFuelLevel = 10;
     // Maybe add an emergency fuel level, e.g. 20 minutes, below which the plane goes into EmergencyStatus.FUEL.
-    private final Statistics stats;
-    private final EventManager eventManager;
+    private EventManager eventManager;
 
-    public HoldingPattern(Statistics stats, EventManager eventManager) {
+    public HoldingPattern() {
         this.queue = new PriorityQueue<>();
-        this.stats = stats;
-        this.eventManager = eventManager;
     }
 
     @Override
@@ -59,9 +56,7 @@ public class HoldingPattern implements AircraftQueue{
             if (aircraft.getFuel() <= minFuelLevel) {
                 aircraft.setState(AircraftState.DIVERTED);
                 iterator.remove();
-                // Handle logging for diverted aircraft here.
-                stats.recordDiversion();
-                // Report diversion
+                // Report diversion to the event manager
                 eventManager.reportDiversion(aircraft.getCallsign(), currentTick);
             }
 
@@ -145,5 +140,9 @@ public class HoldingPattern implements AircraftQueue{
         }
         Collections.sort(output);
         return output;
+    }
+
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
     }
 }

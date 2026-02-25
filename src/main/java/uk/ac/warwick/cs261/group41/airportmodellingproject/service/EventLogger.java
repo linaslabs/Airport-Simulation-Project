@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EventLogger {
-    private List<SimulationEvent> eventLog;
+    private final List<SimulationEvent> eventLog;
 
     public EventLogger() {
         this.eventLog = new ArrayList<>();

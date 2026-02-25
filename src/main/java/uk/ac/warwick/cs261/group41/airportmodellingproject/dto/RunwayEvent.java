@@ -19,10 +19,10 @@ public class RunwayEvent extends SimulationEvent {
     private final int duration;
 
     @JsonCreator
-    public RunwayEvent(@JsonProperty("runwayID") int runwayID,
+    public RunwayEvent(@JsonProperty("tick") int tick,
+                       @JsonProperty("runwayID") int runwayID,
                        @JsonProperty("status") RunwayStatus status,
                        @JsonProperty("mode") RunwayMode mode,
-                       @JsonProperty("tick") int tick,
                        @JsonProperty("duration") Integer duration) {
         super(tick);
         this.runwayID = runwayID;

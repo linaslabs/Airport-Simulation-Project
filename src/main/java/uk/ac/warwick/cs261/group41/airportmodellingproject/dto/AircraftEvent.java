@@ -17,10 +17,11 @@ public class AircraftEvent extends SimulationEvent {
     @NotNull(message = "Emergency status is required")
     private final EmergencyStatus status;
 
-    public AircraftEvent(@JsonProperty("callsign") String callsign,
+    public AircraftEvent(@JsonProperty("tick") int tick,
+                         @JsonProperty("callsign") String callsign,
                          @JsonProperty("type") AircraftEventType type,
-                         @JsonProperty("status") EmergencyStatus status,
-                         @JsonProperty("tick") int tick) {
+                         @JsonProperty("status") EmergencyStatus status
+                         ) {
         super(tick);
         this.callsign = callsign;
         this.type = type;
