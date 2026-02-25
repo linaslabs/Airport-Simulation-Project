@@ -234,4 +234,14 @@ public class Airport {
     public String getRandomHoldingAircraft(Random random) {
         return holdingPattern.getRandomAircraft(random);
     }
+
+    public RunwayConfig getRunwaySnapshot(int runwayID) {
+        Runway runway = runways.get(runwayID);
+        if (runway != null) {
+            return new RunwayConfig(runway.getRunwayID(), runway.getStatus(), runway.getMode());
+        }
+        else {
+            throw new IllegalArgumentException("Unknown runwayID: " + runwayID);
+        }
+    }
 }

@@ -32,7 +32,7 @@ public class SimulationEngine {
         this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3, this.stats);
 
         this.eventLogger = new EventLogger();
-        // Pass EventLogger, Airport and Statistics and random into the EventManager (Sprint 2)
+        // Pass EventLogger, Airport and Statistics and random into the EventManager
         this.manager = new EventManager();
 
         // Instantiate AircraftGenerator, pass it the random seed

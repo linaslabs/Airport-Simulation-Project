@@ -9,7 +9,8 @@ public class AircraftEvent extends SimulationEvent {
     private AircraftEventType type;
     private EmergencyStatus status;
 
-    public AircraftEvent(String callsign, AircraftEventType type, EmergencyStatus status) {
+    public AircraftEvent(String callsign, AircraftEventType type, EmergencyStatus status, int tick) {
+        super(tick);
         this.callsign = callsign;
         this.type = type;
         this.status = status;

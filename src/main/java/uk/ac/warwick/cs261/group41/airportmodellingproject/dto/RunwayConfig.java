@@ -21,6 +21,7 @@ public class RunwayConfig {
     public RunwayConfig() {}
 
     // Parameterised constructor exclusively used for testing purposes.
+    // USED IN EVENT SYSTEM (in order to get a snapshot of the previous runway before initiating an event)
     public RunwayConfig(int runwayID, RunwayStatus status, RunwayMode mode) {
         this.runwayID = runwayID;
         this.status = status;
