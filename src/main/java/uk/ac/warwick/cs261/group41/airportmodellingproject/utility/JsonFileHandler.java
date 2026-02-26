@@ -5,7 +5,6 @@ import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.StatisticsSummary;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
 
 import java.io.File;
 import java.io.IOException;
