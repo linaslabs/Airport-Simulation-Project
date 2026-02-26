@@ -62,6 +62,8 @@ public class SimulationConfig {
     @Valid
     private Map<Integer, List<AircraftEvent>> scheduledAircraftEvents = new HashMap<>();
 
+    private String simulationID; // Generated using the current time when the user clicks start.
+
     // Default constructor required for Jackson to turn the JSON into this object.
     public SimulationConfig() {}
 
@@ -144,5 +146,9 @@ public class SimulationConfig {
     public void setSeed(Long seed) {
         this.seed = seed;
     }
+
+    public String getSimulationID() { return simulationID; }
+
+    public void setSimulationID(String simulationID) { this.simulationID = simulationID; }
 }
 
