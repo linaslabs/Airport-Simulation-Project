@@ -19,6 +19,7 @@ public class StatisticsSummary {
     private final int diversionCount;
     private final int cancellationCount;
     private final double hourlyThroughput;
+    private String simulationID; // Copied from the configuration during results generation.
 
     // JsonCreator annotation required for Jackson to make JSON from class with finals.
     @JsonCreator
@@ -66,4 +67,6 @@ public class StatisticsSummary {
     public int getDiversionCount() { return diversionCount; }
     public int getCancellationCount() { return cancellationCount; }
     public double getHourlyThroughput() { return hourlyThroughput; }
+    public String getSimulationID() { return simulationID; }
+    public void setSimulationID(String simulationID) { this.simulationID = simulationID; }
 }

@@ -4,7 +4,10 @@ import org.springframework.stereotype.Service;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationProgress;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.StatisticsSummary;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandler;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -26,6 +29,14 @@ public class SimulationService {
     public void startSimulation(SimulationConfig config) {
         // Stop any simulations previously
         stopSimulation();
+
+        // Generate the unique ID for the simulation.
+        // This allows the configuration to be traced from the results JSON.
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        config.setSimulationID(timestamp);
+
+        // Save configuration JSON.
+        JsonFileHandler.saveConfig(config);
 
         this.engine = new SimulationEngine(config);
 
@@ -72,6 +83,10 @@ public class SimulationService {
         if (!continueSimulation){
             stopSimulation();
             System.out.println("Simulation ended.");
+
+            // Save the results of the simulation as a JSON.
+            JsonFileHandler.saveResults(getStatisticsSummary());
+
             // HERE WE PREPARE THE FINAL STATS TO SEND BACK
             // TODO We can send back final simulation completion progress here (via websockets)
         } else{
@@ -123,6 +138,10 @@ public class SimulationService {
                 // Engine runs to the end without delays
             }
             stopSimulation();
+            System.out.println("Simulation ended.");
+
+            // Save the results of the simulation as a JSON.
+            JsonFileHandler.saveResults(getStatisticsSummary());
         });
     }
 
