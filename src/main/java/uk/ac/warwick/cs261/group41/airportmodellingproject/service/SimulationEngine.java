@@ -47,8 +47,6 @@ public class SimulationEngine {
 
     public synchronized boolean performTick() {
         // Call event managers process scheduled events
-        System.out.println("Start of perform tick, tick number: " + currentTick);
-        System.out.println("Duration: " + durationTicks);
 
         // Process scheduled events for this tick
         this.eventManager.processScheduledEvents(this.currentTick);
@@ -80,13 +78,14 @@ public class SimulationEngine {
     }
 
     public SimulationProgress getSimulationProgress() {
-        System.out.println("Simulation progress: " + (double) this.currentTick / this.durationTicks);
         return new SimulationProgress((double) this.currentTick / this.durationTicks);
     }
 
     // Currently not to be used, getSimulationProgress takes its place for initial sprints
     public StatisticsSummary getFinalSummary() {
-        return stats.generateSummary(durationTicks);
+        StatisticsSummary summary = stats.generateSummary(durationTicks);
+        summary.setSimulationID(this.config.getSimulationID());
+        return summary;
     }
 
 
