@@ -2,6 +2,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.*;
 
@@ -9,11 +10,10 @@ public class HoldingPattern implements AircraftQueue{
     private final PriorityQueue<Aircraft> queue;
     private int minFuelLevel = 10;
     // Maybe add an emergency fuel level, e.g. 20 minutes, below which the plane goes into EmergencyStatus.FUEL.
-    private final Statistics stats;
+    private EventManager eventManager;
 
-    public HoldingPattern(Statistics stats) {
+    public HoldingPattern() {
         this.queue = new PriorityQueue<>();
-        this.stats = stats;
     }
 
     @Override
@@ -56,8 +56,11 @@ public class HoldingPattern implements AircraftQueue{
             if (aircraft.getFuel() <= minFuelLevel) {
                 aircraft.setState(AircraftState.DIVERTED);
                 iterator.remove();
-                // Handle logging for diverted aircraft here.
-                stats.recordDiversion();
+                // Report diversion to the event manager
+                if (eventManager == null) {
+                    throw new IllegalStateException("EventManager has not been set for HoldingPattern");
+                }
+                eventManager.reportDiversion(aircraft.getCallsign(), currentTick);
             }
 
         }
@@ -141,4 +144,10 @@ public class HoldingPattern implements AircraftQueue{
         Collections.sort(output);
         return output;
     }
+
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
+    }
+
+    public List<Aircraft> getAircraftInQueue() { return new ArrayList<>(this.queue); }
 }

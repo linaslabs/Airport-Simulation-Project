@@ -5,6 +5,7 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.*;
 
@@ -22,8 +23,8 @@ public class Airport {
     public Airport(String airportName, List<RunwayConfig> runways, int maxWaitTime, int runwayOccupationTime, Statistics stats) {
         this.airportName = airportName; // This isn't actually used, but it might in future, and I feel like it should have this attribute.
         this.stats = stats;
-        holdingPattern = new HoldingPattern(stats);
-        takeOffQueue = new TakeOffQueue(maxWaitTime, stats);
+        holdingPattern = new HoldingPattern();
+        takeOffQueue = new TakeOffQueue(maxWaitTime);
         this.runwayOccupationTime = runwayOccupationTime;
 
         // Loop through the runway configurations set by the user, and instantiate the runways into a linked map (so order of adding is order of searching)
@@ -234,4 +235,27 @@ public class Airport {
     public String getRandomHoldingAircraft(Random random) {
         return holdingPattern.getRandomAircraft(random);
     }
+
+    public RunwayConfig getRunwaySnapshot(int runwayID) {
+        Runway runway = runways.get(runwayID);
+        if (runway != null) {
+            return new RunwayConfig(runway.getRunwayID(), runway.getStatus(), runway.getMode());
+        }
+        else {
+            throw new IllegalArgumentException("Unknown runwayID: " + runwayID);
+        }
+    }
+
+    // Used for assigning the event manager to the queues after they are instantiated
+    public void setEventManager(EventManager eventManager) {
+        this.holdingPattern.setEventManager(eventManager);
+        this.takeOffQueue.setEventManager(eventManager);
+    }
+
+    public HoldingPattern getHoldingPattern() { return this.holdingPattern; }
+
+    public TakeOffQueue  getTakeOffQueue() { return this.takeOffQueue; }
+
+    // Returns an unmodifiable collection of the runways (to protect the actual map)
+    public Collection<Runway> getRunways() { return Collections.unmodifiableCollection(this.runways.values()); }
 }

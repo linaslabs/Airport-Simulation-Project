@@ -1,22 +1,19 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 
 public class TakeOffQueue implements AircraftQueue {
 
     private Deque<Aircraft> queue;
     private int maxWaitTime;
-    private final Statistics stats;
+    private EventManager eventManager;
 
-    public TakeOffQueue(int maxWaitTime, Statistics stats) {
+    public TakeOffQueue(int maxWaitTime) {
         this.maxWaitTime = maxWaitTime;
         this.queue = new ArrayDeque<>();
-        this.stats = stats;
     }
 
     @Override
@@ -58,10 +55,14 @@ public class TakeOffQueue implements AircraftQueue {
             if (waitTime >= maxWaitTime) {
                 aircraft.setState(AircraftState.CANCELLED);
                 iterator.remove();
-                // Log cancellation.
-                stats.recordCancellation();
+                // Report cancellation to the event manager
+                this.eventManager.reportCancellation(aircraft.getCallsign(), currentTick);
             }
         }
+    }
+
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
     }
 
     public int getMaxWaitTime() {
@@ -71,4 +72,6 @@ public class TakeOffQueue implements AircraftQueue {
     public void setMaxWaitTime(int maxWaitTime) {
         this.maxWaitTime = maxWaitTime;
     }
+
+    public List<Aircraft> getAircraftInQueue() { return new ArrayList<>(this.queue); }
 }

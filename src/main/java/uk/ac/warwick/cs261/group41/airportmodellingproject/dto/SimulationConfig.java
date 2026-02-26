@@ -10,8 +10,7 @@ import org.hibernate.validator.constraints.Range;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class SimulationConfig {
@@ -57,11 +56,19 @@ public class SimulationConfig {
     @NotNull(message = "A random seed is required. Please enter a value or randomly generate one.")
     private Long seed;
 
+    @Valid
+    private Map<Integer, List<RunwayEvent>> scheduledRunwayEvents = new HashMap<>();
+
+    @Valid
+    private Map<Integer, List<AircraftEvent>> scheduledAircraftEvents = new HashMap<>();
+
     // Default constructor required for Jackson to turn the JSON into this object.
     public SimulationConfig() {}
 
     // Parameterised constructor exclusively used for testing purposes.
-    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime, Integer duration, Long seed) {
+    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime, Integer duration, Long seed,
+                            Map<Integer, List<RunwayEvent>> scheduledRunwayEvents,
+                            Map<Integer, List<AircraftEvent>> scheduledAircraftEvents) {
         // Copy the runway list in case the original list is modified.
         this.runwaySettings = (runwaySettings != null) ? new ArrayList<>(runwaySettings) : new ArrayList<>();
         this.inboundRate = inboundRate;
@@ -69,6 +76,8 @@ public class SimulationConfig {
         this.maxWaitTime = maxWaitTime;
         this.duration = duration;
         this.seed = seed;
+        this.scheduledRunwayEvents = (scheduledRunwayEvents != null) ? new HashMap<>(scheduledRunwayEvents) : new HashMap<>();
+        this.scheduledAircraftEvents = (scheduledAircraftEvents != null) ? new HashMap<>(scheduledAircraftEvents) : new HashMap<>();
     }
 
     public List<RunwayConfig> getRunwaySettings() {
@@ -78,6 +87,18 @@ public class SimulationConfig {
     public void setRunwaySettings(List<RunwayConfig> runwaySettings) {
         // Defensive copy to ensure the DTO owns its own data
         this.runwaySettings = (runwaySettings != null) ? new ArrayList<>(runwaySettings) : new ArrayList<>();
+    }
+
+    public Map<Integer, List<RunwayEvent>> getScheduledRunwayEvents() { return Collections.unmodifiableMap(this.scheduledRunwayEvents); }
+
+    public void setScheduledRunwayEvents(Map<Integer, List<RunwayEvent>> scheduledRunwayEvents) {
+        this.scheduledRunwayEvents = (scheduledRunwayEvents != null) ? new HashMap<>(scheduledRunwayEvents) : new HashMap<>();
+    }
+
+    public Map<Integer, List<AircraftEvent>> getScheduledAircraftEvents() { return Collections.unmodifiableMap(this.scheduledAircraftEvents); }
+
+    public void setScheduledAircraftEvents(Map<Integer, List<AircraftEvent>> scheduledAircraftEvents) {
+        this.scheduledAircraftEvents = (scheduledAircraftEvents != null) ? new HashMap<>(scheduledAircraftEvents) : new HashMap<>();
     }
 
     public Integer getInboundRate() {
