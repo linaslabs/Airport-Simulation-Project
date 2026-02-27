@@ -11,6 +11,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utility class to handle saving and loading simulation data in JSON format.
@@ -66,5 +70,40 @@ public class JsonFileHandler {
             // Log the error to the terminal is disk access fails.
             System.err.println("Error saving JSON: " + e.getMessage());
         }
+    }
+
+    /**
+     * Lists all saved configuration IDs from the /data/configs folder.
+     * Returns IDs sorted newest-first (descending order).
+     * @return List of configuration IDs (filenames without .json extension)
+     */
+    public static List<String> listSavedConfigs() {
+        Path configsDir = Paths.get(dataDirectory, "configs");
+
+        if (!Files.exists(configsDir)) {
+            return Collections.emptyList();
+        }
+
+        try (Stream<Path> files = Files.list(configsDir)) {
+            return files
+                    .filter(path -> path.toString().endsWith(".json"))
+                    .map(path -> path.getFileName().toString().replace(".json", ""))
+                    .sorted(Collections.reverseOrder())
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            System.err.println("Error listing configs: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Loads a SimulationConfig from a JSON file in the /data/configs folder.
+     * @param id The simulation ID (filename without .json extension)
+     * @return The loaded SimulationConfig object
+     * @throws IOException If the file does not exist or contains invalid JSON
+     */
+    public static SimulationConfig loadConfig(String id) throws IOException {
+        Path configFile = Paths.get(dataDirectory, "configs", id + ".json");
+        return mapper.readValue(configFile.toFile(), SimulationConfig.class);
     }
 }
