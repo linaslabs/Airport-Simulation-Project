@@ -1,5 +1,6 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class AircraftGenerator {
     }
 
     // Can add EmergencyStatus as a parameter to this function in future if needed when Events are added.
-    private Aircraft generateAircraft(int scheduledTick, FlightType type) {
+    private Aircraft generateAircraft(int scheduledTick, FlightType type, boolean autoEnabled, double mechanicalRate, double healthRate) {
         String operator = operatorData.getRandomOperatorName();
         String callsign = operatorData.getNextCallsign(operator);
         String origin;
@@ -52,7 +53,24 @@ public class AircraftGenerator {
 
         double fuel = generateFuelValue();
         int entryTick = generateEntryTick(scheduledTick);
-        return new Aircraft(callsign, operator, origin, destination, fuel, scheduledTick, entryTick, type);
+
+
+        // Statistical event modelling - determining if the plane generated should generate with an emergency
+        EmergencyStatus status = EmergencyStatus.NONE;
+
+        if (autoEnabled) {
+            // Generate a value between 0 and 1
+            double roll = random.nextDouble();
+
+            if (roll < mechanicalRate) {
+                status = EmergencyStatus.MECHANICAL;
+            } else if (roll < (mechanicalRate + healthRate)) {
+                // If the roll hasn't landed in the range 0 to mechanicalRate, this "else if" checks that the roll lands mechanicalRate < x < mechanicalRate + healthRate i.e. the range for the health rate
+                status = EmergencyStatus.PASSENGER;
+            }
+        }
+
+        return new Aircraft(callsign, operator, origin, destination, fuel, scheduledTick, entryTick, type, status);
     }
 
     // Function responsible for generating a fuel level uniformly distributed between 20 and 60.
@@ -62,6 +80,8 @@ public class AircraftGenerator {
 
         return min + (random.nextDouble() * (max - min));
     }
+
+
 
     // Function responsible for the Gaussian variation with std dev. 5 of scheduledTick.
     private int generateEntryTick(int scheduledTick) {
@@ -78,7 +98,7 @@ public class AircraftGenerator {
     // We initialise the entire schedule of planes up to the duration of the simulation at the start.
     // I am working off the assumption that one tick is one minute,
     // and the way we speed up time is by advancing more than one tick per iteration.
-    public void initialiseSchedules(int duration) {
+    public void initialiseSchedules(int duration, boolean autoEnabled, double mechanicalRate, double healthRate) {
         double inboundInterval = 60.0 / inboundRate; // This gives the interval between each scheduled tick in minutes.
 
         // Need to write a test to check that the correct number of planes are generated.
@@ -92,7 +112,8 @@ public class AircraftGenerator {
             int scheduledTick = (int) Math.round(inboundUnroundedTick);
 
             // Generate the actual aircraft for the simulation so we can access its randomized entryTick
-            Aircraft newAircraft = generateAircraft(scheduledTick, FlightType.ARRIVAL);
+            // autoEnabled is a boolean value that is true if the user wants random emergency aircraft generation
+            Aircraft newAircraft = generateAircraft(scheduledTick, FlightType.ARRIVAL, autoEnabled, mechanicalRate, healthRate);
 
             // Use the actual entry tick as the map key
             int actualArrivalSpawnTick = newAircraft.getEntryTick();

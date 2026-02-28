@@ -2,10 +2,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.dto;
 
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Range;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
@@ -52,7 +49,27 @@ public class SimulationConfig {
     @Range(min = 60, max = 1440, message = "Simulation duration must be between 60 and 1440 minutes.")
     private Integer duration = 420;
 
-    private boolean isAutomaticGenerationEnabled;
+    private Boolean isAutomaticGenerationEnabled;
+
+    @DecimalMin(value = "0.0", message = "Mechanical failure rate cannot be less than 0.0")
+    @DecimalMax(value = "0.1", message = "Mechanical failure rate cannot exceed 0.1")
+    private Double mechanicalFailureRate = 0.0;
+
+    @DecimalMin(value = "0.0", message = "Passenger health issue rate cannot be less than 0.0")
+    @DecimalMax(value = "0.1", message = "Passenger health issue rate cannot exceed 0.1")
+    private Double passengerHealthIssueRate = 0.0;
+
+    @DecimalMin(value = "0.0", message = "Runway inspection rate cannot be less than 0.0")
+    @DecimalMax(value = "0.1", message = "Runway inspection rate cannot exceed 0.1")
+    private Double runwayInspectionRate = 0.0;
+
+    @DecimalMin(value = "0.0", message = "Snow clearance rate cannot be less than 0.0")
+    @DecimalMax(value = "0.1", message = "Snow clearance rate cannot exceed 0.1")
+    private Double snowClearanceRate = 0.0;
+
+    @DecimalMin(value = "0.0", message = "Equipment failure rate cannot be less than 0.0")
+    @DecimalMax(value = "0.1", message = "Equipment failure rate cannot exceed 0.1")
+    private Double equipmentFailureRate = 0.0;
 
     // Added seed as a Long object.
     @NotNull(message = "A random seed is required. Please enter a value or randomly generate one.")
@@ -70,7 +87,9 @@ public class SimulationConfig {
     public SimulationConfig() {}
 
     // Parameterised constructor exclusively used for testing purposes.
-    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime, Integer duration, Boolean isAutomaticGenerationEnabled ,Long seed,
+    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime,
+                            Integer duration, Boolean isAutomaticGenerationEnabled, Double mechanicalFailureRate, Double passengerHealthIssueRate,
+                            Double runwayInspectionRate, Double snowClearanceRate, Double equipmentFailureRate, Long seed,
                             Map<Integer, List<RunwayEvent>> scheduledRunwayEvents,
                             Map<Integer, List<AircraftEvent>> scheduledAircraftEvents) {
         // Copy the runway list in case the original list is modified.
@@ -79,7 +98,15 @@ public class SimulationConfig {
         this.outboundRate = outboundRate;
         this.maxWaitTime = maxWaitTime;
         this.duration = duration;
+
+        // For statistical modelling
         this.isAutomaticGenerationEnabled = isAutomaticGenerationEnabled;
+        this.mechanicalFailureRate = mechanicalFailureRate;
+        this.passengerHealthIssueRate = passengerHealthIssueRate;
+        this.runwayInspectionRate = runwayInspectionRate;
+        this.snowClearanceRate = snowClearanceRate;
+        this.equipmentFailureRate = equipmentFailureRate;
+
         this.seed = seed;
         this.scheduledRunwayEvents = (scheduledRunwayEvents != null) ? new HashMap<>(scheduledRunwayEvents) : new HashMap<>();
         this.scheduledAircraftEvents = (scheduledAircraftEvents != null) ? new HashMap<>(scheduledAircraftEvents) : new HashMap<>();
@@ -142,9 +169,9 @@ public class SimulationConfig {
 
     public void setDuration(Integer duration) { this.duration = duration; }
 
-    public boolean isAutomaticGenerationEnabled() { return this.isAutomaticGenerationEnabled; }
+    public boolean getIsAutomaticGenerationEnabled() { return this.isAutomaticGenerationEnabled; }
 
-    public void setAutomaticGenerationEnabled(boolean automaticGenerationEnabled) {this.isAutomaticGenerationEnabled = automaticGenerationEnabled; }
+    public void setIsAutomaticGenerationEnabled(boolean automaticGenerationEnabled) {this.isAutomaticGenerationEnabled = automaticGenerationEnabled; }
 
     public Long getSeed() {
         return seed;
@@ -157,5 +184,26 @@ public class SimulationConfig {
     public String getSimulationID() { return simulationID; }
 
     public void setSimulationID(String simulationID) { this.simulationID = simulationID; }
+
+    public Double getMechanicalFailureRate() { return mechanicalFailureRate; }
+
+    public void setMechanicalFailureRate(Double mechanicalFailureRate) { this.mechanicalFailureRate = mechanicalFailureRate; }
+
+    public Double getPassengerHealthIssueRate() { return passengerHealthIssueRate; }
+
+    public void setPassengerHealthIssueRate(Double passengerHealthIssueRate) { this.passengerHealthIssueRate = passengerHealthIssueRate; }
+
+    public Double getRunwayInspectionRate() { return runwayInspectionRate; }
+
+    public void setRunwayInspectionRate(Double runwayInspectionRate) { this.runwayInspectionRate = runwayInspectionRate; }
+
+    public Double getSnowClearanceRate() { return snowClearanceRate; }
+
+    public void setSnowClearanceRate(Double snowClearanceRate) { this.snowClearanceRate = snowClearanceRate; }
+
+    public Double getEquipmentFailureRate() { return equipmentFailureRate; }
+
+    public void setEquipmentFailureRate(Double equipmentFailureRate) { this.equipmentFailureRate = equipmentFailureRate; }
 }
+
 
