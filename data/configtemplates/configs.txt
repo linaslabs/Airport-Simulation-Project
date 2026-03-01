@@ -1,0 +1,3 @@
+Where configuration JSON files will be stored.
+This only stores templates, the simulation results object contains their own copy of the configuration used for that run.
+The simulations results do not reference the configurations in this folder.
