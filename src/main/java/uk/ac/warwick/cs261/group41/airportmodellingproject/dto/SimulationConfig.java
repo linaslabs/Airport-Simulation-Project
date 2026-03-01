@@ -62,13 +62,11 @@ public class SimulationConfig {
     @Valid
     private Map<Integer, List<AircraftEvent>> scheduledAircraftEvents = new HashMap<>();
 
-    private String simulationID; // Generated using the current time when the user clicks start.
-
     // Default constructor required for Jackson to turn the JSON into this object.
     public SimulationConfig() {}
 
     // Parameterised constructor exclusively used for testing purposes.
-    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime, Integer duration, Long seed,
+    public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime, Integer duration, Integer tickTime, Long seed,
                             Map<Integer, List<RunwayEvent>> scheduledRunwayEvents,
                             Map<Integer, List<AircraftEvent>> scheduledAircraftEvents) {
         // Copy the runway list in case the original list is modified.
@@ -76,6 +74,7 @@ public class SimulationConfig {
         this.inboundRate = inboundRate;
         this.outboundRate = outboundRate;
         this.maxWaitTime = maxWaitTime;
+        this.tickTime = tickTime;
         this.duration = duration;
         this.seed = seed;
         this.scheduledRunwayEvents = (scheduledRunwayEvents != null) ? new HashMap<>(scheduledRunwayEvents) : new HashMap<>();
@@ -146,9 +145,5 @@ public class SimulationConfig {
     public void setSeed(Long seed) {
         this.seed = seed;
     }
-
-    public String getSimulationID() { return simulationID; }
-
-    public void setSimulationID(String simulationID) { this.simulationID = simulationID; }
 }
 
