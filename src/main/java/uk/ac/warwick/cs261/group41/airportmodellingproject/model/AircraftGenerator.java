@@ -140,7 +140,7 @@ public class AircraftGenerator {
             int scheduledTick = (int) Math.round(outboundUnroundedTick);
 
             // Generate the actual aircraft for the simulation so we can access its randomized entryTick
-            Aircraft newAircraft = generateAircraft(scheduledTick, FlightType.DEPARTURE);
+            Aircraft newAircraft = generateAircraft(scheduledTick, FlightType.DEPARTURE, autoEnabled, mechanicalRate, healthRate);
 
             // Use the actual entry tick as the map key
             int actualDepartureSpawnTick = newAircraft.getEntryTick();

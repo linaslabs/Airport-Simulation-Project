@@ -8,6 +8,7 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Airport;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Runway;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
 
 import java.util.*;
@@ -52,7 +53,14 @@ public class EventManager {
             newRunwayEvents.add(runwayEvent);
             scheduledRunwayEvents.put(runwayEvent.getTick(), newRunwayEvents);
         } else  {
-            runwayEvents.add(runwayEvent);
+            // If the runway event is of duration 0, it is a reversion event, always call this first
+            // i.e. place this reversion event as the first event in the runway event list for this tick
+            if (runwayEvent.getDuration() == 0) {
+                runwayEvents.addFirst(runwayEvent);
+            } else {
+                // Otherwise append like normal
+                runwayEvents.add(runwayEvent);
+            }
         }
     }
 
@@ -79,15 +87,107 @@ public class EventManager {
             RunwayConfig runwayPrevSnapshot = this.airport.getRunwaySnapshot(runwayID);
 
             int endTick = currentTick + duration;
-            RunwayEvent runwayEvent = new RunwayEvent(endTick, runwayID, runwayPrevSnapshot.getStatus(), runwayPrevSnapshot.getMode(), -1);
+            // Create the new runway reversion (that is of duration 0) to reverse this event when it finishes
+            RunwayEvent reversionEvent = new RunwayEvent(endTick, runwayID, runwayPrevSnapshot.getStatus(), runwayPrevSnapshot.getMode(), 0);
 
-            addScheduledRunwayEvent(runwayEvent);
+            addScheduledRunwayEvent(reversionEvent);
         }
 
         this.airport.updateRunway(runwayID, status, mode);
         this.logger.addEvent(new RunwayEvent(currentTick, runwayID, status, mode, duration));
     }
 
+
+    // Generates the random aircraft emergencies and the random runway status changes for statistical modelling based on the configured rates (only called if the user permits them during the simulation)
+    public void generateRandomEventsForTick(int currentTick, double inspectionRate, double snowRate, double failureRate, double mechanicalRate, double healthRate) {
+
+        // --- Generating AIRCRAFT EMERGENCIES ---
+        // Assuming that the rates are per hour, so need to convert to per tick equivalents
+        double tickMechanicalRate = mechanicalRate / 60;
+        double tickHealthRate = healthRate / 60;
+
+        double emergencyRoll = this.random.nextDouble();
+
+        if (emergencyRoll < tickMechanicalRate) {
+            triggerAircraftEmergency(null, EmergencyStatus.MECHANICAL, currentTick);
+        } else if (emergencyRoll < (tickMechanicalRate + tickHealthRate)) {
+            triggerAircraftEmergency(null, EmergencyStatus.PASSENGER, currentTick);
+        }
+
+        // --- Generating RUNWAY CLOSURES ---
+        double tickInspectionRate =  inspectionRate / 60;
+        double tickSnowRate =  snowRate / 60;
+        double tickFailureRate = failureRate / 60;
+
+        Collection<Runway> runways = this.airport.getRunways();
+
+        for (Runway runway : runways) {
+            // Check if the status of the runway is available (failures can still happen if runways are occupied)
+            if(runway.getStatus() == RunwayStatus.AVAILABLE) {
+                double runwayRoll = this.random.nextDouble();
+                RunwayStatus newRunwayStatus = null;
+
+                if (runwayRoll < tickInspectionRate) {
+                    newRunwayStatus = RunwayStatus.INSPECTION;
+                } else if (runwayRoll < (tickInspectionRate + tickSnowRate)) {
+                    newRunwayStatus = RunwayStatus.SNOWCLEARANCE;
+                } else if (runwayRoll < (tickInspectionRate + tickSnowRate + tickFailureRate)) {
+                    newRunwayStatus = RunwayStatus.FAILURE;
+                }
+
+                // Checking if the roll landed to satisfy one of the rates
+                if (newRunwayStatus != null) {
+                    // Generating a random number between 10 and 60 ticks
+                    int duration = 10 + this.random.nextInt(51);
+
+                    // Find the ticks until the next scheduled event for this runway
+                    int ticksUntilNextEvent = ticksUntilNextScheduledRunwayEvent(runway.getRunwayID(), currentTick);
+
+                    // Make sure that the duration of this random event is CAPPED so it finishes before the next scheduled runway event
+                    if (ticksUntilNextEvent > 0 && duration > ticksUntilNextEvent) {
+                        duration = ticksUntilNextEvent;
+                    }
+
+                    // Trigger the event
+                    triggerRunwayEvent(runway.getRunwayID(),  newRunwayStatus, null, currentTick, duration);
+                }
+            }
+        }
+    }
+
+    // Function to return the ticks until the next scheduled event for the runway
+    private int ticksUntilNextScheduledRunwayEvent(int runwayID, int currentTick) {
+        // Track the starting tick of the soonest event (will be updated every time we find a sooner event)
+        int soonestEventTick = -1;
+
+        // Loop through all scheduled ticks in the map (note: each entry will not be in order)
+        for (Map.Entry<Integer, List<RunwayEvent>> entry : this.scheduledRunwayEvents.entrySet()) {
+            // Get the tick linked to this list of runway events
+            int scheduledTick = entry.getKey();
+
+            // Check if this tick linked to the runway events is scheduled for the future
+            if (scheduledTick > currentTick) {
+                // Check all events scheduled for that specific tick
+                for (RunwayEvent event : entry.getValue()) {
+                    // Check if the runway event is an event on the current runway ID
+                    if (event.getRunwayID() == runwayID) {
+                        // If this is the first one we found, or it's sooner than the last one found, save it
+                        if (soonestEventTick == -1 || scheduledTick < soonestEventTick) {
+                            soonestEventTick = scheduledTick;
+                        }
+                    }
+                }
+            }
+        }
+
+        // If we found a future event, return the gap in minutes
+        // If we didn't, return -1 (meaning infinite free time)
+        if (soonestEventTick == -1) {
+            return -1;
+        } else {
+            return soonestEventTick - currentTick;
+        }
+    }
 
     // Triggers an aircraft emergency from either the user or the schedule, if it's the user, callsign is present, otherwise callsign is null and a random is chosen
     // Updates the aircraft status and logs the event respective to whether it was a scheduled emergency or a manual one
@@ -117,7 +217,6 @@ public class EventManager {
         this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.CANCELLATION, EmergencyStatus.NONE));
         this.statistics.recordCancellation();
     }
-
 
     // For each event scheduled for the current tick, this method triggers them
     public void processScheduledEvents(int currentTick){
