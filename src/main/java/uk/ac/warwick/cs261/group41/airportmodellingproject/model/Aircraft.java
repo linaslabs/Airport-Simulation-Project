@@ -20,7 +20,7 @@ public class Aircraft implements Comparable<Aircraft> {
     private int groundSpeed; // Set to 230 knots for inbound, 0 knots for outbound.
     private AircraftState state; // Set to queued for landing or queued for takeoff depending on flightType.
 
-    public Aircraft(String callsign, String operator, String origin, String destination, double fuel, int scheduledTick, int entryTick, FlightType flightType, EmergencyStatus status) {
+    public Aircraft(String callsign, String operator, String origin, String destination, double fuel, int scheduledTick, int entryTick, FlightType flightType) {
         this.callsign = callsign;
         this.operator = operator;
         this.origin = origin;

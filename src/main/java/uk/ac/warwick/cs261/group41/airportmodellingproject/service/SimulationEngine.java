@@ -41,7 +41,7 @@ public class SimulationEngine {
 
         this.generator = new AircraftGenerator(this.random, config.getInboundRate(), config.getOutboundRate(), "SimulationAirport");
 
-        this.generator.initialiseSchedules(this.durationTicks, this.config.getIsAutomaticGenerationEnabled(), this.config.getMechanicalFailureRate(), this.config.getPassengerHealthIssueRate());
+        this.generator.initialiseSchedules(this.durationTicks);
 
     }
 
