@@ -40,20 +40,16 @@ function loadResults(){
 }
 
 function saveResults(){
-    alert("Sprint 1: Save Configuration & Data (stub).");
+    // in future this might POST to server; for now simply notify user
+    alert("Save successfully");
 }
 
-function goCompare(){
-    alert("Sprint 1: Comparison Menu (stub).");
-}
 
 // Wire buttons + init
 document.addEventListener("DOMContentLoaded", () => {
     loadResults();
 
     const saveBtn = document.getElementById("saveBtn");
-    const compareBtn = document.getElementById("compareBtn");
 
     if (saveBtn) saveBtn.addEventListener("click", saveResults);
-    if (compareBtn) compareBtn.addEventListener("click", goCompare);
 });
