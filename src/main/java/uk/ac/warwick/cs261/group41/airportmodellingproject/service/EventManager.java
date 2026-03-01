@@ -3,10 +3,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.AircraftEvent;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayEvent;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftEventType;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Airport;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Runway;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
@@ -88,13 +85,14 @@ public class EventManager {
 
             int endTick = currentTick + duration;
             // Create the new runway reversion (that is of duration 0) to reverse this event when it finishes
-            RunwayEvent reversionEvent = new RunwayEvent(endTick, runwayID, runwayPrevSnapshot.getStatus(), runwayPrevSnapshot.getMode(), 0);
+            RunwayEvent reversionEvent = new RunwayEvent(endTick, runwayID, runwayPrevSnapshot.getStatus(), runwayPrevSnapshot.getMode(), RunwayEventType.REVERSION, 0);
 
             addScheduledRunwayEvent(reversionEvent);
         }
 
         this.airport.updateRunway(runwayID, status, mode);
-        this.logger.addEvent(new RunwayEvent(currentTick, runwayID, status, mode, duration));
+        this.logger.addEvent(new RunwayEvent(currentTick, runwayID, status, mode,
+                (duration < 0) ? RunwayEventType.MANUAL_CHANGE : (duration > 0) ? RunwayEventType.SCHEDULED_CHANGE : RunwayEventType.REVERSION, duration));
     }
 
 
