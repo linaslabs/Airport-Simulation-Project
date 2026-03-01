@@ -160,6 +160,6 @@ public class JsonFileHandler {
      * @param stats The statistics object containing the statistical results of the simulation.
      */
     public static void saveResults(StatisticsSummary stats) throws IOException {
-        saveToFile(stats, "results", stats.getSimulationID());
+        saveToFile(stats, "results", "temporaryResultsName");
     }
 }

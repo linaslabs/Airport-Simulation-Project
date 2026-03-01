@@ -83,9 +83,7 @@ public class SimulationEngine {
 
     // Currently not to be used, getSimulationProgress takes its place for initial sprints
     public StatisticsSummary getFinalSummary() {
-        StatisticsSummary summary = stats.generateSummary(durationTicks);
-        summary.setSimulationID(this.config.getSimulationID());
-        return summary;
+        return stats.generateSummary(durationTicks);
     }
 
 
