@@ -10,6 +10,7 @@ public class HoldingPattern implements AircraftQueue{
     private final PriorityQueue<Aircraft> queue;
     private int minFuelLevel = 10;
     // Maybe add an emergency fuel level, e.g. 20 minutes, below which the plane goes into EmergencyStatus.FUEL.
+    private int emergencyFuelLevel = 15;
     private EventManager eventManager;
 
     public HoldingPattern() {
@@ -48,6 +49,9 @@ public class HoldingPattern implements AircraftQueue{
 
     @Override
     public void update(int currentTick) {
+        // Need a temporary list of aircraft that should be re-prioritised due to low fuel (will re-prioritise after this iterator)
+        List<String> newFuelEmergencies = new ArrayList<>();
+
         Iterator<Aircraft> iterator = queue.iterator();
         while (iterator.hasNext()) {
             Aircraft aircraft = iterator.next();
@@ -61,9 +65,19 @@ public class HoldingPattern implements AircraftQueue{
                     throw new IllegalStateException("EventManager has not been set for HoldingPattern");
                 }
                 eventManager.reportDiversion(aircraft.getCallsign(), currentTick);
+            } else if (aircraft.getFuel() <= emergencyFuelLevel && aircraft.getStatus() != EmergencyStatus.FUEL) {
+                // Add this aircraft to the list of fuel emergencies to reprioritise later
+                newFuelEmergencies.add(aircraft.getCallsign());
             }
 
         }
+
+        // Remove and reinsert the planes after the first iterator has finished (updateAircraftStatus also uses an iterator on the same queue)
+        for (String callsign : newFuelEmergencies) {
+            updateAircraftStatus(callsign, EmergencyStatus.FUEL);
+            this.eventManager.reportAircraftEmergency(callsign, EmergencyStatus.FUEL, currentTick);
+        }
+
         // after updating all aircraft, for those still in the queue update their altitudes.
         updateAltitudes();
     }

@@ -208,6 +208,10 @@ public class EventManager {
         }
     }
 
+    public void reportAircraftEmergency(String callsign, EmergencyStatus status, int currentTick){
+        this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.NATURAL_EMERGENCY, status));
+    }
+
     public void reportDiversion(String callsign, int currentTick){
         this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.DIVERSION, EmergencyStatus.FUEL));
         this.statistics.recordDiversion();
