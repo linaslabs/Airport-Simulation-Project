@@ -58,6 +58,9 @@ public class JsonFileHandler {
         mapper.writeValue(outputFile, data);
     }
 
+
+    // The following functions are for the configuration templates file handling logic.
+
     /**
      * Lists summaries of all the configuration templates stored in the /data/configtemplates folder.
      * Note that for the function which is mapped to each file, we do catch that error so we can continue
@@ -155,11 +158,19 @@ public class JsonFileHandler {
         saveToFile(configTemplate, "configtemplates", configTemplate.getTemplateName());
     }
 
+
+    // The following functions are for the simulation results file handling logic.
+
+    public static boolean resultNameExists(String name) {
+        Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
+        return Files.exists(resultPath);
+    }
+
     /**
-     * Saves the final simulation results to the /data/results folder.
-     * @param stats The statistics object containing the statistical results of the simulation.
+     * Saves the simulation results to the /data/results folder.
+     * @param results The results object, containing the name and date of the results, and the statistics and configuration.
      */
-    public static void saveResults(StatisticsSummary stats) throws IOException {
-        saveToFile(stats, "results", "temporaryResultsName");
+    public static void saveResults(SimulationResultSaved results) throws IOException {
+        saveToFile(results, "results", results.getSimulationName());
     }
 }
