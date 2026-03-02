@@ -1,24 +1,17 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.ConfigurationTemplate;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.ConfigurationTemplateSummary;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.service.SimulationService;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandler;
 
-import java.io.IOException;
-import java.nio.file.NoSuchFileException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -61,7 +54,7 @@ public class ConfigurationController {
     }
 
     @DeleteMapping("/templates/delete/{name}")
-    ResponseEntity<String> deleteConfigTemplate(@PathVariable String name) {
+    public ResponseEntity<String> deleteConfigTemplate(@PathVariable String name) {
         simulationService.deleteConfigurationTemplate(name);
         return ResponseEntity.ok("Configuration template deleted.");
     }

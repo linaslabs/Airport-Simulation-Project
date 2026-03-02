@@ -134,7 +134,7 @@ public class JsonFileHandler {
         return mapper.readValue(configtemplateFilePath.toFile(), ConfigurationTemplate.class);
     }
 
-    public static void deleteConfigTemplate(String name) throws IOException{
+    public static void deleteConfigTemplate(String name) throws IOException {
         Path configtemplateFilePath = Paths.get(dataDirectory, "configtemplates", name + ".json");
 
         // Check if it exists first to throw a more specific error.
@@ -172,5 +172,16 @@ public class JsonFileHandler {
      */
     public static void saveResults(SimulationResultSaved results) throws IOException {
         saveToFile(results, "results", results.getSimulationName());
+    }
+
+    public static void deleteSimulationResult(String name) throws IOException {
+        Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
+
+        // Check if it exists first to throw a more specific error.
+        if (!Files.exists(resultPath)) {
+            throw new NoSuchFileException(resultPath.toString());
+        }
+
+        Files.delete(resultPath);
     }
 }

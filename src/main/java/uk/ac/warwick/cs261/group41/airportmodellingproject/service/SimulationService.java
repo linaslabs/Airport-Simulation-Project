@@ -262,4 +262,14 @@ public class SimulationService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Disk error, could not save file.");
         }
     }
+
+    public void deleteSimulationResult(String name) {
+        try {
+            JsonFileHandler.deleteSimulationResult(name);
+        } catch (NoSuchFileException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find result with name: " + name);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting the file.");
+        }
+    }
 }
