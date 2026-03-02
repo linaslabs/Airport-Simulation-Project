@@ -11,9 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -22,7 +20,6 @@ import java.util.stream.Stream;
 /**
  * Utility class to handle saving and loading simulation data in JSON format.
  * This class is static and does not need to be instantiated.
- *
  * One of the key ideas with this class is that the errors from disk access are not handled here.
  * Instead, they are propagated to the function which called it, so they can be handled in the SimulationService.
  */
@@ -58,11 +55,14 @@ public class JsonFileHandler {
         mapper.writeValue(outputFile, data);
     }
 
+
+    // The following functions are for the configuration templates file handling logic.
+
     /**
      * Lists summaries of all the configuration templates stored in the /data/configtemplates folder.
      * Note that for the function which is mapped to each file, we do catch that error so we can continue
      * reading the rest of the files after one read failed.
-     * @return List of ConfigurationTemplateSummary objects, sorted by data, newest-first.
+     * @return List of ConfigurationTemplateSummary objects, sorted by date, newest-first.
      * @throws IOException Error thrown if disk access fails.
      */
     public static List<ConfigurationTemplateSummary> listSavedConfigTemplateSummaries() throws IOException {
@@ -79,27 +79,27 @@ public class JsonFileHandler {
 
                         try {
                             // Load the full template.
-                            ConfigurationTemplate temp = mapper.readValue(path.toFile(), ConfigurationTemplate.class);
+                            ConfigurationTemplate template = mapper.readValue(path.toFile(), ConfigurationTemplate.class);
 
                             // Calculate the event count (summing nested lists).
                             int eventCount = 0;
                             // Sum the aircraft events.
-                            for (List<AircraftEvent> list : temp.getScheduledAircraftEvents().values()) {
+                            for (List<AircraftEvent> list : template.getScheduledAircraftEvents().values()) {
                                 eventCount += list.size();
                             }
                             // Sum the runway events.
-                            for (List<RunwayEvent> list : temp.getScheduledRunwayEvents().values()) {
+                            for (List<RunwayEvent> list : template.getScheduledRunwayEvents().values()) {
                                 eventCount += list.size();
                             }
 
                             // Return the lightweight summary.
                             return new ConfigurationTemplateSummary(
-                                    temp.getTemplateName(),
-                                    temp.getDateCreated(),
-                                    temp.getRunwaySettings().size(),
+                                    template.getTemplateName(),
+                                    template.getDateCreated(),
+                                    template.getRunwaySettings().size(),
                                     eventCount,
-                                    temp.getInboundRate(),
-                                    temp.getOutboundRate()
+                                    template.getInboundRate(),
+                                    template.getOutboundRate()
                             );
                         } catch (Exception e) {
                             // If one of the templates fails to read, log the error and handle by returning null.
@@ -131,7 +131,7 @@ public class JsonFileHandler {
         return mapper.readValue(configtemplateFilePath.toFile(), ConfigurationTemplate.class);
     }
 
-    public static void deleteConfigTemplate(String name) throws IOException{
+    public static void deleteConfigTemplate(String name) throws IOException {
         Path configtemplateFilePath = Paths.get(dataDirectory, "configtemplates", name + ".json");
 
         // Check if it exists first to throw a more specific error.
@@ -155,11 +155,105 @@ public class JsonFileHandler {
         saveToFile(configTemplate, "configtemplates", configTemplate.getTemplateName());
     }
 
+
+    // The following functions are for the simulation results file handling logic.
+
+    public static boolean resultNameExists(String name) {
+        Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
+        return Files.exists(resultPath);
+    }
+
     /**
-     * Saves the final simulation results to the /data/results folder.
-     * @param stats The statistics object containing the statistical results of the simulation.
+     * Saves the simulation results to the /data/results folder.
+     * @param results The results object, containing the name and date of the results, and the statistics and configuration.
      */
-    public static void saveResults(StatisticsSummary stats) throws IOException {
-        saveToFile(stats, "results", "temporaryResultsName");
+    public static void saveResults(SimulationResultSaved results) throws IOException {
+        saveToFile(results, "results", results.getSimulationName());
+    }
+
+    /**
+     * Lists summaries of all the simulation results stored in the /data/results folder.
+     * Note that for the function which is mapped to each file, we do catch that error so we can continue
+     * reading the rest of the files after one read failed.
+     * @return List of SimulationResultSummary objects, sorted by date, newest-first.
+     * @throws IOException Error thrown if disk access fails.
+     */
+    public static List<SimulationResultSummary> listResultSummaries() throws IOException {
+        Path resultsDir = Paths.get(dataDirectory, "results");
+
+        if (!Files.exists(resultsDir)) {
+            return Collections.emptyList();
+        }
+
+        try (Stream<Path> files = Files.list(resultsDir)) {
+            return files
+                    .filter(path -> path.toString().endsWith(".json"))
+                    .map(path -> {
+
+                        try {
+                            // Load the full saved simulation result.
+                            SimulationResultSaved result = mapper.readValue(path.toFile(), SimulationResultSaved.class);
+
+                            // Calculate the event count (summing nested lists).
+                            int eventCount = 0;
+                            // Sum the aircraft events.
+                            for (List<AircraftEvent> list : result.getConfig().getScheduledAircraftEvents().values()) {
+                                eventCount += list.size();
+                            }
+                            // Sum the runway events.
+                            for (List<RunwayEvent> list : result.getConfig().getScheduledRunwayEvents().values()) {
+                                eventCount += list.size();
+                            }
+
+                            // Return the lightweight summary.
+                            return new SimulationResultSummary(
+                                    result.getSimulationName(),
+                                    result.getDateExecuted(),
+                                    result.getConfig().getRunwaySettings().size(),
+                                    eventCount,
+                                    result.getConfig().getInboundRate(),
+                                    result.getConfig().getOutboundRate(),
+                                    result.getStats().getHourlyThroughput()
+                            );
+                        } catch (Exception e) {
+                            // If one of the templates fails to read, log the error and handle by returning null.
+                            System.err.println("Skipping invalid template file: " + path.getFileName());
+                            return null;
+                        }
+
+                    })
+                    .filter(Objects::nonNull) // Remove the nulls from failed reads.
+                    .sorted((a, b) -> b.getDateExecuted().compareTo(a.getDateExecuted())) // Sort by newest date
+                    .collect(Collectors.toList());
+        }
+    }
+
+
+    /**
+     * Loads a SimulationResultSaved object from a JSON file in the /data/results folder.
+     * @param name The name of the result to load.
+     * @return The loaded SimulationResultSaved object.
+     * @throws IOException If the file does not exist or contains invalid JSON.
+     */
+    public static SimulationResultSaved getSimulationResult(String name) throws IOException {
+        Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
+
+        // Check if it exists first to throw a more specific error.
+        if (!Files.exists(resultPath)) {
+            throw new NoSuchFileException(resultPath.toString());
+        }
+
+        return mapper.readValue(resultPath.toFile(), SimulationResultSaved.class);
+    }
+
+    public static void deleteSimulationResult(String name) throws IOException {
+        Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
+
+        // Check if it exists first to throw a more specific error.
+        if (!Files.exists(resultPath)) {
+            throw new NoSuchFileException(resultPath.toString());
+        }
+
+        Files.delete(resultPath);
     }
 }

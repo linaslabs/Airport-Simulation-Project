@@ -81,8 +81,7 @@ public class SimulationEngine {
         return new SimulationProgress((double) this.currentTick / this.durationTicks);
     }
 
-    // Currently not to be used, getSimulationProgress takes its place for initial sprints
-    public StatisticsSummary getFinalSummary() {
+    public StatisticsSummary getStatistics() {
         return stats.generateSummary(durationTicks);
     }
 

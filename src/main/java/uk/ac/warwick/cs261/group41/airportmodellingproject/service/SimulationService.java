@@ -1,6 +1,5 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
-import org.springframework.boot.jackson.autoconfigure.JacksonProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -9,7 +8,6 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandl
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -24,6 +22,7 @@ public class SimulationService {
     private SimulationEngine engine;
     private int currentTickDelay; // Milliseconds between each tick
     private volatile boolean isPaused = false;
+    private volatile boolean isFinished = false;
 
     // The background worker
     private ScheduledExecutorService executor;
@@ -34,6 +33,7 @@ public class SimulationService {
         // Stop any simulations previously
         stopSimulation();
 
+        this.isFinished = false;
         this.engine = new SimulationEngine(config);
 
         this.engine.initialiseSimulation();
@@ -77,6 +77,7 @@ public class SimulationService {
         boolean continueSimulation = this.engine.performTick();
 
         if (!continueSimulation){
+            this.isFinished = true;
             stopSimulation();
             System.out.println("Simulation ended.");
 
@@ -150,11 +151,6 @@ public class SimulationService {
         return this.engine.getSimulationProgress();
     }
 
-    public StatisticsSummary getStatisticsSummary() {
-        // It is the role of the SimulationService to create the DTOs from the SimulationEngine data.
-        return engine.getFinalSummary();
-    }
-
     public boolean isPaused() { return this.isPaused; }
 
     public boolean isRunning() { return this.engine != null && this.simulationTask != null && !this.simulationTask.isCancelled() && !this.isPaused; }
@@ -202,9 +198,12 @@ public class SimulationService {
     // In getConfigurationTemplate, we do a similar check to ensure the file actually exists with a given name,
     // however checking the file actually exists is physical logic, so it should be in JsonFileHandler and not here.
     public void saveConfigurationTemplate(ConfigurationTemplate configTemplate) {
+        // Sanitise the name to remove spaces and special characters.
+        String safeName = configTemplate.getTemplateName().replaceAll("[^a-zA-Z0-9-_\\s]", "");
+        configTemplate.setTemplateName(safeName);
 
-        // First check that the user hasn't made an error and given the template an existing name.
-        if (JsonFileHandler.templateNameExists(configTemplate.getTemplateName())) {
+        // Check that the user hasn't made an error and given the template an existing name.
+        if (JsonFileHandler.templateNameExists(safeName)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Template name already exists.");
         }
 
@@ -220,4 +219,75 @@ public class SimulationService {
     }
 
 
+    // The following functions are called by the ResultsController.
+
+    // This returns the result of the last simulation that was started.
+    // If a simulation is still being run, or none was ever started, this function returns an error.
+    public SimulationResult getLastResult() {
+        // First check if a simulation was ever started since the app was opened.
+        if (engine == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No simulation has been started.");
+        }
+
+        // Check that no simulation is currently running.
+        if (!isFinished) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Simulation is still in progress.");
+        }
+
+        // Otherwise, a simulation must have been run, and it is finished so return its result.
+        return new SimulationResult(engine.getConfig(), engine.getStatistics());
+    }
+
+    public void saveSimulationResult(String name) {
+        // Sanitise the name to remove spaces and special characters.
+        String safeName = name.replaceAll("[^a-zA-Z0-9-_\\s]", "");
+
+        // Check the name is unique.
+        if (JsonFileHandler.resultNameExists(safeName)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Simulation result name already exists.");
+        }
+
+        // Construct the saved results DTO
+        SimulationResultSaved savedResult = new SimulationResultSaved(
+                engine.getConfig(),
+                engine.getStatistics(),
+                safeName,
+                new Date()
+        );
+
+        // Use try catch to write the file in case of disk errors.
+        try {
+            JsonFileHandler.saveResults(savedResult);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Disk error, could not save file.");
+        }
+    }
+
+    public List<SimulationResultSummary> listResultSummaries() {
+        try {
+            return JsonFileHandler.listResultSummaries();
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading file.");
+        }
+    }
+
+    public SimulationResultSaved getSimulationResult(String name) {
+        try {
+            return JsonFileHandler.getSimulationResult(name);
+        } catch (NoSuchFileException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find result with name: " + name);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading file.");
+        }
+    }
+
+    public void deleteSimulationResult(String name) {
+        try {
+            JsonFileHandler.deleteSimulationResult(name);
+        } catch (NoSuchFileException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find result with name: " + name);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting the file.");
+        }
+    }
 }
