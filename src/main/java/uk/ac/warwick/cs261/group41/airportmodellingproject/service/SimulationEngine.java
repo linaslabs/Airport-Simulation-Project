@@ -1,9 +1,7 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
 import org.jspecify.annotations.NonNull;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationProgress;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.StatisticsSummary;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.*;
 
 import java.util.*;
@@ -86,6 +84,45 @@ public class SimulationEngine {
 
     public SimulationProgress getSimulationProgress() {
         return new SimulationProgress((double) this.currentTick / this.durationTicks);
+    }
+
+    public SimulationSnapshot getSimulationSnapshot(){
+        // Get all holding aircraft
+        List<HoldingAircraftDTO> holdingDTOs = new ArrayList<>();
+        for (Aircraft aircraft : airport.getHoldingPattern().getAircraftInQueue()) {
+            holdingDTOs.add(new HoldingAircraftDTO(aircraft.getCallsign(), aircraft.getFuel(), aircraft.getStatus()));
+        }
+
+        // Get all take off aircraft
+        List<TakeOffAircraftDTO> takeoffDTOs = new ArrayList<>();
+        for (Aircraft aircraft : airport.getTakeOffQueue().getAircraftInQueue()) {
+            takeoffDTOs.add(new TakeOffAircraftDTO(aircraft.getCallsign(), aircraft.getEntryTick(), aircraft.getState()));
+        }
+
+        // Get all runway information
+        List<RunwayDTO> runwayDTOs = new ArrayList<>();
+        for (Runway runway : airport.getRunways()) {
+            String callsign = (runway.getCurrentAircraft() != null) ? runway.getCurrentAircraft().getCallsign() : null;
+            runwayDTOs.add(new RunwayDTO(runway.getRunwayID(), runway.getStatus(), runway.getMode(), callsign, runway.getOccupiedUntil()));
+        }
+
+        // Calculate progress as a double
+        double progress = (double) this.currentTick / this.durationTicks;
+
+        // Return the compiled snapshot
+        return new SimulationSnapshot(
+                this.currentTick,
+                progress,
+                holdingDTOs.size(),
+                takeoffDTOs.size(),
+                stats.getTotalAircraftLanded(),
+                stats.getTotalAircraftDeparted(),
+                stats.getDiversionCount(),
+                stats.getCancellationCount(),
+                runwayDTOs,
+                holdingDTOs,
+                takeoffDTOs
+        );
     }
 
     public StatisticsSummary getStatistics() {

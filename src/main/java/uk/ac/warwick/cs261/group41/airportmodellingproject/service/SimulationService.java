@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandler;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
@@ -28,6 +29,13 @@ public class SimulationService {
     private ScheduledExecutorService executor;
     // The task the worker will be doing (a controller for it, so we can pause or stop it)
     private ScheduledFuture<?> simulationTask;
+
+    // Inject the messaging template
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public SimulationService(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
 
     public void startSimulation(SimulationConfig config) {
         // Stop any simulations previously
@@ -81,11 +89,12 @@ public class SimulationService {
             stopSimulation();
             System.out.println("Simulation ended.");
 
-            // HERE WE PREPARE THE FINAL STATS TO SEND BACK
-            // TODO We can send back final simulation completion progress here (via websockets)
+            // Final statistics summary are sent to the channel "/simulation/summary" which the front end is subscribed to (the web socket)
+            messagingTemplate.convertAndSend("/simulation/summary", this.engine.getStatistics());
         } else{
-            // SEND BACK SIMULATION SNAPSHOT TO THE UI
-            // TODO In this case, we will send back the simulation progress (via websockets)
+
+            // Simulation snapshot is sent to the channel "/simulation/summary" which the front end is subscribed to (the web socket)
+            messagingTemplate.convertAndSend("/simulation/snapshot", this.engine.getSimulationSnapshot());
         }
 
     }
