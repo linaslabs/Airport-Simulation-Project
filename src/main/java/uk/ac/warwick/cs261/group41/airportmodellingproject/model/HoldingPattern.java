@@ -8,9 +8,9 @@ import java.util.*;
 
 public class HoldingPattern implements AircraftQueue{
     private final PriorityQueue<Aircraft> queue;
-    private int minFuelLevel = 10;
+    private final int minFuelLevel = 10;
     // Maybe add an emergency fuel level, e.g. 20 minutes, below which the plane goes into EmergencyStatus.FUEL.
-    private int emergencyFuelLevel = 15;
+    private final int emergencyFuelLevel = 15;
     private EventManager eventManager;
 
     public HoldingPattern() {
@@ -49,6 +49,10 @@ public class HoldingPattern implements AircraftQueue{
 
     @Override
     public void update(int currentTick) {
+        if (eventManager == null) {
+            throw new IllegalStateException("EventManager has not been set for HoldingPattern");
+        }
+
         // Need a temporary list of aircraft that should be re-prioritised due to low fuel (will re-prioritise after this iterator)
         List<String> newFuelEmergencies = new ArrayList<>();
 
@@ -61,9 +65,6 @@ public class HoldingPattern implements AircraftQueue{
                 aircraft.setState(AircraftState.DIVERTED);
                 iterator.remove();
                 // Report diversion to the event manager
-                if (eventManager == null) {
-                    throw new IllegalStateException("EventManager has not been set for HoldingPattern");
-                }
                 eventManager.reportDiversion(aircraft.getCallsign(), currentTick);
             } else if (aircraft.getFuel() <= emergencyFuelLevel && aircraft.getStatus() != EmergencyStatus.FUEL) {
                 // Add this aircraft to the list of fuel emergencies to reprioritise later

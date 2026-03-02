@@ -49,24 +49,30 @@ public class SimulationConfig {
     @Range(min = 60, max = 1440, message = "Simulation duration must be between 60 and 1440 minutes.")
     private Integer duration = 420;
 
-    private Boolean isAutomaticGenerationEnabled;
+    @NotNull(message = "Automatic generation flag is required") // In case front end sends a null explicitly
+    private Boolean automaticGenerationEnabled = false;
 
+    @NotNull(message = "Mechanical failure rate is required")
     @DecimalMin(value = "0.0", message = "Mechanical failure rate cannot be less than 0.0")
     @DecimalMax(value = "0.1", message = "Mechanical failure rate cannot exceed 0.1")
     private Double mechanicalFailureRate = 0.0;
 
+    @NotNull(message = "Passenger health issue rate is required")
     @DecimalMin(value = "0.0", message = "Passenger health issue rate cannot be less than 0.0")
     @DecimalMax(value = "0.1", message = "Passenger health issue rate cannot exceed 0.1")
     private Double passengerHealthIssueRate = 0.0;
 
+    @NotNull(message = "Runway inspection rate is required")
     @DecimalMin(value = "0.0", message = "Runway inspection rate cannot be less than 0.0")
     @DecimalMax(value = "0.1", message = "Runway inspection rate cannot exceed 0.1")
     private Double runwayInspectionRate = 0.0;
 
+    @NotNull(message = "Snow clearance rate is required")
     @DecimalMin(value = "0.0", message = "Snow clearance rate cannot be less than 0.0")
     @DecimalMax(value = "0.1", message = "Snow clearance rate cannot exceed 0.1")
     private Double snowClearanceRate = 0.0;
 
+    @NotNull(message = "Equipment failure rate is required")
     @DecimalMin(value = "0.0", message = "Equipment failure rate cannot be less than 0.0")
     @DecimalMax(value = "0.1", message = "Equipment failure rate cannot exceed 0.1")
     private Double equipmentFailureRate = 0.0;
@@ -88,7 +94,7 @@ public class SimulationConfig {
 
     // Parameterised constructor exclusively used for testing purposes.
     public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime,
-                            Integer duration, Boolean isAutomaticGenerationEnabled, Double mechanicalFailureRate, Double passengerHealthIssueRate,
+                            Integer duration, Boolean automaticGenerationEnabled, Double mechanicalFailureRate, Double passengerHealthIssueRate,
                             Double runwayInspectionRate, Double snowClearanceRate, Double equipmentFailureRate, Long seed,
                             Map<Integer, List<RunwayEvent>> scheduledRunwayEvents,
                             Map<Integer, List<AircraftEvent>> scheduledAircraftEvents) {
@@ -100,7 +106,7 @@ public class SimulationConfig {
         this.duration = duration;
 
         // For statistical modelling
-        this.isAutomaticGenerationEnabled = isAutomaticGenerationEnabled;
+        this.automaticGenerationEnabled = automaticGenerationEnabled;
         this.mechanicalFailureRate = mechanicalFailureRate;
         this.passengerHealthIssueRate = passengerHealthIssueRate;
         this.runwayInspectionRate = runwayInspectionRate;
@@ -169,9 +175,9 @@ public class SimulationConfig {
 
     public void setDuration(Integer duration) { this.duration = duration; }
 
-    public boolean getIsAutomaticGenerationEnabled() { return this.isAutomaticGenerationEnabled; }
+    public Boolean getAutomaticGenerationEnabled() { return this.automaticGenerationEnabled; }
 
-    public void setIsAutomaticGenerationEnabled(boolean automaticGenerationEnabled) {this.isAutomaticGenerationEnabled = automaticGenerationEnabled; }
+    public void setAutomaticGenerationEnabled(boolean automaticGenerationEnabled) {this.automaticGenerationEnabled = automaticGenerationEnabled; }
 
     public Long getSeed() {
         return seed;

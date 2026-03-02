@@ -30,7 +30,7 @@ public class Aircraft implements Comparable<Aircraft> {
         this.entryTick = entryTick;
         this.flightType = flightType;
 
-        this.status = status;
+        this.status = EmergencyStatus.NONE;
 
         if (flightType == FlightType.ARRIVAL) {
             this.altitude = 10000;

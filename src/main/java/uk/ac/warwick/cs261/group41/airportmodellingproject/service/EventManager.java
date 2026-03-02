@@ -4,7 +4,6 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.AircraftEvent;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayEvent;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.*;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Aircraft;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Airport;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Runway;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
@@ -54,7 +53,7 @@ public class EventManager {
             // If the runway event is of duration 0, it is a reversion event, always call this first
             // i.e. place this reversion event as the first event in the runway event list for this tick
             if (runwayEvent.getDuration() == 0) {
-                runwayEvents.addFirst(runwayEvent);
+                runwayEvents.add(0, runwayEvent);
             } else {
                 // Otherwise append like normal
                 runwayEvents.add(runwayEvent);
@@ -204,7 +203,8 @@ public class EventManager {
                 this.airport.updateAircraftStatus(randomCallsign, status);
                 this.logger.addEvent(new AircraftEvent(currentTick, randomCallsign, isNaturalEvent ? AircraftEventType.NATURAL_EMERGENCY : AircraftEventType.SCHEDULED_EMERGENCY, status));
             } else {
-                System.out.println("Tick " + currentTick + ": Scheduled emergency skipped, holding pattern is empty.");
+                String emergencyType = isNaturalEvent ? "Natural" : "Scheduled";
+                System.out.println("Tick " + currentTick + ": " + emergencyType + " emergency skipped, holding pattern is empty.");
             }
         } else {
             this.airport.updateAircraftStatus(callsign, status);

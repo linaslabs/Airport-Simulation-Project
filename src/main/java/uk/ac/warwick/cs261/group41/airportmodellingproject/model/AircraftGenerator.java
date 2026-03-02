@@ -1,6 +1,5 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 
 import java.util.List;
