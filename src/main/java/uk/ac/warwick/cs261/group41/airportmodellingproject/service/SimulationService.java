@@ -1,17 +1,21 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
+import org.springframework.boot.jackson.autoconfigure.JacksonProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationProgress;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.StatisticsSummary;
+import org.springframework.web.server.ResponseStatusException;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandler;
 
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 // Spring Boot automatically instantiates this Service as a Singleton upon application startup and injects it into the Controllers.
 @Service
@@ -29,14 +33,6 @@ public class SimulationService {
     public void startSimulation(SimulationConfig config) {
         // Stop any simulations previously
         stopSimulation();
-
-        // Generate the unique ID for the simulation.
-        // This allows the configuration to be traced from the results JSON.
-        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        config.setSimulationID(timestamp);
-
-        // Save configuration JSON.
-        JsonFileHandler.saveConfig(config);
 
         this.engine = new SimulationEngine(config);
 
@@ -83,9 +79,6 @@ public class SimulationService {
         if (!continueSimulation){
             stopSimulation();
             System.out.println("Simulation ended.");
-
-            // Save the results of the simulation as a JSON.
-            JsonFileHandler.saveResults(getStatisticsSummary());
 
             // HERE WE PREPARE THE FINAL STATS TO SEND BACK
             // TODO We can send back final simulation completion progress here (via websockets)
@@ -139,9 +132,6 @@ public class SimulationService {
             }
             stopSimulation();
             System.out.println("Simulation ended.");
-
-            // Save the results of the simulation as a JSON.
-            JsonFileHandler.saveResults(getStatisticsSummary());
         });
     }
 
@@ -168,4 +158,66 @@ public class SimulationService {
     public boolean isPaused() { return this.isPaused; }
 
     public boolean isRunning() { return this.engine != null && this.simulationTask != null && !this.simulationTask.isCancelled() && !this.isPaused; }
+
+
+
+    // The following functions are called by the ConfigurationController when saving/loading configuration JSONs.
+    // Business logic checks are performed here, such as you cannot save a configuration template with the same
+    // name as one that already exists.
+    // However, physical logic checks are deferred to the JsonFileHandler, such as a configuration template with
+    // a given name must exist if it is to be returned or deleted.
+
+    public List<ConfigurationTemplateSummary> listSavedConfigTemplateSummaries() {
+        try {
+            return JsonFileHandler.listSavedConfigTemplateSummaries();
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading file.");
+        }
+    }
+
+    public ConfigurationTemplate getConfigurationTemplate(String name) {
+        try {
+            return JsonFileHandler.getConfigTemplate(name);
+        } catch (NoSuchFileException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find template with name: " + name);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading file.");
+        }
+    }
+
+    // Deletes the specified saved configuration template.
+    public void deleteConfigurationTemplate(String name) {
+        try {
+            JsonFileHandler.deleteConfigTemplate(name);
+        } catch (NoSuchFileException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find template with name: " + name);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting the file.");
+        }
+    }
+
+    // Saves the user's current configuration.
+    // Note that we perform the check for a template with an existing name here rather than in JsonFileHandler.
+    // This is because this is business logic.
+    // In getConfigurationTemplate, we do a similar check to ensure the file actually exists with a given name,
+    // however checking the file actually exists is physical logic, so it should be in JsonFileHandler and not here.
+    public void saveConfigurationTemplate(ConfigurationTemplate configTemplate) {
+
+        // First check that the user hasn't made an error and given the template an existing name.
+        if (JsonFileHandler.templateNameExists(configTemplate.getTemplateName())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Template name already exists.");
+        }
+
+        // Set the date created to the current date and time.
+        configTemplate.setDateCreated(new Date());
+
+        // Use try catch in case of disk errors.
+        try {
+            JsonFileHandler.saveConfigTemplate(configTemplate);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Disk error, could not save file.");
+        }
+    }
+
+
 }

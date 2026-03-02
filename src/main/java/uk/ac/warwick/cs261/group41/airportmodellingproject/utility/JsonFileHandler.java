@@ -3,22 +3,28 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.utility;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.StatisticsSummary;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Utility class to handle saving and loading simulation data in JSON format.
  * This class is static and does not need to be instantiated.
+ *
+ * One of the key ideas with this class is that the errors from disk access are not handled here.
+ * Instead, they are propagated to the function which called it, so they can be handled in the SimulationService.
  */
 public class JsonFileHandler {
 
@@ -32,53 +38,35 @@ public class JsonFileHandler {
     private static final String dataDirectory = System.getProperty("user.dir") + File.separator + "data";
 
     /**
-     * Saves a simulation's input parameters to the /data/configs folder.
-     * @param config The configuration object containing the simulation settings.
-     */
-    public static void saveConfig(SimulationConfig config) {
-        saveToFile(config, "configs", config.getSimulationID());
-    }
-
-    /**
-     * Saves the final simulation results to the /data/results folder.
-     * @param stats The statistics object containing the statistical results of the simulation.
-     */
-    public static void saveResults(StatisticsSummary stats) {
-        saveToFile(stats, "results", stats.getSimulationID());
-    }
-
-    /**
      * Generic private helper to handle the physical writing of objects to disk.
      * @param data The Java object to be converted to JSON.
      * @param subFolder The specific subdirectory (configs or results).
      * @param id The unique ID of the simulation, used as the filename.
+     * @throws IOException Error thrown if disk access fails.
      */
-    private static void saveToFile(Object data, String subFolder, String id) {
-        try {
-            // Construct the logical path to the destination folder.
-            Path directory = Paths.get(dataDirectory, subFolder);
+    private static void saveToFile(Object data, String subFolder, String id) throws IOException {
+        // Construct the logical path to the destination folder.
+        Path directory = Paths.get(dataDirectory, subFolder);
 
-            // Ensure the directory exists, if not create it and any missing parent folders.
-            Files.createDirectories(directory);
+        // Ensure the directory exists, if not create it and any missing parent folders.
+        Files.createDirectories(directory);
 
-            // Combine the directory path with the filename and convert to a File object.
-            File outputFile = directory.resolve(id + ".json").toFile();
+        // Combine the directory path with the filename and convert to a File object.
+        File outputFile = directory.resolve(id + ".json").toFile();
 
-            // Transform the Java object into JSON text and write it to the file.
-            mapper.writeValue(outputFile, data);
-        } catch (IOException e) {
-            // Log the error to the terminal is disk access fails.
-            System.err.println("Error saving JSON: " + e.getMessage());
-        }
+        // Transform the Java object into JSON text and write it to the file.
+        mapper.writeValue(outputFile, data);
     }
 
     /**
-     * Lists all saved configuration IDs from the /data/configs folder.
-     * Returns IDs sorted newest-first (descending order).
-     * @return List of configuration IDs (filenames without .json extension)
+     * Lists summaries of all the configuration templates stored in the /data/configtemplates folder.
+     * Note that for the function which is mapped to each file, we do catch that error so we can continue
+     * reading the rest of the files after one read failed.
+     * @return List of ConfigurationTemplateSummary objects, sorted by data, newest-first.
+     * @throws IOException Error thrown if disk access fails.
      */
-    public static List<String> listSavedConfigs() {
-        Path configsDir = Paths.get(dataDirectory, "configs");
+    public static List<ConfigurationTemplateSummary> listSavedConfigTemplateSummaries() throws IOException {
+        Path configsDir = Paths.get(dataDirectory, "configtemplates");
 
         if (!Files.exists(configsDir)) {
             return Collections.emptyList();
@@ -87,23 +75,91 @@ public class JsonFileHandler {
         try (Stream<Path> files = Files.list(configsDir)) {
             return files
                     .filter(path -> path.toString().endsWith(".json"))
-                    .map(path -> path.getFileName().toString().replace(".json", ""))
-                    .sorted(Collections.reverseOrder())
+                    .map(path -> {
+
+                        try {
+                            // Load the full template.
+                            ConfigurationTemplate temp = mapper.readValue(path.toFile(), ConfigurationTemplate.class);
+
+                            // Calculate the event count (summing nested lists).
+                            int eventCount = 0;
+                            // Sum the aircraft events.
+                            for (List<AircraftEvent> list : temp.getScheduledAircraftEvents().values()) {
+                                eventCount += list.size();
+                            }
+                            // Sum the runway events.
+                            for (List<RunwayEvent> list : temp.getScheduledRunwayEvents().values()) {
+                                eventCount += list.size();
+                            }
+
+                            // Return the lightweight summary.
+                            return new ConfigurationTemplateSummary(
+                                    temp.getTemplateName(),
+                                    temp.getDateCreated(),
+                                    temp.getRunwaySettings().size(),
+                                    eventCount,
+                                    temp.getInboundRate(),
+                                    temp.getOutboundRate()
+                            );
+                        } catch (Exception e) {
+                            // If one of the templates fails to read, log the error and handle by returning null.
+                            System.err.println("Skipping invalid template file: " + path.getFileName());
+                            return null;
+                        }
+
+                    })
+                    .filter(Objects::nonNull) // Remove the nulls from failed reads.
+                    .sorted((a, b) -> b.getDateCreated().compareTo(a.getDateCreated())) // Sort by newest date
                     .collect(Collectors.toList());
-        } catch (IOException e) {
-            System.err.println("Error listing configs: " + e.getMessage());
-            return Collections.emptyList();
         }
     }
 
     /**
-     * Loads a SimulationConfig from a JSON file in the /data/configs folder.
-     * @param id The simulation ID (filename without .json extension)
-     * @return The loaded SimulationConfig object
-     * @throws IOException If the file does not exist or contains invalid JSON
+     * Loads a ConfigurationTemplate from a JSON file in the /data/configtemplates folder.
+     * @param name The name of the configuration template to load.
+     * @return The loaded ConfigurationTemplate object.
+     * @throws IOException If the file does not exist or contains invalid JSON.
      */
-    public static SimulationConfig loadConfig(String id) throws IOException {
-        Path configFile = Paths.get(dataDirectory, "configs", id + ".json");
-        return mapper.readValue(configFile.toFile(), SimulationConfig.class);
+    public static ConfigurationTemplate getConfigTemplate(String name) throws IOException {
+        Path configtemplateFilePath = Paths.get(dataDirectory, "configtemplates", name + ".json");
+
+        // Check if it exists first to throw a more specific error.
+        if (!Files.exists(configtemplateFilePath)) {
+            throw new NoSuchFileException(configtemplateFilePath.toString());
+        }
+
+        return mapper.readValue(configtemplateFilePath.toFile(), ConfigurationTemplate.class);
+    }
+
+    public static void deleteConfigTemplate(String name) throws IOException{
+        Path configtemplateFilePath = Paths.get(dataDirectory, "configtemplates", name + ".json");
+
+        // Check if it exists first to throw a more specific error.
+        if (!Files.exists(configtemplateFilePath)) {
+            throw new NoSuchFileException(configtemplateFilePath.toString());
+        }
+
+        Files.delete(configtemplateFilePath);
+    }
+
+    public static boolean templateNameExists(String name) {
+        Path configtemplateFilePath = Paths.get(dataDirectory, "configtemplates", name + ".json");
+        return Files.exists(configtemplateFilePath);
+    }
+
+    /**
+     * Saves a simulation's input parameters to the /data/configs folder.
+     * @param configTemplate The ConfigurationTemplate object containing the simulation settings.
+     */
+    public static void saveConfigTemplate(ConfigurationTemplate configTemplate) throws IOException {
+        saveToFile(configTemplate, "configtemplates", configTemplate.getTemplateName());
+    }
+
+    /**
+     * Saves the final simulation results to the /data/results folder.
+     * @param stats The statistics object containing the statistical results of the simulation.
+     */
+    public static void saveResults(StatisticsSummary stats) throws IOException {
+        saveToFile(stats, "results", "temporaryResultsName");
     }
 }
