@@ -11,9 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -22,7 +20,6 @@ import java.util.stream.Stream;
 /**
  * Utility class to handle saving and loading simulation data in JSON format.
  * This class is static and does not need to be instantiated.
- *
  * One of the key ideas with this class is that the errors from disk access are not handled here.
  * Instead, they are propagated to the function which called it, so they can be handled in the SimulationService.
  */

@@ -1,7 +1,5 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.dto;
 
-import java.util.Date;
-
 // Simple wrapper around a simulation's configuration and statistical results.
 public class SimulationResult {
     private SimulationConfig config;
