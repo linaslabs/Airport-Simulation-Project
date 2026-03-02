@@ -52,6 +52,24 @@ public class AircraftGenerator {
 
         double fuel = generateFuelValue();
         int entryTick = generateEntryTick(scheduledTick);
+
+
+        // Statistical event modelling - determining if the plane generated should generate with an emergency
+        // Commented out for now, can be added back in if we want to add more realism (will need to determine how the rates are split between generation and triggering of existing aircraft)
+//        EmergencyStatus status = EmergencyStatus.NONE;
+//
+//        if (autoEnabled) {
+//            // Generate a value between 0 and 1
+//            double roll = random.nextDouble();
+//
+//            if (roll < mechanicalRate) {
+//                status = EmergencyStatus.MECHANICAL;
+//            } else if (roll < (mechanicalRate + healthRate)) {
+//                // If the roll hasn't landed in the range 0 to mechanicalRate, this "else if" checks that the roll lands mechanicalRate < x < mechanicalRate + healthRate i.e. the range for the health rate
+//                status = EmergencyStatus.PASSENGER;
+//            }
+//        }
+
         return new Aircraft(callsign, operator, origin, destination, fuel, scheduledTick, entryTick, type);
     }
 
@@ -62,6 +80,8 @@ public class AircraftGenerator {
 
         return min + (random.nextDouble() * (max - min));
     }
+
+
 
     // Function responsible for the Gaussian variation with std dev. 5 of scheduledTick.
     private int generateEntryTick(int scheduledTick) {
@@ -92,6 +112,7 @@ public class AircraftGenerator {
             int scheduledTick = (int) Math.round(inboundUnroundedTick);
 
             // Generate the actual aircraft for the simulation so we can access its randomized entryTick
+            // autoEnabled is a boolean value that is true if the user wants random emergency aircraft generation
             Aircraft newAircraft = generateAircraft(scheduledTick, FlightType.ARRIVAL);
 
             // Use the actual entry tick as the map key

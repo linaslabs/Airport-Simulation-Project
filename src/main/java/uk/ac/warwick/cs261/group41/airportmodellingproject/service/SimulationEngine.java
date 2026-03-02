@@ -63,6 +63,13 @@ public class SimulationEngine {
             this.airport.acceptOutboundAircraft(aircraft);
         }
 
+        if (this.config.getAutomaticGenerationEnabled()){
+            this.eventManager.generateRandomEventsForTick(currentTick, this.config.getRunwayInspectionRate(),
+                    this.config.getSnowClearanceRate(), this.config.getEquipmentFailureRate(),
+                    this.config.getMechanicalFailureRate(), this.config.getPassengerHealthIssueRate());
+        }
+
+
         // Assign airport runways
         this.airport.assignRunways(this.currentTick);
 

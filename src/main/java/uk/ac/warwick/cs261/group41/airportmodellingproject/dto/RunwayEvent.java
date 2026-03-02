@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayEventType;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.SimulationEvent;
@@ -14,20 +15,23 @@ public class RunwayEvent extends SimulationEvent {
 
     private final RunwayStatus runwayStatus;
     private final RunwayMode runwayMode;
+    private final RunwayEventType type;
 
     @NotNull(message = "Duration must be provided or -1 for infinite")
-    private final int duration;
+    private final Integer duration;
 
     @JsonCreator
     public RunwayEvent(@JsonProperty("tick") int tick,
                        @JsonProperty("runwayID") int runwayID,
                        @JsonProperty("status") RunwayStatus status,
                        @JsonProperty("mode") RunwayMode mode,
+                       @JsonProperty("type") RunwayEventType type,
                        @JsonProperty("duration") Integer duration) {
         super(tick);
         this.runwayID = runwayID;
         this.runwayStatus = status;
         this.runwayMode = mode;
+        this.type = type;
         this.duration = duration;
     }
 
@@ -42,6 +46,11 @@ public class RunwayEvent extends SimulationEvent {
     public RunwayMode getRunwayMode() {
         return this.runwayMode;
     }
+
+    public RunwayEventType getType() {
+        return this.type;
+    }
+
 
     public int getDuration() {
         return this.duration;
