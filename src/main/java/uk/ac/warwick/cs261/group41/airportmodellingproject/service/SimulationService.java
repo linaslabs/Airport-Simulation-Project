@@ -202,9 +202,12 @@ public class SimulationService {
     // In getConfigurationTemplate, we do a similar check to ensure the file actually exists with a given name,
     // however checking the file actually exists is physical logic, so it should be in JsonFileHandler and not here.
     public void saveConfigurationTemplate(ConfigurationTemplate configTemplate) {
+        // Sanitise the name to remove spaces and special characters.
+        String safeName = configTemplate.getTemplateName().replaceAll("[^a-zA-Z0-9-_\\s]", "");
+        configTemplate.setTemplateName(safeName);
 
-        // First check that the user hasn't made an error and given the template an existing name.
-        if (JsonFileHandler.templateNameExists(configTemplate.getTemplateName())) {
+        // Check that the user hasn't made an error and given the template an existing name.
+        if (JsonFileHandler.templateNameExists(safeName)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Template name already exists.");
         }
 
@@ -219,5 +222,7 @@ public class SimulationService {
         }
     }
 
+
+    // The following functions are called by the ResultsController.
 
 }
