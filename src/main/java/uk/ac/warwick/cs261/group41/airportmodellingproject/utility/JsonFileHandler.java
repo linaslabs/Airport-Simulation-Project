@@ -174,6 +174,23 @@ public class JsonFileHandler {
         saveToFile(results, "results", results.getSimulationName());
     }
 
+    /**
+     * Loads a SimulationResultSaved object from a JSON file in the /data/results folder.
+     * @param name The name of the result to load.
+     * @return The loaded SimulationResultSaved object.
+     * @throws IOException If the file does not exist or contains invalid JSON.
+     */
+    public static SimulationResultSaved getSimulationResult(String name) throws IOException {
+        Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
+
+        // Check if it exists first to throw a more specific error.
+        if (!Files.exists(resultPath)) {
+            throw new NoSuchFileException(resultPath.toString());
+        }
+
+        return mapper.readValue(resultPath.toFile(), SimulationResultSaved.class);
+    }
+
     public static void deleteSimulationResult(String name) throws IOException {
         Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
 

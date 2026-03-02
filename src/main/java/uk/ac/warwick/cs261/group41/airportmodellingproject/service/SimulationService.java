@@ -263,6 +263,16 @@ public class SimulationService {
         }
     }
 
+    public SimulationResultSaved getSimulationResult(String name) {
+        try {
+            return JsonFileHandler.getSimulationResult(name);
+        } catch (NoSuchFileException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find result with name: " + name);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading file.");
+        }
+    }
+
     public void deleteSimulationResult(String name) {
         try {
             JsonFileHandler.deleteSimulationResult(name);

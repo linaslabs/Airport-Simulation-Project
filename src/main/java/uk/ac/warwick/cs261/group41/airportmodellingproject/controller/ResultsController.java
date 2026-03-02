@@ -45,7 +45,7 @@ public class ResultsController {
     // Similar to the summary window for configuration selection, view and compare can use the same logic.
     @GetMapping("/vieworcompare/{name}")
     public ResponseEntity<SimulationResultSaved> viewOrCompareSimulationResult(@PathVariable String name) {
-
+        return ResponseEntity.ok(simulationService.getSimulationResult(name));
     }
 
     @DeleteMapping("/delete/{name}")
