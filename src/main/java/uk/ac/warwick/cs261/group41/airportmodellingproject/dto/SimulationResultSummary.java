@@ -10,9 +10,9 @@ public class SimulationResultSummary {
     private Integer scheduledEventsCount;
     private Integer inboundRate;
     private Integer outboundRate;
-    private Integer throughput;
+    private Double throughput;
 
-    public SimulationResultSummary(String simulationName, Date dateExecuted, Integer runwayCount, Integer scheduledEventsCount, Integer inboundRate, Integer outboundRate, Integer throughput) {
+    public SimulationResultSummary(String simulationName, Date dateExecuted, Integer runwayCount, Integer scheduledEventsCount, Integer inboundRate, Integer outboundRate, Double throughput) {
         this.simulationName = simulationName;
         this.dateExecuted = dateExecuted;
         this.runwayCount = runwayCount;
@@ -46,7 +46,7 @@ public class SimulationResultSummary {
         return outboundRate;
     }
 
-    public Integer getThroughput() {
+    public Double getThroughput() {
         return throughput;
     }
 
@@ -74,7 +74,7 @@ public class SimulationResultSummary {
         this.outboundRate = outboundRate;
     }
 
-    public void setThroughput(Integer throughput) {
+    public void setThroughput(Double throughput) {
         this.throughput = throughput;
     }
 }

@@ -263,6 +263,14 @@ public class SimulationService {
         }
     }
 
+    public List<SimulationResultSummary> listResultSummaries() {
+        try {
+            return JsonFileHandler.listResultSummaries();
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading file.");
+        }
+    }
+
     public SimulationResultSaved getSimulationResult(String name) {
         try {
             return JsonFileHandler.getSimulationResult(name);

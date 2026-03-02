@@ -65,7 +65,7 @@ public class JsonFileHandler {
      * Lists summaries of all the configuration templates stored in the /data/configtemplates folder.
      * Note that for the function which is mapped to each file, we do catch that error so we can continue
      * reading the rest of the files after one read failed.
-     * @return List of ConfigurationTemplateSummary objects, sorted by data, newest-first.
+     * @return List of ConfigurationTemplateSummary objects, sorted by date, newest-first.
      * @throws IOException Error thrown if disk access fails.
      */
     public static List<ConfigurationTemplateSummary> listSavedConfigTemplateSummaries() throws IOException {
@@ -82,27 +82,27 @@ public class JsonFileHandler {
 
                         try {
                             // Load the full template.
-                            ConfigurationTemplate temp = mapper.readValue(path.toFile(), ConfigurationTemplate.class);
+                            ConfigurationTemplate template = mapper.readValue(path.toFile(), ConfigurationTemplate.class);
 
                             // Calculate the event count (summing nested lists).
                             int eventCount = 0;
                             // Sum the aircraft events.
-                            for (List<AircraftEvent> list : temp.getScheduledAircraftEvents().values()) {
+                            for (List<AircraftEvent> list : template.getScheduledAircraftEvents().values()) {
                                 eventCount += list.size();
                             }
                             // Sum the runway events.
-                            for (List<RunwayEvent> list : temp.getScheduledRunwayEvents().values()) {
+                            for (List<RunwayEvent> list : template.getScheduledRunwayEvents().values()) {
                                 eventCount += list.size();
                             }
 
                             // Return the lightweight summary.
                             return new ConfigurationTemplateSummary(
-                                    temp.getTemplateName(),
-                                    temp.getDateCreated(),
-                                    temp.getRunwaySettings().size(),
+                                    template.getTemplateName(),
+                                    template.getDateCreated(),
+                                    template.getRunwaySettings().size(),
                                     eventCount,
-                                    temp.getInboundRate(),
-                                    temp.getOutboundRate()
+                                    template.getInboundRate(),
+                                    template.getOutboundRate()
                             );
                         } catch (Exception e) {
                             // If one of the templates fails to read, log the error and handle by returning null.
@@ -173,6 +173,64 @@ public class JsonFileHandler {
     public static void saveResults(SimulationResultSaved results) throws IOException {
         saveToFile(results, "results", results.getSimulationName());
     }
+
+    /**
+     * Lists summaries of all the simulation results stored in the /data/results folder.
+     * Note that for the function which is mapped to each file, we do catch that error so we can continue
+     * reading the rest of the files after one read failed.
+     * @return List of SimulationResultSummary objects, sorted by date, newest-first.
+     * @throws IOException Error thrown if disk access fails.
+     */
+    public static List<SimulationResultSummary> listResultSummaries() throws IOException {
+        Path resultsDir = Paths.get(dataDirectory, "results");
+
+        if (!Files.exists(resultsDir)) {
+            return Collections.emptyList();
+        }
+
+        try (Stream<Path> files = Files.list(resultsDir)) {
+            return files
+                    .filter(path -> path.toString().endsWith(".json"))
+                    .map(path -> {
+
+                        try {
+                            // Load the full saved simulation result.
+                            SimulationResultSaved result = mapper.readValue(path.toFile(), SimulationResultSaved.class);
+
+                            // Calculate the event count (summing nested lists).
+                            int eventCount = 0;
+                            // Sum the aircraft events.
+                            for (List<AircraftEvent> list : result.getConfig().getScheduledAircraftEvents().values()) {
+                                eventCount += list.size();
+                            }
+                            // Sum the runway events.
+                            for (List<RunwayEvent> list : result.getConfig().getScheduledRunwayEvents().values()) {
+                                eventCount += list.size();
+                            }
+
+                            // Return the lightweight summary.
+                            return new SimulationResultSummary(
+                                    result.getSimulationName(),
+                                    result.getDateExecuted(),
+                                    result.getConfig().getRunwaySettings().size(),
+                                    eventCount,
+                                    result.getConfig().getInboundRate(),
+                                    result.getConfig().getOutboundRate(),
+                                    result.getStats().getHourlyThroughput()
+                            );
+                        } catch (Exception e) {
+                            // If one of the templates fails to read, log the error and handle by returning null.
+                            System.err.println("Skipping invalid template file: " + path.getFileName());
+                            return null;
+                        }
+
+                    })
+                    .filter(Objects::nonNull) // Remove the nulls from failed reads.
+                    .sorted((a, b) -> b.getDateExecuted().compareTo(a.getDateExecuted())) // Sort by newest date
+                    .collect(Collectors.toList());
+        }
+    }
+
 
     /**
      * Loads a SimulationResultSaved object from a JSON file in the /data/results folder.

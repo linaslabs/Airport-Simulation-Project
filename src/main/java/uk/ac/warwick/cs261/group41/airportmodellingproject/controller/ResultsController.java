@@ -39,7 +39,7 @@ public class ResultsController {
 
     @GetMapping("/summaries")
     public ResponseEntity<List<SimulationResultSummary>> listSimulationResultSummaries() {
-
+        return ResponseEntity.ok(simulationService.listResultSummaries());
     }
 
     // Similar to the summary window for configuration selection, view and compare can use the same logic.
