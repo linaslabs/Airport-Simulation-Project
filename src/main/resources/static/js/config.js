@@ -117,20 +117,6 @@ function generateInputs() {
 }
 
 function startSimulation() {
-    // gathering data
-
-
-    // input params data
-    let inputParams = {};
-    const inputs = document.querySelectorAll('input[type="number"]');
-
-    inputs.forEach(input => {
-        // Example: id="num_runways" -> inputParams["num_runways"] = 10
-        if (input.id) {
-            inputParams[input.id] = parseFloat(input.value);
-        }
-    });
-
     // Runways
     let runwayData = [];
     const runwayCount = parseInt(runwayCounter.innerText);
@@ -139,7 +125,7 @@ function startSimulation() {
     function statusToEnum(statusVal) {
         const mapping = {
             'available': 'AVAILABLE',
-            'snow': 'SNOW',
+            'snow': 'SNOWCLEARANCE', // updated
             'inspection': 'INSPECTION',
             'failure': 'FAILURE'
         };
@@ -166,6 +152,53 @@ function startSimulation() {
             mode: modeToEnum(modeVal)
         });
     }
+
+    // Parsing scheduled events into the backend data maps, it expects Map<Integer, List<...Event> for both types of event
+    // JavaScript objects (like below) act like the java maps, so link well
+    let formattedRunwayEvents = {};
+    let formattedAircraftEvents = {};
+
+    // Loop through the scheduled events scheduled by the user
+    scheduledEventsData.forEach(event => {
+        const tick = event.time;
+
+        // Check the event location whether the event is for the runway or the holding pattern (aircraft)
+        if (event.location.startsWith("Runway")) {
+            // Create an empty array if the tick key doesn't exist yet
+            if(!formattedRunwayEvents[tick]) formattedRunwayEvents[tick] = [];
+
+            // Take out "Runway" from the label "Runway x" to leave "x", then 0 index it by subtracting by 1
+            const runwayID = parseInt(event.location.replace("Runway ", "")) - 1;
+
+            // Map to enum
+            let backendStatus = "AVAILABLE";
+            if (event.name === "Runway Inspection") backendStatus = "INSPECTION";
+            if (event.name === "Snow Clearance") backendStatus = "SNOWCLEARANCE";
+            if (event.name === "Equipment Failure") backendStatus = "FAILURE";
+
+            // For the given tick, push to the array for that tick (therefore building the runway map)
+            formattedRunwayEvents[tick].push({
+                type: "SCHEDULED_CHANGE",
+                runwayID: runwayID,
+                status: backendStatus,
+                mode: event.mode,
+                duration: event.duration,
+            });
+
+        } else if (event.location === "Holding Pattern") {
+            // If the tick key doesn't exist yet, create an empty array for it
+            if (!formattedAircraftEvents[tick]) formattedAircraftEvents[tick] = [];
+
+            let backendStatus = "NONE";
+            if (event.name === "Mechanical Failure") backendStatus = "MECHANICAL";
+            if (event.name === "Passenger Health") backendStatus = "PASSENGER"; // UPDATED
+
+            formattedAircraftEvents[tick].push({
+                type: "SCHEDULED_EMERGENCY", // Matches AircraftEventType enum
+                status: backendStatus
+            });
+        }
+    });
 
     const payload = {
         runwaySettings: runwayData,
@@ -254,7 +287,17 @@ function updateEventForm() {
     const nameSelect = document.getElementById("new-event-name");
     const locSelect = document.getElementById("new-event-loc");
 
+    // ADDED: get the elements that constitute the runway specific inputs (like the newly added mode and the duration fields)
+    const runwaySpecificInputs = document.getElementById("runway-specific-inputs");
+
     const selectedType = typeSelect.value;
+
+    // Hide the elements with the id "runway-specific-inputs" if the selected type isn't runway
+    if (selectedType === "Runway") {
+        runwaySpecificInputs.style.display = "flex"; // show
+    } else {
+        runwaySpecificInputs.style.display = "none"; // hide
+    }
 
     // --- A. UPDATE EVENT NAMES ---
     // Clear current options
@@ -309,6 +352,10 @@ function addEvent() {
     const nameSelect = document.getElementById("new-event-name");
     const locSelect = document.getElementById("new-event-loc");
     const timeInput = document.getElementById("new-event-time");
+    // Added inputs for the mode selection and duration
+    const modeSelect = document.getElementById("new-event-mode");
+    const durationInput = document.getElementById("new-event-duration");
+
     const list = document.getElementById("scheduled-events-list");
     const emptyMsg = document.getElementById("empty-list-msg");
     const simInput = document.querySelector('input[name="sim_duration"]');
@@ -318,6 +365,13 @@ function addEvent() {
     const eventLoc = locSelect.options[locSelect.selectedIndex].text;
     const startTime = parseInt(timeInput.value);
     const simLimit = parseInt(simInput.value);
+
+    // Parse duration and default to -1 if left blank
+    let eventDuration = parseInt(durationInput.value);
+    if (isNaN(eventDuration)) eventDuration = -1;
+
+    // Parse mode and set to null if no change selected
+    let eventMode = modeSelect.value === "none" ? null : modeSelect.value;
 
     // might change validation
     // validate empty start time
@@ -337,7 +391,9 @@ function addEvent() {
         id: uniqueId,
         name: eventName,
         location: eventLoc,
-        time: startTime
+        time: startTime,
+        duration: eventDuration,
+        mode: eventMode
     });
 
     console.log("Event Added:", scheduledEventsData);
