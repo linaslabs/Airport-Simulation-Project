@@ -39,9 +39,50 @@ function loadResults(){
         });
 }
 
+function openSaveModal(){
+    const modal = document.getElementById("saveModal");
+    const resultNameInput = document.getElementById("resultName");
+    if (modal) {
+        modal.style.display = "flex";
+        resultNameInput.focus();
+        resultNameInput.value = ""; // Clear previous input
+    }
+}
+
+function closeSaveModal(){
+    const modal = document.getElementById("saveModal");
+    if (modal) modal.style.display = "none";
+}
+
 function saveResults(){
-    // in future this might POST to server; for now simply notify user
-    alert("Save successfully");
+    const resultName = document.getElementById("resultName").value.trim();
+    if (!resultName) {
+        alert("Please enter a simulation result name");
+        return;
+    }
+
+    // POST to server with the result name
+    fetch('/api/results/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: resultName })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to save results');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert("Saved successfully: " + resultName);
+            closeSaveModal();
+        })
+        .catch(error => {
+            console.error('Error saving results:', error);
+            alert("Failed to save results");
+        });
 }
 
 
@@ -50,6 +91,26 @@ document.addEventListener("DOMContentLoaded", () => {
     loadResults();
 
     const saveBtn = document.getElementById("saveBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const confirmSaveBtn = document.getElementById("confirmSaveBtn");
+    const modal = document.getElementById("saveModal");
+    const resultNameInput = document.getElementById("resultName");
 
-    if (saveBtn) saveBtn.addEventListener("click", saveResults);
+    if (saveBtn) saveBtn.addEventListener("click", openSaveModal);
+    if (cancelBtn) cancelBtn.addEventListener("click", closeSaveModal);
+    if (confirmSaveBtn) confirmSaveBtn.addEventListener("click", saveResults);
+
+    // Allow Enter key to submit
+    if (resultNameInput) {
+        resultNameInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") saveResults();
+        });
+    }
+
+    // Close modal when clicking outside of it
+    if (modal) {
+        window.addEventListener("click", (e) => {
+            if (e.target === modal) closeSaveModal();
+        });
+    }
 });
