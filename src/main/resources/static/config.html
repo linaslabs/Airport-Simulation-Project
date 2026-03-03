@@ -7,24 +7,29 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
 <body>
-<div class="container-fluid py-3 mb-4 bg-white border-bottom">
+<div class="container-fluid py-3 mb-1 bg-white border-bottom">
     <div class="row align-items-center">
 
-        <div class="col-3">
-            <button class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm">
-                Load Configuration
+        <div class="col d-flex align-items-center gap-2">
+            <a href="index.html" class="btn btn-outline-secondary rounded-pill px-3 fw-bold shadow-sm">
+                &larr; Back
+            </a>
+            <button class="btn btn-dark rounded-pill px-3 fw-bold shadow-sm" onclick="openLoadConfigModal()">
+                Load Config
+            </button>
+            <button class="btn btn-primary rounded-pill px-3 fw-bold shadow-sm" onclick="openSaveModal()">
+                Save Config
             </button>
         </div>
 
-        <div class="col-6 text-center">
+        <div class="col-auto text-center">
             <h2 class="m-0 fw-bold">Configuration Page</h2>
         </div>
 
-        <div class="col-3 d-flex justify-content-end align-items-center gap-3">
-
+        <div class="col d-flex justify-content-end align-items-center gap-3">
             <div class="d-flex align-items-center">
                 <span class="fw-bold me-2 small text-muted text-nowrap">Simulation Mode:</span>
-                <select class="form-select form-select-sm border-secondary rounded-pill" style="width: auto;" aria-label="Select Simulation Type">
+                <select class="form-select form-select-sm border-secondary rounded-pill shadow-sm" style="width: auto;" aria-label="Select Simulation Type">
                     <option>Quick Sim</option>
                     <option>Table View</option>
                     <option>Real Time</option>
@@ -35,12 +40,12 @@
                 Start Simulation
             </button>
         </div>
+
     </div>
 </div>
 
-
 <div class="container">
-    <div class="row mt-4 ">
+    <div class="row mt-1">
         <div class="col">
             <h5>Input Parameters</h5>
             <div class="wrapper d-flex align-items-center mb-2">
@@ -65,6 +70,17 @@
             <!--                <input id="inbound_rate_id" type="number" name="inbound_rate" class="form-control" min="0" max="100" value="15" required>-->
             <!--            </div>-->
             <div id="input-parameters-list"></div>
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <div class="me-2">
+                    <label class="form-label mb-0 small fw-bold text-dark" for="input-auto_gen">Enable Random Events</label>
+                    <div class="text-muted" style="font-size: 0.7rem; line-height: 1;">Uses failure rates to generate unplanned issues.</div>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <input class="form-check-input border-secondary" type="checkbox" id="input-auto_gen"
+                           style="width: 20px; height: 20px; cursor: pointer; margin-top: 0;">
+                </div>
+            </div>
         </div>
         <div class="col">
             <div class="mb-2" ><h5>Runways</h5></div>
@@ -77,23 +93,21 @@
             </div>
             <div id="runway-list"></div>
         </div>
-        <div class="col">
+        <div class="col-lg-4">
             <h5>Scheduled Events</h5>
+
             <div class="d-flex small text-muted mb-2 px-2 fw-bold pe-4">
-                <div class="flex-grow-1">Event</div>   <div style="width: 60px;">Time</div>   <div style="width: 30px;" class="text-end"></div>
+                <div class="flex-grow-1">Event</div>
+                <div style="width: 60px;">Time</div>
+                <div style="width: 30px;" class="text-end"></div>
             </div>
 
-            <div id="scheduled-events-list" class="rounded p-2 mb-3 border bg-light"
+            <div id="scheduled-events-list" class="rounded p-2 mb-3 border bg-light overflow-x-hidden"
                  style="height: 250px; overflow-y: auto;">
-
-                <div class="text-center text-muted small mt-5" id="empty-list-msg">
-                    No events scheduled
-                </div>
-
+                <div class="text-center text-muted small mt-5" id="empty-list-msg">No events scheduled</div>
             </div>
 
-            <div class="rounded p-3 bg-light border">
-
+            <div class="rounded p-3 bg-light border shadow-sm">
                 <div class="fw-bold mb-2 small text-uppercase text-muted" style="letter-spacing: 0.5px;">New Event</div>
 
                 <div class="row g-2 mb-2">
@@ -104,30 +118,33 @@
                             <option value="Aircraft">Aircraft</option>
                         </select>
                     </div>
-
                     <div class="col-8">
                         <label class="form-label small text-muted mb-0 fw-bold">Event</label>
-                        <select id="new-event-name" class="form-select form-select-sm rounded-1">
-                        </select>
+                        <select id="new-event-name" class="form-select form-select-sm rounded-1"></select>
                     </div>
                 </div>
 
                 <div class="row g-2 mb-3">
-                    <div class="col-8">
+                    <div class="col-6">
                         <label class="form-label small text-muted mb-0 fw-bold">Location</label>
-                        <select id="new-event-loc" class="form-select form-select-sm rounded-1">
-                        </select>
+                        <select id="new-event-loc" class="form-select form-select-sm rounded-1"></select>
                     </div>
 
-                    <div class="col-4">
+                    <div class="col-6">
                         <label class="form-label small text-muted mb-0 fw-bold">Time</label>
                         <div class="input-group input-group-sm">
-                            <input id="new-event-time"
-                                   type="number"
-                                   min="0"
-                                   class="form-control rounded-1 ps-2"> <!-- MUST ADD VALIDATION-->
-                            <span class="input-group-text rounded-1 px-1 text-muted">m</span>
+                            <input id="new-event-time" type="number" min="0" class="form-control rounded-start-1 border-end-0 px-2">
+                            <span class="input-group-text bg-white border-start-0 text-muted small px-1">mins</span>
                         </div>
+                    </div>
+                </div>
+                <!------------------------------------------------------->
+
+                <div class="col-4 mb-3" id="duration-container">
+                    <label class="form-label small text-muted mb-0 fw-bold" title="-1 for infinite">Duration</label>
+                    <div class="input-group input-group-sm">
+                        <input id="new-event-duration" type="number" min="-1" class="form-control rounded-start-1 border-end-0 px-2">
+                        <span class="input-group-text bg-white border-start-0 text-muted small px-1">mins</span>
                     </div>
                 </div>
 
@@ -154,12 +171,9 @@
                     <span class="fs-6 me-1">+</span> Schedule Event
                 </button>
             </div>
-
         </div>
     </div>
 </div>
-
-
 
 <!--TEMPLATE FOR RUNWAY DROPDOWN ROWS-->
 <template id="runway-template">
@@ -186,20 +200,87 @@
 
 <!--RUNWAY CONFIG TEMPLATES-->
 <template id="input-field-template">
-    <div class="mb-2 d-flex justify-content-between align-items-center">
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+            <div class="me-2">
+                <label class="form-label mb-0 small fw-bold field-label text-dark"></label>
+                <div class="text-muted field-range" style="font-size: 0.7rem; line-height: 1;"></div>
+            </div>
 
-        <div class="me-2">
-            <label class="form-label mb-0 small fw-bold field-label text-dark"></label>
-            <div class="text-muted field-range" style="font-size: 0.7rem; line-height: 1;"></div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary border-0 p-0 dice-btn"
+                        type="button" style="display: none; font-size: 1.1rem;"
+                        onclick="generateRandomSeed()" title="Generate Random Seed">🎲</button>
+
+                <input type="number"
+                       class="form-control form-control-sm rounded-pill ps-3 field-input"
+                       style="width: 100px; height: 31px;"
+                       required>
+            </div>
+        </div>
+    </template>
+
+<!-- LOADING CONFIGS -->
+<div class="modal fade" id="loadConfigModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">Load Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-3">
+                <div id="saved-configs-list" class="list-group">
+
+                    <div class="text-center text-muted small py-5" id="empty-configs-msg">
+                        No saved configurations found.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="saveConfigModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Save Configuration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="mb-3">Enter configuration name:</p>
+                    <input type="text" id="new-config-name" class="form-control mb-3">
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary px-4" id="confirm-save-btn">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<template id="saved-config-template">
+    <div class="list-group-item p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div class="config-name fw-bold mb-1"></div>
+                <div class="config-date small text-muted"></div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary details-btn">Details</button>
+                <button class="btn btn-sm btn-dark fw-bold px-3 load-btn">Load</button>
+            </div>
         </div>
 
-        <input type="number"
-               class="form-control form-control-sm rounded-pill ps-3 field-input"
-               style="width: 120px; height: 31px;"
-               required aria-label="Enter relevant value">
+        <div class="collapse mt-3 config-details-box">
+            <div class="card card-body bg-light border-0 small text-muted p-2 config-stats">
+            </div>
+        </div>
     </div>
 </template>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/config.js"></script>
 </body>
 </html>
