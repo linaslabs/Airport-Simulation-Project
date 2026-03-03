@@ -269,7 +269,7 @@ generateInputs();
 
 // EVENTS STUFF - SPRINT 2
 const eventOptions = {
-    "Runway": ["Available", "Runway Inspection", "Snow Clearance", "Equipment Failure"],
+    "Runway": ["No Change", "Available", "Runway Inspection", "Snow Clearance", "Equipment Failure"],
     "Aircraft": ["Mechanical Failure", "Passenger Health"]
 };
 
@@ -306,7 +306,10 @@ function addEvent() {
     }
 
     const modeSelect = document.getElementById("new-event-mode");
-    const eventModeVal = eventType === "Runway" ? modeSelect.value : "MIXED";
+    let rawMode = modeSelect.value;
+
+    // If it's a Runway, check if it's the "null" string. If so, make it a REAL null.
+    const eventModeVal = eventType === "Runway" ? (rawMode === "null" ? null : rawMode) : "MIXED";
     const eventModeLabel = eventType === "Runway" ? modeSelect.options[modeSelect.selectedIndex].text : "";
 
     const durationInput = document.getElementById("new-event-duration");
@@ -361,7 +364,10 @@ function addEvent() {
 
     timeInput.value = "";
     durationInput.value = "";
-    modeSelect.value = "MIXED"; // Optional: reset mode to default
+    modeSelect.value = "null"; // Change from "MIXED" to "null" for No Change default
+
+    // Inside updateEventForm() after populating nameSelect:
+    nameSelect.value = "No Change";
 
 }
 
@@ -421,29 +427,30 @@ function formatEventsForBackend(frontendEvents) {
         const tickTime = parseInt(ev.time);
 
         if (ev.type === "Runway") {
-            let status = 'AVAILABLE';
+            let status = null;
             let type = 'SCHEDULED_CHANGE';
 
-            if (ev.name === "Runway Inspection") status = 'INSPECTION';
+            if (ev.name === "Available") status = 'AVAILABLE';
+            else if (ev.name === "Runway Inspection") status = 'INSPECTION';
             else if (ev.name === "Snow Clearance") {
                 status = 'SNOWCLEARANCE';
                 type = 'NATURAL_CLOSURE';
             } else if (ev.name === "Equipment Failure") {
                 status = 'FAILURE';
             }
-            // (If ev.name is "Available", it stays 'AVAILABLE' and 'SCHEDULED_CHANGE')
 
             if (!runwayMap[tickTime]) runwayMap[tickTime] = [];
 
             runwayMap[tickTime].push({
                 tick: tickTime,
                 runwayID: parseInt(ev.locationId),
-                status: status,
-                mode: ev.mode || 'MIXED', // <--- Pulls directly from your array!
                 type: type,
-                duration: ev.duration
+                duration: ev.duration,
+                status: status,  // This will send null if "No Change" is selected
+                mode: ev.mode    // This will send null if "No Change" is selected
             });
         }
+
         else if (ev.type === "Aircraft") {
             let status = 'NONE';
             if (ev.name === "Mechanical Failure") status = 'MECHANICAL';
