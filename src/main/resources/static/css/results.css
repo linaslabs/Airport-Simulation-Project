@@ -51,7 +51,7 @@ body{
     font-weight: 650;
     opacity: .9;
     padding: 10px 14px;
-    border-radius: 999px;
+    border-radius: 6px;
     transition: .2s;
     border: 1px solid rgba(255,255,255,.15);
 }
@@ -85,10 +85,10 @@ body{
 .panel{
     width: min(1200px, 100%);
     margin: 0 auto;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 22px;
-    box-shadow: var(--shadow);
+    background: #ffffff;
+    border: 3px solid #4a90e2;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.15);
     padding: 30px;
 }
 
@@ -116,8 +116,8 @@ body{
 
 .section{
     background: #f8fafc;
-    border: 1px solid var(--border);
-    border-radius: 18px;
+    border: 2px solid #d0d0d0;
+    border-radius: 6px;
     padding: 20px;
 }
 
@@ -133,7 +133,7 @@ body{
     justify-content: space-between;
     gap: 14px;
     padding: 12px 0;
-    border-bottom: 1px dashed #e5e7eb;
+    border-bottom: 1px dashed #d0d0d0;
     font-size: 16px;
 }
 .row:last-child{ border-bottom:none; }
@@ -153,12 +153,12 @@ body{
     border: none;
     cursor:pointer;
     padding: 16px 24px;
-    border-radius: 999px;
+    border-radius: 6px;
     font-size: 16px;
     font-weight: 900;
     color:white;
     background: var(--primary);
-    box-shadow: 0 14px 30px rgba(15,23,42,.18);
+    box-shadow: 0 8px 20px rgba(15,23,42,.18);
     transition: .2s;
     min-width: 200px;
     text-align:center;
@@ -176,6 +176,82 @@ body{
     background: #475569;
 }
 
+/* ===== MODAL ===== */
+.modal{
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #d8d8d8;
+    padding: 40px;
+    border: 3px solid #4a90e2;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 570px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.4);
+}
+
+.modal-content h2{
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: 0px;
+    color: #000;
+}
+
+.modal-content p{
+    color: #000;
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+.modal-input{
+    width: 100%;
+    padding: 18px 16px;
+    margin-bottom: 28px;
+    border: 2px solid #888;
+    border-radius: 4px;
+    font-size: 18px;
+    font-family: inherit;
+    transition: .2s;
+    background: #e8e8e8;
+    color: #000;
+}
+
+.modal-input:focus{
+    outline: none;
+    border-color: #4a90e2;
+    background: #efefef;
+}
+
+.modal-actions{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    justify-content: stretch;
+}
+
+.modal-actions .btn{
+    min-width: 0;
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 20px;
+    border-radius: 6px;
+}
+
 @media(max-width: 900px){
     .navbar{ padding: 14px 18px; }
     .wrap{ padding: 26px 18px 60px; }
@@ -184,4 +260,22 @@ body{
     .panel{ padding: 20px; }
     .btn{ min-width: 0; width: 100%; }
     .actions{ width: 100%; }
+
+    .modal-content{
+        width: 95%;
+        padding: 30px 20px;
+    }
+
+    .modal-content h2{
+        font-size: 24px;
+    }
+
+    .modal-actions{
+        flex-direction: column;
+    }
+
+    .modal-actions .btn{
+        width: 100%;
+        min-width: 0;
+    }
 }
