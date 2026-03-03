@@ -34,7 +34,6 @@ public class ResultsController {
         return ResponseEntity.ok("Simulation result saved.");
     }
 
-
     // These 3 endpoints are used for the window to select which result to view/compare/delete.
 
     @GetMapping("/summaries")

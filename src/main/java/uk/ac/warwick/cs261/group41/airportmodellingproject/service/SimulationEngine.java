@@ -26,6 +26,16 @@ public class SimulationEngine {
 
     public void initialiseSimulation() {
 
+        if (this.config.getAutomaticGenerationEnabled()){
+            System.out.println("--- Automatic Event Generation is ENABLED ---");
+            System.out.println("- Runway Inspection Rate:      " + this.config.getRunwayInspectionRate());
+            System.out.println("- Snow Clearance Rate:         " + this.config.getSnowClearanceRate());
+            System.out.println("- Equipment Failure Rate:      " + this.config.getEquipmentFailureRate());
+            System.out.println("- Mechanical Failure Rate:     " + this.config.getMechanicalFailureRate());
+            System.out.println("- Passenger Health Issue Rate: " + this.config.getPassengerHealthIssueRate());
+            System.out.println("---------------------------------------------");
+        }
+
         this.stats = new Statistics();
 
         this.airport = new Airport("SimulationAirport", this.config.getRunwaySettings(), this.config.getMaxWaitTime(), 3, this.stats);

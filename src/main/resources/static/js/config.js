@@ -422,12 +422,10 @@ function formatEventsForBackend(frontendEvents) {
 
         if (ev.type === "Runway") {
             let status = 'AVAILABLE';
-            let type = 'SCHEDULED_CHANGE';
 
             if (ev.name === "Runway Inspection") status = 'INSPECTION';
             else if (ev.name === "Snow Clearance") {
                 status = 'SNOWCLEARANCE';
-                type = 'NATURAL_CLOSURE';
             } else if (ev.name === "Equipment Failure") {
                 status = 'FAILURE';
             }
@@ -439,8 +437,8 @@ function formatEventsForBackend(frontendEvents) {
                 tick: tickTime,
                 runwayID: parseInt(ev.locationId),
                 status: status,
-                mode: ev.mode || 'MIXED', // <--- Pulls directly from your array!
-                type: type,
+                mode: ev.mode || 'MIXED',
+                type: 'SCHEDULED_CHANGE', // All scheduled runway events are scheduled changes
                 duration: ev.duration
             });
         }
@@ -452,7 +450,7 @@ function formatEventsForBackend(frontendEvents) {
             if (!aircraftMap[tickTime]) aircraftMap[tickTime] = [];
             aircraftMap[tickTime].push({
                 tick: tickTime,
-                callsign: "BAW" + Math.floor(Math.random() * 900 + 100),
+                callsign: null, // Need to send null so backend randomly selects an aircraft
                 type: 'SCHEDULED_EMERGENCY', // From your AircraftEventType Enum
                 status: status                // From your EmergencyStatus Enum
             });

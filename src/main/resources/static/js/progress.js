@@ -54,10 +54,10 @@ function connectWebSocket() {
                 stompClient.disconnect();
             }
 
-            // Wait half a sec for the user to see the bar hit 100% (for UI) then redirect
+            // Wait 2 secs for the user to see the bar hit 100% (for UI) then redirect
             setTimeout(() => {
                 window.location.href = '/results.html';
-            }, 500);
+            }, 2000);
         });
 
     }, function(error) {

@@ -80,10 +80,15 @@ public class EventManager {
     public void triggerRunwayEvent(int runwayID, RunwayStatus status,  RunwayMode mode, int currentTick, int duration, boolean isNaturalEvent) {
         // If duration is > 0, this is a scheduled event, set another scheduled event in the future to reverse the changes
         // NOTE: this will currently override any user set runway events for that runway when a reversion happens
+
+        System.out.println("[TICK " + currentTick + "] [RUNWAY] ID: " + runwayID + " | Status: " + status + " | Mode: " + mode + " | Duration: " + duration + " | Natural: " + isNaturalEvent);
+
         if (duration > 0){
             RunwayConfig runwayPrevSnapshot = this.airport.getRunwaySnapshot(runwayID);
 
             int endTick = currentTick + duration;
+            System.out.println("            -> Scheduled Reversion created for Tick: " + endTick);
+
             // Create the new runway reversion (that is of duration 0) to reverse this event when it finishes
             RunwayEvent reversionEvent = new RunwayEvent(endTick, runwayID, runwayPrevSnapshot.getStatus(), runwayPrevSnapshot.getMode(), RunwayEventType.REVERSION, 0);
 
@@ -112,8 +117,10 @@ public class EventManager {
         double emergencyRoll = this.random.nextDouble();
 
         if (emergencyRoll < tickMechanicalRate) {
+            System.out.println("[TICK " + currentTick + "] [RANDOM] Rolled Aircraft Emergency: MECHANICAL");
             triggerAircraftEmergency(null, EmergencyStatus.MECHANICAL, currentTick, true);
         } else if (emergencyRoll < (tickMechanicalRate + tickHealthRate)) {
+            System.out.println("[TICK " + currentTick + "] [RANDOM] Rolled Aircraft Emergency: PASSENGER");
             triggerAircraftEmergency(null, EmergencyStatus.PASSENGER, currentTick, true);
         }
 
@@ -140,6 +147,8 @@ public class EventManager {
 
                 // Checking if the roll landed to satisfy one of the rates
                 if (newRunwayStatus != null) {
+                    System.out.println("[TICK " + currentTick + "] [RANDOM] Rolled Runway Closure: " + newRunwayStatus + " on ID: " + runway.getRunwayID());
+
                     // Generating a random number between 10 and 60 ticks
                     int duration = 10 + this.random.nextInt(51);
 
@@ -148,6 +157,7 @@ public class EventManager {
 
                     // Make sure that the duration of this random event is CAPPED so it finishes before the next scheduled runway event
                     if (ticksUntilNextEvent > 0 && duration > ticksUntilNextEvent) {
+                        System.out.println("            -> TRUNCATED duration from " + duration + " to " + ticksUntilNextEvent + " to prevent overlap with user schedule.");
                         duration = ticksUntilNextEvent;
                     }
 
@@ -196,32 +206,40 @@ public class EventManager {
     // Updates the aircraft status and logs the event respective to whether it was a scheduled emergency or a manual one
 
     public void triggerAircraftEmergency(String callsign, EmergencyStatus status, int currentTick, boolean isNaturalEvent){
+
+        System.out.println("[TICK " + currentTick + "] [AIRCRAFT] Triggering " + (isNaturalEvent ? "NATURAL" : "SCHEDULED/MANUAL") + " Emergency: " + status);
+
         if (callsign == null){
             String randomCallsign = this.airport.getRandomHoldingAircraft(this.random);
             // If there is no current aircraft in the holding queue, there are no aircraft to set emergencies to
             if (randomCallsign != null) {
+                System.out.println("            -> Random callsign selected: " + randomCallsign);
                 this.airport.updateAircraftStatus(randomCallsign, status);
                 this.logger.addEvent(new AircraftEvent(currentTick, randomCallsign, isNaturalEvent ? AircraftEventType.NATURAL_EMERGENCY : AircraftEventType.SCHEDULED_EMERGENCY, status));
             } else {
                 String emergencyType = isNaturalEvent ? "Natural" : "Scheduled";
-                System.out.println("Tick " + currentTick + ": " + emergencyType + " emergency skipped, holding pattern is empty.");
+                System.out.println("            -> WARNING: " + emergencyType + " emergency skipped (holding pattern is empty).");
             }
         } else {
+            System.out.println("            -> Applying to specific callsign: " + callsign);
             this.airport.updateAircraftStatus(callsign, status);
             this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.MANUAL_EMERGENCY, status));
         }
     }
 
     public void reportAircraftEmergency(String callsign, EmergencyStatus status, int currentTick){
+        System.out.println("[TICK " + currentTick + "] [REPORT] Escalating Natural Emergency for " + callsign + " (Status: " + status + ")");
         this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.NATURAL_EMERGENCY, status));
     }
 
     public void reportDiversion(String callsign, int currentTick){
+        System.out.println("[TICK " + currentTick + "] [REPORT] Aircraft Diverted due to low fuel: " + callsign);
         this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.DIVERSION, EmergencyStatus.FUEL));
         this.statistics.recordDiversion();
     }
 
     public void reportCancellation(String callsign, int currentTick){
+        System.out.println("[TICK " + currentTick + "] [REPORT] Aircraft Cancelled: " + callsign);
         this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.CANCELLATION, EmergencyStatus.NONE));
         this.statistics.recordCancellation();
     }
@@ -229,14 +247,16 @@ public class EventManager {
     // For each event scheduled for the current tick, this method triggers them
     public void processScheduledEvents(int currentTick){
         List<RunwayEvent> runwayEvents =  scheduledRunwayEvents.get(currentTick);
-        if (runwayEvents != null) {
+        if (runwayEvents != null && !runwayEvents.isEmpty()) {
+            System.out.println("[TICK " + currentTick + "] [SCHEDULE] Processing " + runwayEvents.size() + " scheduled Runway Event(s).");
             for (RunwayEvent runwayEvent : runwayEvents) {
                 triggerRunwayEvent(runwayEvent.getRunwayID(), runwayEvent.getRunwayStatus(), runwayEvent.getRunwayMode(), currentTick, runwayEvent.getDuration(), false);
             }
         }
 
         List<AircraftEvent> aircraftEvents =  scheduledAircraftEvents.get(currentTick);
-        if (aircraftEvents != null) {
+        if (aircraftEvents != null && !aircraftEvents.isEmpty()) {
+            System.out.println("[TICK " + currentTick + "] [SCHEDULE] Processing " + aircraftEvents.size() + " scheduled Aircraft Event(s).");
             for (AircraftEvent aircraftEvent : aircraftEvents) {
                 triggerAircraftEmergency(null, aircraftEvent.getStatus(),  currentTick, false);
             }

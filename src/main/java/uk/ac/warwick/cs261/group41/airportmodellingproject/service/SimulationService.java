@@ -9,7 +9,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -43,6 +45,12 @@ public class SimulationService {
 
         this.isFinished = false;
         this.engine = new SimulationEngine(config);
+
+        // Generating a unique ID for the simulation (TEMPORARY UNLESS ANOTHER METHOD IS NOT REQUIRED)
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        config.setSimulationID(timestamp);
+
+        printConfigurationSummary(config);
 
         this.engine.initialiseSimulation();
 
@@ -298,5 +306,64 @@ public class SimulationService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting the file.");
         }
+    }
+
+
+    // Helper method to print out the full configuration received:
+    private void printConfigurationSummary(SimulationConfig config) {
+        System.out.println("\n==================================================");
+        System.out.println("===     SIMULATION CONFIGURATION RECEIVED      ===");
+        System.out.println("==================================================");
+        System.out.println("-> Simulation ID: " + config.getSimulationID());
+        System.out.println("-> Seed:          " + config.getSeed());
+        System.out.println("-> Duration:      " + config.getDuration() + " ticks");
+        System.out.println("-> Tick Time:     " + config.getTickTime() + " ms");
+        System.out.println("-> Traffic Rates: Inbound: " + config.getInboundRate() + "/hr | Outbound: " + config.getOutboundRate() + "/hr");
+        System.out.println("-> Max Wait Time: " + config.getMaxWaitTime() + " ticks");
+
+        System.out.println("\n--- RUNWAY SETTINGS ---");
+        if (config.getRunwaySettings() != null) {
+            config.getRunwaySettings().forEach(r ->
+                    System.out.println("  - ID: " + r.getRunwayID() + " | Mode: " + r.getMode() + " | Status: " + r.getStatus())
+            );
+        }
+
+        System.out.println("\n--- STATISTICAL MODELLING ---");
+        System.out.println("  - Enabled: " + config.getAutomaticGenerationEnabled());
+        if (Boolean.TRUE.equals(config.getAutomaticGenerationEnabled())) {
+            System.out.println("  - Inspection: " + config.getRunwayInspectionRate() + " | Snow: " + config.getSnowClearanceRate() + " | Equip Fail: " + config.getEquipmentFailureRate());
+            System.out.println("  - Mech Fail:  " + config.getMechanicalFailureRate() + " | Passenger Health: " + config.getPassengerHealthIssueRate());
+        }
+
+        System.out.println("\n--- SCHEDULED RUNWAY EVENTS ---");
+        Map<Integer, List<RunwayEvent>> scheduledRunways = config.getScheduledRunwayEvents();
+        if (scheduledRunways != null && !scheduledRunways.isEmpty()) {
+            // Sort the keys so they print in chronological order
+            scheduledRunways.keySet().stream().sorted().forEach(tick -> {
+                for (RunwayEvent event : scheduledRunways.get(tick)) {
+                    System.out.println("  - [TICK " + tick + "] Runway ID: " + event.getRunwayID() +
+                            " | Set Status: " + event.getRunwayStatus() +
+                            " | Set Mode: " + event.getRunwayMode() +
+                            " | Duration: " + event.getDuration());
+                }
+            });
+        } else {
+            System.out.println("  - No pre-scheduled runway events.");
+        }
+
+        System.out.println("\n--- SCHEDULED AIRCRAFT EVENTS ---");
+        Map<Integer, List<AircraftEvent>> scheduledAircraft = config.getScheduledAircraftEvents();
+        if (scheduledAircraft != null && !scheduledAircraft.isEmpty()) {
+            // Sort the keys so they print in chronological order
+            scheduledAircraft.keySet().stream().sorted().forEach(tick -> {
+                for (AircraftEvent event : scheduledAircraft.get(tick)) {
+                    System.out.println("  - [TICK " + tick + "] Callsign: " + event.getCallsign() +
+                            " | Emergency Status: " + event.getStatus());
+                }
+            });
+        } else {
+            System.out.println("  - No pre-scheduled aircraft events.");
+        }
+        System.out.println("==================================================\n");
     }
 }
