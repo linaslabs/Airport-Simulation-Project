@@ -222,7 +222,7 @@ function startSimulation() {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to validate configuration');
+                throw new Error('Failed to validate configuration'); // carry failure messages up
             }
             return response.text();
         })
@@ -239,7 +239,7 @@ function startSimulation() {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to start simulation');
+                throw new Error('Failed to start simulation'); // carry failures messages up
             }
             return response.text();
         })
