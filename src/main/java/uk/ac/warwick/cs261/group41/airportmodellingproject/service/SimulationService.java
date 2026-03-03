@@ -1,14 +1,18 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandler;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -18,6 +22,8 @@ import java.util.List;
 // Spring Boot automatically instantiates this Service as a Singleton upon application startup and injects it into the Controllers.
 @Service
 public class SimulationService {
+
+    private static final Logger log = LoggerFactory.getLogger(SimulationService.class);
 
     private SimulationEngine engine;
     private int currentTickDelay; // Milliseconds between each tick
@@ -29,12 +35,21 @@ public class SimulationService {
     // The task the worker will be doing (a controller for it, so we can pause or stop it)
     private ScheduledFuture<?> simulationTask;
 
+    // Inject the messaging template
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public SimulationService(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
     public void startSimulation(SimulationConfig config) {
         // Stop any simulations previously
         stopSimulation();
 
         this.isFinished = false;
         this.engine = new SimulationEngine(config);
+
+        printConfigurationSummary(config);
 
         this.engine.initialiseSimulation();
 
@@ -79,13 +94,14 @@ public class SimulationService {
         if (!continueSimulation){
             this.isFinished = true;
             stopSimulation();
-            System.out.println("Simulation ended.");
+            log.info("Simulation ended.");
 
-            // HERE WE PREPARE THE FINAL STATS TO SEND BACK
-            // TODO We can send back final simulation completion progress here (via websockets)
+            // Final statistics summary are sent to the channel "/simulation/summary" which the front end is subscribed to (the web socket)
+            messagingTemplate.convertAndSend("/simulation/summary", this.engine.getStatistics());
         } else{
-            // SEND BACK SIMULATION SNAPSHOT TO THE UI
-            // TODO In this case, we will send back the simulation progress (via websockets)
+
+            // Simulation snapshot is sent to the channel "/simulation/snapshot" which the front end is subscribed to (the web socket)
+            messagingTemplate.convertAndSend("/simulation/snapshot", this.engine.getSimulationSnapshot());
         }
 
     }
@@ -132,7 +148,10 @@ public class SimulationService {
                 // Engine runs to the end without delays
             }
             stopSimulation();
-            System.out.println("Simulation ended.");
+
+            // Send the final summary to the frontend
+            messagingTemplate.convertAndSend("/simulation/summary", this.engine.getStatistics());
+            log.info("Simulation ended.");
         });
     }
 
@@ -289,5 +308,60 @@ public class SimulationService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting the file.");
         }
+    }
+
+
+    // Helper method to print out the full configuration received:
+    private void printConfigurationSummary(SimulationConfig config) {
+        log.info("\n==================================================");
+        log.info("===     SIMULATION CONFIGURATION RECEIVED      ===");
+        log.info("==================================================");
+        log.info("-> Simulation ID: {}", config.getSimulationID());
+        log.info("-> Seed:          {}", config.getSeed());
+        log.info("-> Duration:      {} ticks", config.getDuration());
+        log.info("-> Tick Time:     {} ms", config.getTickTime());
+        log.info("-> Traffic Rates: Inbound: {}/hr | Outbound: {}/hr", config.getInboundRate(), config.getOutboundRate());
+        log.info("-> Max Wait Time: {} ticks", config.getMaxWaitTime());
+
+        log.info("\n--- RUNWAY SETTINGS ---");
+        if (config.getRunwaySettings() != null) {
+            config.getRunwaySettings().forEach(r ->
+                    log.info("  - ID: {} | Mode: {} | Status: {}", r.getRunwayID(), r.getMode(), r.getStatus())
+            );
+        }
+
+        log.info("\n--- STATISTICAL MODELLING ---");
+        log.info("  - Enabled: {}", config.getAutomaticGenerationEnabled());
+        if (Boolean.TRUE.equals(config.getAutomaticGenerationEnabled())) {
+            log.info("  - Inspection: {} | Snow: {} | Equip Fail: {}", config.getRunwayInspectionRate(), config.getSnowClearanceRate(), config.getEquipmentFailureRate());
+            log.info("  - Mech Fail:  {} | Passenger Health: {}", config.getMechanicalFailureRate(), config.getPassengerHealthIssueRate());
+        }
+
+        log.info("\n--- SCHEDULED RUNWAY EVENTS ---");
+        Map<Integer, List<RunwayEvent>> scheduledRunways = config.getScheduledRunwayEvents();
+        if (scheduledRunways != null && !scheduledRunways.isEmpty()) {
+            // Sort the keys so they print in chronological order
+            scheduledRunways.keySet().stream().sorted().forEach(tick -> {
+                for (RunwayEvent event : scheduledRunways.get(tick)) {
+                    log.info("  - [TICK {}] Runway ID: {} | Set Status: {} | Set Mode: {} | Duration: {}", tick, event.getRunwayID(), event.getRunwayStatus(), event.getRunwayMode(), event.getDuration());
+                }
+            });
+        } else {
+            log.info("  - No pre-scheduled runway events.");
+        }
+
+        log.info("\n--- SCHEDULED AIRCRAFT EVENTS ---");
+        Map<Integer, List<AircraftEvent>> scheduledAircraft = config.getScheduledAircraftEvents();
+        if (scheduledAircraft != null && !scheduledAircraft.isEmpty()) {
+            // Sort the keys so they print in chronological order
+            scheduledAircraft.keySet().stream().sorted().forEach(tick -> {
+                for (AircraftEvent event : scheduledAircraft.get(tick)) {
+                    log.info("  - [TICK {}] Callsign: {} | Emergency Status: {}", tick, event.getCallsign(), event.getStatus());
+                }
+            });
+        } else {
+            log.info("  - No pre-scheduled aircraft events.");
+        }
+        log.info("==================================================\n");
     }
 }

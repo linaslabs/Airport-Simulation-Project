@@ -16,27 +16,31 @@ function loadResults(){
             return response.json();
         })
         .then(data => {
-            const stats = data?.stats;
-            if (!stats) {
+
+            console.log(data);
+            // The endpoint returns a SimulationResult, inside the stats attribute is the statistics
+            const statistics = data?.stats;
+
+            if (!statistics) {
                 throw new Error('Invalid results format from server');
             }
 
-            // Map StatisticsSummary fields to HTML elements
-            setText("throughput", formatNumber(stats.hourlyThroughput));
+            // Map fields to HTML elements
+            setText("throughput", formatNumber(statistics.hourlyThroughput));
 
             // Departures
-            setText("depAvgWait", formatNumber(stats.avgWaitTime));
-            setText("depMaxQueue", stats.maxTakeOffQueueSize ?? '--');
-            setText("depMaxDelay", formatNumber(stats.maxTakeOffDelay));
-            setText("depAvgDelay", formatNumber(stats.avgTakeOffDelay));
-            setText("depCancelled", stats.cancellationCount ?? '--');
+            setText("depAvgWait", formatNumber(statistics.avgWaitTime));
+            setText("depMaxQueue", statistics.maxTakeOffQueueSize);
+            setText("depMaxDelay", formatNumber(statistics.maxTakeOffDelay));
+            setText("depAvgDelay", formatNumber(statistics.avgTakeOffDelay));
+            setText("depCancelled", statistics.cancellationCount);
 
             // Arrivals
-            setText("arrAvgHold", formatNumber(stats.avgHoldingTime));
-            setText("arrMaxHolding", stats.maxHoldingSize ?? '--');
-            setText("arrMaxDelay", formatNumber(stats.maxArrivalDelay));
-            setText("arrAvgDelay", formatNumber(stats.avgArrivalDelay));
-            setText("arrDiverted", stats.diversionCount ?? '--');
+            setText("arrAvgHold", formatNumber(statistics.avgHoldingTime));
+            setText("arrMaxHolding", statistics.maxHoldingSize);
+            setText("arrMaxDelay", formatNumber(statistics.maxArrivalDelay));
+            setText("arrAvgDelay", formatNumber(statistics.avgArrivalDelay));
+            setText("arrDiverted", statistics.diversionCount);
         })
         .catch(error => {
             console.error('Error loading results:', error);

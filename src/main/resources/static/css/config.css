@@ -63,7 +63,7 @@ h6 {
     line-height: 1;
 }
 
-/* 3. INPUT FIELD TWEAKS */
+/* input field tweaks */
 .field-input {
     /* Ensures the text inside isn't touching the curved edge of input box*/
     padding-left: 1rem !important;
@@ -73,5 +73,15 @@ h6 {
 /* makes the label and the range text sit closer together */
 .me-3 {
     line-height: 1.2;
+}
+
+/* Fixes the "Split Box" look for Time and Duration */
+.input-group-text.bg-white {
+    border-color: #dee2e6; /* Matches Bootstrap default border */
+    color: #adb5bd !important; /* Soft grey text */
+}
+
+.input-group > .form-control:focus + .input-group-text {
+    border-color: #86b7fe; /* Matches the blue focus glow */
 }
 
