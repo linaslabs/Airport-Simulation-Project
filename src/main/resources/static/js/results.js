@@ -8,7 +8,7 @@ function formatNumber(num) {
 }
 
 function loadResults(){
-    fetch('/api/results/summary')
+    fetch('/api/results/lastresult')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch results');
@@ -16,25 +16,31 @@ function loadResults(){
             return response.json();
         })
         .then(data => {
+            const stats = data?.stats;
+            if (!stats) {
+                throw new Error('Invalid results format from server');
+            }
+
             // Map StatisticsSummary fields to HTML elements
-            setText("throughput", formatNumber(data.hourlyThroughput));
+            setText("throughput", formatNumber(stats.hourlyThroughput));
 
             // Departures
-            setText("depAvgWait", formatNumber(data.avgWaitTime));
-            setText("depMaxQueue", data.maxTakeOffQueueSize);
-            setText("depMaxDelay", formatNumber(data.maxTakeOffDelay));
-            setText("depAvgDelay", formatNumber(data.avgTakeOffDelay));
-            setText("depCancelled", data.cancellationCount);
+            setText("depAvgWait", formatNumber(stats.avgWaitTime));
+            setText("depMaxQueue", stats.maxTakeOffQueueSize ?? '--');
+            setText("depMaxDelay", formatNumber(stats.maxTakeOffDelay));
+            setText("depAvgDelay", formatNumber(stats.avgTakeOffDelay));
+            setText("depCancelled", stats.cancellationCount ?? '--');
 
             // Arrivals
-            setText("arrAvgHold", formatNumber(data.avgHoldingTime));
-            setText("arrMaxHolding", data.maxHoldingSize);
-            setText("arrMaxDelay", formatNumber(data.maxArrivalDelay));
-            setText("arrAvgDelay", formatNumber(data.avgArrivalDelay));
-            setText("arrDiverted", data.diversionCount);
+            setText("arrAvgHold", formatNumber(stats.avgHoldingTime));
+            setText("arrMaxHolding", stats.maxHoldingSize ?? '--');
+            setText("arrMaxDelay", formatNumber(stats.maxArrivalDelay));
+            setText("arrAvgDelay", formatNumber(stats.avgArrivalDelay));
+            setText("arrDiverted", stats.diversionCount ?? '--');
         })
         .catch(error => {
             console.error('Error loading results:', error);
+            alert("Failed to load simulation results. Please ensure a simulation has completed.");
             // Fallback: display '--' for all fields
         });
 }
@@ -67,15 +73,15 @@ function saveResults(){
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name: resultName })
+        body: JSON.stringify(resultName)
     })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to save results');
             }
-            return response.json();
+            return response.text();
         })
-        .then(data => {
+        .then(() => {
             alert("Saved successfully: " + resultName);
             closeSaveModal();
         })
