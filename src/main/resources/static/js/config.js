@@ -143,26 +143,6 @@ function startSimulation() {
     let runwayData = [];
     const runwayCount = parseInt(runwayCounter.innerText);
 
-    // Helper function to convert status dropdown value to enum
-    function statusToEnum(statusVal) {
-        const mapping = {
-            'available': 'AVAILABLE',
-            'snow': 'SNOWCLEARANCE',
-            'inspection': 'INSPECTION',
-            'failure': 'FAILURE'
-        };
-        return mapping[statusVal.toLowerCase()] || 'AVAILABLE';
-    }
-
-    // Helper function to convert mode dropdown value to enum
-    function modeToEnum(modeVal) {
-        const mapping = {
-            'mixed': 'MIXED',
-            'landing': 'LANDING',
-            'takeoff': 'TAKEOFF'
-        };
-        return mapping[modeVal.toLowerCase()] || 'MIXED';
-    }
 
     for (let i = 1; i <= runwayCount; i++) {
         const statusVal = document.getElementById(`status_${i}`).value;
@@ -204,12 +184,13 @@ function startSimulation() {
     };
 
     console.log("Sending Payload:", payload); // Debug check
-    alert(
-        "1. RAW ARRAY (If this is empty, you didn't add an event!):\n" +
-        JSON.stringify(scheduledEventsData, null, 2) +
-        "\n\n2. FORMATTED RUNWAYS:\n" +
-        JSON.stringify(payload.scheduledRunwayEvents, null, 2)
-    );
+
+    // alert(
+    //     "1. RAW ARRAY (If this is empty, you didn't add an event!):\n" +
+    //     JSON.stringify(scheduledEventsData, null, 2) +
+    //     "\n\n2. FORMATTED RUNWAYS:\n" +
+    //     JSON.stringify(payload.scheduledRunwayEvents, null, 2)
+    // );
 
     // sending
 
@@ -273,6 +254,8 @@ const eventOptions = {
     "Aircraft": ["Mechanical Failure", "Passenger Health"]
 };
 
+
+let scheduledEventsData = [];
 
 // 2. The Event Builder (No Duration gathered or saved)
 function addEvent() {
@@ -365,8 +348,6 @@ function addEvent() {
 
 }
 
-
-let scheduledEventsData = [];
 
 function deleteEvent(idToDelete) {
     // keep everything that does not match the ID

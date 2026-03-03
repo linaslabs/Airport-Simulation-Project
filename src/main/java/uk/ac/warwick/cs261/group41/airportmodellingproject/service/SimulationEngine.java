@@ -1,12 +1,17 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.*;
+
 
 import java.util.*;
 
 public class SimulationEngine {
+
+    private static final Logger log = LoggerFactory.getLogger(SimulationEngine.class);
 
     private final SimulationConfig config;
     private Airport airport;
@@ -27,13 +32,13 @@ public class SimulationEngine {
     public void initialiseSimulation() {
 
         if (this.config.getAutomaticGenerationEnabled()){
-            System.out.println("--- Automatic Event Generation is ENABLED ---");
-            System.out.println("- Runway Inspection Rate:      " + this.config.getRunwayInspectionRate());
-            System.out.println("- Snow Clearance Rate:         " + this.config.getSnowClearanceRate());
-            System.out.println("- Equipment Failure Rate:      " + this.config.getEquipmentFailureRate());
-            System.out.println("- Mechanical Failure Rate:     " + this.config.getMechanicalFailureRate());
-            System.out.println("- Passenger Health Issue Rate: " + this.config.getPassengerHealthIssueRate());
-            System.out.println("---------------------------------------------");
+            log.info("--- Automatic Event Generation is ENABLED ---");
+            log.info("- Runway Inspection Rate:      {}", this.config.getRunwayInspectionRate());
+            log.info("- Snow Clearance Rate:         {}", this.config.getSnowClearanceRate());
+            log.info("- Equipment Failure Rate:      {}", this.config.getEquipmentFailureRate());
+            log.info("- Mechanical Failure Rate:     {}", this.config.getMechanicalFailureRate());
+            log.info("- Passenger Health Issue Rate: {}", this.config.getPassengerHealthIssueRate());
+            log.info("---------------------------------------------");
         }
 
         this.stats = new Statistics();
@@ -154,9 +159,5 @@ public class SimulationEngine {
     public SimulationConfig getConfig() { return this.config; }
 
     public Statistics getStats() { return this.stats; }
-
-
-
-
 
 }

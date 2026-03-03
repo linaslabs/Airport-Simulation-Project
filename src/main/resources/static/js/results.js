@@ -18,8 +18,12 @@ function loadResults(){
         .then(data => {
 
             console.log(data);
-            // The endpoint returns a SimulationResult, inside the statistics attribute is the stats
-            const statistics = data.stats;
+            // The endpoint returns a SimulationResult, inside the stats attribute is the statistics
+            const statistics = data?.stats;
+
+            if (!statistics) {
+                throw new Error('Invalid results format from server');
+            }
 
             // Map fields to HTML elements
             setText("throughput", formatNumber(statistics.hourlyThroughput));

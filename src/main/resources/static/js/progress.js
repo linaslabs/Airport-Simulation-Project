@@ -41,6 +41,12 @@ function connectWebSocket() {
             // Extract the progress and update the UI
             updateProgress(snapshotData.progressPercent);
 
+            // Update the current tick count display, if present
+            const tickCountElement = document.getElementById('tickCount');
+            if (tickCountElement && typeof snapshotData.currentTick !== 'undefined') {
+                tickCountElement.textContent = snapshotData.currentTick.toString();
+            }
+
             // snapshotData.holdingAircraft and snapshotData.runways can be used here to draw out the real-time simulation
             // ...
         });
