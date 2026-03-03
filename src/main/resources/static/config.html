@@ -111,16 +111,26 @@
                 <div class="fw-bold mb-2 small text-uppercase text-muted" style="letter-spacing: 0.5px;">New Event</div>
 
                 <div class="row g-2 mb-2">
-                    <div class="col-4">
+                    <div class="col-3">
                         <label class="form-label small text-muted mb-0 fw-bold">Type</label>
                         <select id="new-event-type" class="form-select form-select-sm rounded-1" onchange="updateEventForm()">
                             <option value="Runway">Runway</option>
                             <option value="Aircraft">Aircraft</option>
                         </select>
                     </div>
-                    <div class="col-8">
-                        <label class="form-label small text-muted mb-0 fw-bold">Event</label>
+
+                    <div class="col-5">
+                        <label class="form-label small text-muted mb-0 fw-bold">Status</label>
                         <select id="new-event-name" class="form-select form-select-sm rounded-1"></select>
+                    </div>
+
+                    <div class="col-4" id="mode-container">
+                        <label class="form-label small text-muted mb-0 fw-bold">Mode</label>
+                        <select id="new-event-mode" class="form-select form-select-sm rounded-1">
+                            <option value="MIXED">Mixed</option>
+                            <option value="LANDING">Landing</option>
+                            <option value="TAKEOFF">Takeoff</option>
+                        </select>
                     </div>
                 </div>
 

@@ -71,16 +71,16 @@ minus1Btn.onclick = minus1
 // INPUT CONFIG
 // format for inputs with text boxes
 const inputConfig = [
-    { label: "Inbound Rate /hr",        name: "inbound_rate",      range: "0 - 100",    min: 0,  max: 100, val: 15 },
-    { label: "Outbound Rate /hr",       name: "outbound_rate",     range: "0 - 100",    min: 0,  max: 100, val: 15 },
-    { label: "Simulation Duration (mins)", name: "sim_duration",      range: "60 - 1440",  min: 60, max: 1440, val: 120 },
+    { label: "Inbound Rate /hr",        name: "inbound_rate",      range: "0 - 100", min: 0,  max: 100, step: 1, val: 15 },
+    { label: "Outbound Rate /hr",       name: "outbound_rate",     range: "0 - 100", min: 0,  max: 100, step: 1, val: 15 },
+    { label: "Simulation Duration (mins)", name: "sim_duration",      range: "60 - 1440", min: 60, max: 1440, step: 1, val: 120 },
     { label: "Mech. Failure Rate",      name: "mech_failure_rate", range: "0.00 - 0.10", min: 0, max: 0.1, step: 0.01, val: 0.05 },
     { label: "Health Issue Rate",       name: "health_issue_rate", range: "0.0 - 0.1",   min: 0, max: 0.1, step: 0.01, val: 0.01 },
     { label: "Runway Inspection Rate",  name: "inspection_rate",   range: "0.0 - 0.1",   min: 0, max: 0.1, step: 0.01, val: 0.01 },
     { label: "Snow Clearance Rate",     name: "snow_rate",         range: "0.0 - 0.1",   min: 0, max: 0.1, step: 0.01, val: 0.01 },
     { label: "Equip. Failure Rate",     name: "equip_failure_rate",range: "0.0 - 0.1",   min: 0, max: 0.1, step: 0.01, val: 0.01 },
-    { label: "Max Delay Time (mins)",      name: "max_delay",         range: "0 - 60",    min: 0,  max: 60,  val: 30 },
-    { label: "Simulation Seed", name: "seed", range: "0 - 10^8", min: 0, max: 99999999, val: 0 }
+    { label: "Max Delay Time (mins)",      name: "max_delay",         range: "0 - 60",   min: 0,  max: 60,  step: 1, val: 30},
+    { label: "Simulation Seed", name: "seed", range: "0 - 10^8", min: 0, max: 99999999, step: 1, val: 0 }
 ];
 
 // generate input params
@@ -99,6 +99,10 @@ function generateInputs() {
         input.id = "input-" + config.name;
         input.name = config.name;
         input.value = config.val;
+
+        if (config.min !== undefined) input.min = config.min;
+        if (config.max !== undefined) input.max = config.max;
+        if (config.step !== undefined) input.step = config.step;
 
         // Enable Dice only for Seed
         if (config.name === "seed") {
@@ -265,10 +269,7 @@ generateInputs();
 
 // EVENTS STUFF - SPRINT 2
 const eventOptions = {
-    "Runway": ["Runway Inspection", "Snow Clearance", "Equipment Failure",
-        "Mode: Landing Only", // NEW
-        "Mode: Takeoff Only", // NEW
-        "Mode: Mixed"], // NEW
+    "Runway": ["Available", "Runway Inspection", "Snow Clearance", "Equipment Failure"],
     "Aircraft": ["Mechanical Failure", "Passenger Health"]
 };
 
@@ -304,6 +305,10 @@ function addEvent() {
         return;
     }
 
+    const modeSelect = document.getElementById("new-event-mode");
+    const eventModeVal = eventType === "Runway" ? modeSelect.value : "MIXED";
+    const eventModeLabel = eventType === "Runway" ? modeSelect.options[modeSelect.selectedIndex].text : "";
+
     const durationInput = document.getElementById("new-event-duration");
     let eventDuration = parseInt(durationInput.value);
 
@@ -323,7 +328,9 @@ function addEvent() {
         name: eventEnum,
         locationId: eventLocId,
         time: startTime,
-        duration: eventDuration // new
+        duration: eventDuration,
+        mode: eventModeVal,        // e.g., "LANDING"
+        modeLabel: eventModeLabel  // e.g., "Landing"
     });
 
     if (emptyMsg) emptyMsg.remove();
@@ -332,26 +339,13 @@ function addEvent() {
     row.className = "d-flex align-items-center small mb-2 pb-2 border-bottom pe-1";
     row.setAttribute("data-id", uniqueId.toString());
 
-    // UI List gets the Display Label
-    row.innerHTML = `
-    <div class="flex-grow-1 text-truncate">
-        <strong>${displayLabel}</strong> 
-        <span class="text-muted">on ${eventLocText}</span>
-    </div>
-    <div style="width: 70px;" class="text-end text-muted">
-        ${startTime} mins
-    </div>
-    <div style="width: 30px;" class="text-end">
-        <button class="btn btn-link text-danger p-0 border-0 fs-5" 
-                onclick="deleteEvent(${uniqueId})">&times;</button>
-    </div>
-    `;
-
+    // 3. Add a cool blue badge for the mode!
     let durationBadge = eventType === "Runway" ? `<span class="badge bg-secondary ms-1">${eventDuration}m</span>` : "";
+    let modeBadge = eventType === "Runway" ? `<span class="badge bg-info text-dark ms-1">${eventModeLabel}</span>` : "";
 
     row.innerHTML = `
     <div class="flex-grow-1 text-truncate">
-        <strong>${displayLabel}</strong> ${durationBadge}
+        <strong>${displayLabel}</strong> ${modeBadge} ${durationBadge}
         <span class="text-muted d-block" style="font-size: 0.75rem;">on ${eventLocText}</span>
     </div>
     <div style="width: 50px;" class="text-end text-muted fw-bold">
@@ -364,8 +358,11 @@ function addEvent() {
 
     list.appendChild(row);
     list.scrollTop = list.scrollHeight;
+
     timeInput.value = "";
     durationInput.value = "";
+    modeSelect.value = "MIXED"; // Optional: reset mode to default
+
 }
 
 
@@ -425,30 +422,26 @@ function formatEventsForBackend(frontendEvents) {
 
         if (ev.type === "Runway") {
             let status = 'AVAILABLE';
-            let type = 'SCHEDULED_CHANGE'; // From your RunwayEventType Enum
-            let mode = 'MIXED';
-            if (ev.name === "Runway Inspection") {
-                status = 'INSPECTION';
-            } else if (ev.name === "Snow Clearance") {
+            let type = 'SCHEDULED_CHANGE';
+
+            if (ev.name === "Runway Inspection") status = 'INSPECTION';
+            else if (ev.name === "Snow Clearance") {
                 status = 'SNOWCLEARANCE';
+                type = 'NATURAL_CLOSURE';
             } else if (ev.name === "Equipment Failure") {
                 status = 'FAILURE';
-            } else if (ev.name === "Mode: Landing Only") {
-                mode = 'LANDING';
-            } else if (ev.name === "Mode: Takeoff Only") {
-                mode = 'TAKEOFF';
-            } else if (ev.name === "Mode: Mixed") {
-                mode = 'MIXED';
             }
+            // (If ev.name is "Available", it stays 'AVAILABLE' and 'SCHEDULED_CHANGE')
 
             if (!runwayMap[tickTime]) runwayMap[tickTime] = [];
+
             runwayMap[tickTime].push({
                 tick: tickTime,
                 runwayID: parseInt(ev.locationId),
                 status: status,
-                mode: mode,
+                mode: ev.mode || 'MIXED', // <--- Pulls directly from your array!
                 type: type,
-                duration: ev.duration // Required by RunwayEvent.java @NotNull
+                duration: ev.duration
             });
         }
         else if (ev.type === "Aircraft") {
@@ -503,6 +496,15 @@ function updateEventForm() {
         locSelect.appendChild(option);
     }
 
+    const modeContainer = document.getElementById("mode-container");
+    if (modeContainer) {
+        if (selectedType === "Aircraft") {
+            modeContainer.style.display = 'none'; // Hide for Aircraft
+        } else {
+            modeContainer.style.display = 'block'; // Show for Runway
+        }
+    }
+
     const durationContainer = document.getElementById("duration-container");
     if (durationContainer) {
         if (selectedType === "Aircraft") {
@@ -516,19 +518,23 @@ function updateEventForm() {
 const dummyConfigs = [
     {
         id: 1, name: "Config 1", date: "27-02-2026",
-        inboundRate: 5, outboundRate: 2, duration: 240, maxWait: 45, seed: 123456, runways: 2, events: 5
+        inboundRate: 5, outboundRate: 2, duration: 240, maxWaitTime: 45, seed: 123456, runways: 2, events: 5,
+        mechanicalFailureRate: 0.05, passengerHealthIssueRate: 0.01, runwayInspectionRate: 0.01, snowClearanceRate: 0.01, equipmentFailureRate: 0.01
     },
     {
         id: 2, name: "Config 2", date: "26-02-2026",
-        inboundRate: 15, outboundRate: 15, duration: 120, maxWait: 30, seed: 987654, runways: 8, events: 0
+        inboundRate: 15, outboundRate: 15, duration: 120, maxWaitTime: 30, seed: 987654, runways: 8, events: 0,
+        mechanicalFailureRate: 0.02, passengerHealthIssueRate: 0.02, runwayInspectionRate: 0.05, snowClearanceRate: 0.00, equipmentFailureRate: 0.01
     },
     {
         id: 3, name: "Config 3", date: "20-02-2026",
-        inboundRate: 15, outboundRate: 35, duration: 120, maxWait: 34, seed: 231495, runways: 10, events: 0
+        inboundRate: 15, outboundRate: 35, duration: 120, maxWaitTime: 34, seed: 231495, runways: 10, events: 0,
+        mechanicalFailureRate: 0.06, passengerHealthIssueRate: 0.01, runwayInspectionRate: 0.02, snowClearanceRate: 0.04, equipmentFailureRate: 0.03
     },
     {
         id: 4, name: "Config 4", date: "20-02-2025",
-        inboundRate: 15, outboundRate: 35, duration: 120, maxWait: 15, seed: 231435, runways: 10, events: 17
+        inboundRate: 15, outboundRate: 35, duration: 120, maxWaitTime: 15, seed: 231435, runways: 10, events: 17,
+        mechanicalFailureRate: 0.08, passengerHealthIssueRate: 0.03, runwayInspectionRate: 0.01, snowClearanceRate: 0.08, equipmentFailureRate: 0.02
     }
 ];
 
@@ -558,7 +564,7 @@ function openLoadConfigModal() {
                 { label: "Inbound", value: `${configData.inboundRate}/hr` },
                 { label: "Outbound", value: `${configData.outboundRate}/hr` },
                 { label: "Duration", value: `${configData.duration} mins` },
-                { label: "Max Delay", value: `${configData.maxWait} mins` },
+                { label: "Max Delay", value: `${configData.maxWaitTime} mins` },
                 { label: "Runways", value: configData.runways },
                 { label: "Seed", value: configData.seed },
                 {
@@ -621,8 +627,15 @@ function applyConfigToPage(data) {
         "input-inbound_rate": data.inboundRate,
         "input-outbound_rate": data.outboundRate,
         "input-sim_duration": data.duration,
-        "input-max_delay": data.maxWait,
-        "input-seed": data.seed
+        "input-max_delay": data.maxWaitTime,
+        "input-seed": data.seed,
+
+        // Matched to Java Backend names!
+        "input-mech_failure_rate": data.mechanicalFailureRate,
+        "input-health_issue_rate": data.passengerHealthIssueRate,
+        "input-inspection_rate": data.runwayInspectionRate,
+        "input-snow_rate": data.snowClearanceRate,
+        "input-equip_failure_rate": data.equipmentFailureRate
     };
 
     Object.keys(fieldMapping).forEach(id => {
@@ -690,16 +703,17 @@ function rebuildEventListUI() {
         row.className = "d-flex align-items-center small mb-2 pb-2 border-bottom pe-1";
         row.setAttribute("data-id", ev.id.toString());
 
-        // 1. Recreate the badge using the saved duration
+        // 1. Recreate BOTH badges using the saved data
         let durationBadge = ev.type === "Runway" ? `<span class="badge bg-secondary ms-1">${ev.duration}m</span>` : "";
+        let modeBadge = ev.type === "Runway" ? `<span class="badge bg-info text-dark ms-1">${ev.modeLabel || 'Mixed'}</span>` : "";
 
-        // 2. Format the location text so it reads "Runway 1" instead of "0"
+        // 2. Format the location text
         let eventLocText = ev.type === 'Runway' ? 'Runway ' + (parseInt(ev.locationId) + 1) : ev.locationId;
 
-        // 3. Inject the exact same HTML template you just made
+        // 3. Inject the HTML template with the modeBadge included
         row.innerHTML = `
             <div class="flex-grow-1 text-truncate">
-                <strong>${ev.name}</strong> ${durationBadge}
+                <strong>${ev.name}</strong> ${modeBadge} ${durationBadge}
                 <span class="text-muted d-block" style="font-size: 0.75rem;">on ${eventLocText}</span>
             </div>
             <div style="width: 50px;" class="text-end text-muted fw-bold">
@@ -744,12 +758,20 @@ document.getElementById("confirm-save-btn").onclick = function() {
         inboundRate: document.getElementById("input-inbound_rate").value,
         outboundRate: document.getElementById("input-outbound_rate").value,
         duration: document.getElementById("input-sim_duration").value,
-        maxWait: document.getElementById("input-max_delay").value,
+        maxWaitTime: document.getElementById("input-max_delay").value,
         seed: document.getElementById("input-seed").value,
         autoGen: document.getElementById("input-auto_gen").checked,
+
+        // Matched to Java Backend names!
+        mechanicalFailureRate: document.getElementById("input-mech_failure_rate").value,
+        passengerHealthIssueRate: document.getElementById("input-health_issue_rate").value,
+        runwayInspectionRate: document.getElementById("input-inspection_rate").value,
+        snowClearanceRate: document.getElementById("input-snow_rate").value,
+        equipmentFailureRate: document.getElementById("input-equip_failure_rate").value,
+
         runways: number,
         runwayDetails: currentRunwayDetails,
-        savedEvents: [...scheduledEventsData] // Uses your existing events array
+        savedEvents: [...scheduledEventsData]
     };
 
     dummyConfigs.push(configData);
