@@ -139,7 +139,7 @@ function startSimulation() {
     function statusToEnum(statusVal) {
         const mapping = {
             'available': 'AVAILABLE',
-            'snow': 'SNOW',
+            'snow': 'SNOWCLEARANCE',
             'inspection': 'INSPECTION',
             'failure': 'FAILURE'
         };
@@ -174,11 +174,22 @@ function startSimulation() {
         outboundRate: parseInt(document.querySelector('input[id="input-outbound_rate"]').value) || 15,
         maxWaitTime: parseInt(document.querySelector('input[id="input-max_delay"]').value) || 30,
         duration: parseInt(document.querySelector('input[id="input-sim_duration"]').value) || 120,
+        automaticGenerationEnabled: false,
+
+        mechanicalFailureRate: parseFloat(document.querySelector('input[id="input-mech_failure_rate"]').value) || 0.0,
+        passengerHealthIssueRate: parseFloat(document.querySelector('input[id="input-health_issue_rate"]').value) || 0.0,
+        runwayInspectionRate: parseFloat(document.querySelector('input[id="input-inspection_rate"]').value) || 0.0,
+        snowClearanceRate: parseFloat(document.querySelector('input[id="input-snow_rate"]').value) || 0.0,
+        equipmentFailureRate: parseFloat(document.querySelector('input[id="input-equip_failure_rate"]').value) || 0.0,
 
         tickTime: 1000, // like sim duration
 
         // not yet implemented
-        seed: Math.floor(Math.random() * 100000000)
+        seed: Math.floor(Math.random() * 100000000),
+
+        // send explicit empty maps for event lists when no manual events are scheduled yet
+        scheduledRunwayEvents: {},
+        scheduledAircraftEvents: {}
 
         // Mechanical Failure Rate
         //
@@ -200,9 +211,10 @@ function startSimulation() {
         },
         body: JSON.stringify(payload)
     })
-        .then(response => {
+        .then(async response => {
             if (!response.ok) {
-                throw new Error('Failed to validate configuration');
+                const errorText = await response.text();
+                throw new Error(errorText || `Failed to validate configuration (HTTP ${response.status})`);
             }
             return response.text();
         })
@@ -217,9 +229,10 @@ function startSimulation() {
                 body: JSON.stringify(payload)
             });
         })
-        .then(response => {
+        .then(async response => {
             if (!response.ok) {
-                throw new Error('Failed to start simulation');
+                const errorText = await response.text();
+                throw new Error(errorText || `Failed to start simulation (HTTP ${response.status})`);
             }
             return response.text();
         })
