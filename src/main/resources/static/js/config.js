@@ -265,7 +265,10 @@ generateInputs();
 
 // EVENTS STUFF - SPRINT 2
 const eventOptions = {
-    "Runway": ["Runway Inspection", "Snow Clearance", "Equipment Failure"],
+    "Runway": ["Runway Inspection", "Snow Clearance", "Equipment Failure",
+        "Mode: Landing Only", // NEW
+        "Mode: Takeoff Only", // NEW
+        "Mode: Mixed"], // NEW
     "Aircraft": ["Mechanical Failure", "Passenger Health"]
 };
 
@@ -423,13 +426,19 @@ function formatEventsForBackend(frontendEvents) {
         if (ev.type === "Runway") {
             let status = 'AVAILABLE';
             let type = 'SCHEDULED_CHANGE'; // From your RunwayEventType Enum
-
+            let mode = 'MIXED';
             if (ev.name === "Runway Inspection") {
                 status = 'INSPECTION';
             } else if (ev.name === "Snow Clearance") {
                 status = 'SNOWCLEARANCE';
             } else if (ev.name === "Equipment Failure") {
                 status = 'FAILURE';
+            } else if (ev.name === "Mode: Landing Only") {
+                mode = 'LANDING';
+            } else if (ev.name === "Mode: Takeoff Only") {
+                mode = 'TAKEOFF';
+            } else if (ev.name === "Mode: Mixed") {
+                mode = 'MIXED';
             }
 
             if (!runwayMap[tickTime]) runwayMap[tickTime] = [];
@@ -437,7 +446,7 @@ function formatEventsForBackend(frontendEvents) {
                 tick: tickTime,
                 runwayID: parseInt(ev.locationId),
                 status: status,
-                mode: 'MIXED',
+                mode: mode,
                 type: type,
                 duration: ev.duration // Required by RunwayEvent.java @NotNull
             });
