@@ -148,25 +148,6 @@
                     </div>
                 </div>
 
-                <div class="row g-2 mb-3" id="runway-specific-inputs">
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-0 fw-bold">New Mode</label>
-                        <select id="new-event-mode" class="form-select form-select-sm rounded-1">
-                            <option value="none">No Change</option>
-                            <option value="MIXED">Mixed</option>
-                            <option value="LANDING">Landing</option>
-                            <option value="TAKEOFF">Take-Off</option>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label small text-muted mb-0 fw-bold">Duration</label>
-                        <div class="input-group input-group-sm">
-                            <input id="new-event-duration" type="number" min="-1" placeholder="-1 = infinite" class="form-control rounded-1 ps-2">
-                            <span class="input-group-text rounded-1 px-1 text-muted">m</span>
-                        </div>
-                    </div>
-                </div>
-
                 <button onclick="addEvent()" class="btn btn-dark w-100 fw-bold rounded-1 shadow-sm">
                     <span class="fs-6 me-1">+</span> Schedule Event
                 </button>
