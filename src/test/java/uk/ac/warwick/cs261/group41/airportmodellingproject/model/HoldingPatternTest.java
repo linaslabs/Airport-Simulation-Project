@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -18,9 +19,10 @@ import static org.mockito.Mockito.*;
  *
  * Focus:
  * - Priority behaviour (emergencies first / ordering)
- * - Fuel consumption + diversion rule at min fuel threshold
+ * - Fuel consumption + diversion rule at the minimum fuel threshold
  * - Status updates re-prioritise the queue
  * - Random selection only picks aircraft with EmergencyStatus.NONE
+ * - Diversions are reported via EventManager
  */
 class HoldingPatternTest {
 
@@ -60,13 +62,12 @@ class HoldingPatternTest {
     }
 
     /**
-     * Verifies that the holding pattern serves aircraft in priority order.
-     * Based on the spec: emergencies first; within equal emergency level, lower fuel should be served first.
+     * Verifies that the holding pattern serves aircraft in priority order:
+     * emergencies first; within equal emergency status, lower fuel first; NONE last.
      */
     @Test
     void addAircraft_andPoll_shouldReturnHighestPriorityFirst() {
-        Statistics stats = mock(Statistics.class);
-        HoldingPattern hp = new HoldingPattern(stats);
+        HoldingPattern hp = new HoldingPattern();
 
         EmergencyStatus emergency = someNonNoneEmergencyStatus();
 
@@ -94,14 +95,15 @@ class HoldingPatternTest {
 
     /**
      * Verifies fuel consumption occurs each tick, and aircraft are diverted when fuel reaches the minimum threshold.
-     * The current implementation diverts when fuel <= 10 after consuming 1 tick of fuel.
+     * Diversions should be reported to EventManager.
      */
     @Test
     void update_shouldConsumeFuel_andDivertWhenFuelAtOrBelow10() {
-        Statistics stats = mock(Statistics.class);
-        HoldingPattern hp = new HoldingPattern(stats);
+        HoldingPattern hp = new HoldingPattern();
+        EventManager eventManager = mock(EventManager.class);
+        hp.setEventManager(eventManager);
 
-        Aircraft lowFuel = newArrival("LOW-1", 10.5, 0, 0);
+        Aircraft lowFuel = newArrival("LOW-1", 10.5, 0, 0); // after consumeFuel(1.0) => 9.5 (divert)
         lowFuel.setStatus(EmergencyStatus.NONE);
 
         hp.addAircraft(lowFuel);
@@ -110,18 +112,20 @@ class HoldingPatternTest {
 
         assertEquals(0, hp.getSize(), "Aircraft should be removed (diverted) when fuel <= 10.");
         assertEquals(AircraftState.DIVERTED, lowFuel.getState(), "Diverted aircraft should be marked as DIVERTED.");
-        verify(stats, times(1)).recordDiversion();
+        verify(eventManager, times(1)).reportDiversion("LOW-1", 0);
     }
 
     /**
-     * Verifies aircraft are not diverted if fuel remains above the minimum threshold after consumption.
+     * Verifies aircraft are not diverted if fuel remains above the minimum threshold after consumption,
+     * and no diversion is reported.
      */
     @Test
     void update_shouldNotDivert_ifFuelRemainsAbove10() {
-        Statistics stats = mock(Statistics.class);
-        HoldingPattern hp = new HoldingPattern(stats);
+        HoldingPattern hp = new HoldingPattern();
+        EventManager eventManager = mock(EventManager.class);
+        hp.setEventManager(eventManager);
 
-        Aircraft okFuel = newArrival("OK-1", 11.1, 0, 0);
+        Aircraft okFuel = newArrival("OK-1", 11.1, 0, 0); // after consumeFuel(1.0) => 10.1 (keep)
         okFuel.setStatus(EmergencyStatus.NONE);
 
         hp.addAircraft(okFuel);
@@ -130,7 +134,23 @@ class HoldingPatternTest {
 
         assertEquals(1, hp.getSize(), "Aircraft should remain in holding pattern if fuel > 10 after tick.");
         assertNotEquals(AircraftState.DIVERTED, okFuel.getState(), "Aircraft should not be marked diverted.");
-        verify(stats, never()).recordDiversion();
+        verify(eventManager, never()).reportDiversion(anyString(), anyInt());
+    }
+
+    /**
+     * Verifies that if a diversion occurs and EventManager has not been set,
+     * update() throws an IllegalStateException (to prevent silent failures).
+     */
+    @Test
+    void update_whenDiversionOccursWithoutEventManager_shouldThrow() {
+        HoldingPattern hp = new HoldingPattern();
+
+        Aircraft lowFuel = newArrival("LOW-2", 10.5, 0, 0); // will divert after consuming fuel
+        lowFuel.setStatus(EmergencyStatus.NONE);
+        hp.addAircraft(lowFuel);
+
+        assertThrows(IllegalStateException.class, () -> hp.update(0),
+                "Expected update() to throw if diversion occurs without an EventManager set.");
     }
 
     /**
@@ -138,8 +158,7 @@ class HoldingPatternTest {
      */
     @Test
     void updateAircraftStatus_shouldReprioritiseAircraft_andUpdateAltitudes() {
-        Statistics stats = mock(Statistics.class);
-        HoldingPattern hp = new HoldingPattern(stats);
+        HoldingPattern hp = new HoldingPattern();
 
         Aircraft a = newArrival("A-1", 40.0, 0, 0);
         a.setStatus(EmergencyStatus.NONE);
@@ -171,8 +190,7 @@ class HoldingPatternTest {
      */
     @Test
     void getRandomAircraft_shouldOnlySelectNoneStatus_andReturnNullIfNoneEligible() {
-        Statistics stats = mock(Statistics.class);
-        HoldingPattern hp = new HoldingPattern(stats);
+        HoldingPattern hp = new HoldingPattern();
 
         EmergencyStatus emergency = someNonNoneEmergencyStatus();
 
@@ -213,8 +231,7 @@ class HoldingPatternTest {
      */
     @Test
     void getEmergencyAircraft_shouldReturnOnlyEmergencies_sortedByPriority() {
-        Statistics stats = mock(Statistics.class);
-        HoldingPattern hp = new HoldingPattern(stats);
+        HoldingPattern hp = new HoldingPattern();
 
         EmergencyStatus emergency = someNonNoneEmergencyStatus();
 
@@ -237,7 +254,7 @@ class HoldingPatternTest {
         assertTrue(emergencies.stream().allMatch(a -> a.getStatus() != EmergencyStatus.NONE),
                 "All returned aircraft should have a non-NONE emergency status.");
 
-        // With same emergency status, spec expects lower fuel to have higher priority.
+        // With same emergency status, lower fuel should have higher priority.
         assertEquals("E-LOWFUEL", emergencies.get(0).getCallsign(),
                 "Expected lower-fuel emergency aircraft to appear first.");
         assertEquals("E-HIGHFUEL", emergencies.get(1).getCallsign());

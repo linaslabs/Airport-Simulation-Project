@@ -1,181 +1,433 @@
-// Mock data storage - In real app, this would come from backend/localStorage
-const mockSimulations = {
-    'sim001': {
-        id: 'sim001',
-        name: 'SIM A - Baseline',
-        timestamp: '2026-02-20 10:30',
-        config: {
-            'Number of Runways': '10',
-            'Inbound Rate': '15 /hr',
-            'Outbound Rate': '15 /hr',
-            'Simulation Duration': '120 mins',
-            'Max Wait Time': '30 mins',
-            'Passenger Health Issue Rate': '0.0',
-            'Runway Inspection Rate': '0.02',
-            'Snow Clearance Rate': '0.1',
-            'Equipment Failure Rate': '15'
-        },
-        events: [
-            { event: 'Equipment Failure on Runway 01', time: '100 minutes', duration: '50 minutes', scheduled: 'Yes' },
-            { event: 'Passenger Health in Holding Pattern', time: '250 minutes', duration: 'Indefinite', scheduled: 'Yes' },
-            { event: 'Snow Clearance on Runway 08', time: '300 minutes', duration: '45 minutes', scheduled: 'No' },
-            { event: 'Runway Maintenance', time: '350 minutes', duration: '30 minutes', scheduled: 'Yes' }
-        ],
-        statistics: {
-            throughput: 17,
-            depAvgWait: 7,
-            depMaxQueue: 8,
-            depMaxDelay: 15,
-            depAvgDelay: 8,
-            depCancelled: 2,
-            arrAvgHold: 11,
-            arrMaxHolding: 6,
-            arrMaxDelay: 17,
-            arrAvgDelay: 10,
-            arrDiverted: 4
-        }
-    },
-    'sim002': {
-        id: 'sim002',
-        name: 'SIM B - Optimized',
-        timestamp: '2026-02-20 11:45',
-        config: {
-            'Number of Runways': '8',
-            'Inbound Rate': '20 /hr',
-            'Outbound Rate': '18 /hr',
-            'Simulation Duration': '120 mins',
-            'Max Wait Time': '25 mins',
-            'Passenger Health Issue Rate': '0.01',
-            'Runway Inspection Rate': '0.01',
-            'Snow Clearance Rate': '0.05',
-            'Equipment Failure Rate': '10'
-        },
-        events: [
-            { event: 'Snow Clearance', time: '40 mins', duration: '45 mins', scheduled: 'No' }
-        ],
-        statistics: {
-            throughput: 15,
-            depAvgWait: 9,
-            depMaxQueue: 7,
-            depMaxDelay: 18,
-            depAvgDelay: 10,
-            depCancelled: 2,
-            arrAvgHold: 5,
-            arrMaxHolding: 2,
-            arrMaxDelay: 7,
-            arrAvgDelay: 4,
-            arrDiverted: 0
-        }
-    },
-    'sim003': {
-        id: 'sim003',
-        name: 'SIM C - Peak Hours',
-        timestamp: '2026-02-20 12:15',
-        config: {
-            'Number of Runways': '12',
-            'Inbound Rate': '25 /hr',
-            'Outbound Rate': '22 /hr',
-            'Simulation Duration': '120 mins',
-            'Max Wait Time': '20 mins',
-            'Passenger Health Issue Rate': '0.005',
-            'Runway Inspection Rate': '0.015',
-            'Snow Clearance Rate': '0.08',
-            'Equipment Failure Rate': '12'
-        },
-        events: [
-            { event: 'Weather Advisory', time: '10 mins', duration: '60 mins', scheduled: 'Yes' },
-            { event: 'Fuel Supply Issue', time: '90 mins', duration: '15 mins', scheduled: 'No' }
-        ],
-        statistics: {
-            throughput: 22,
-            depAvgWait: 5,
-            depMaxQueue: 6,
-            depMaxDelay: 10,
-            depAvgDelay: 5,
-            depCancelled: 1,
-            arrAvgHold: 8,
-            arrMaxHolding: 4,
-            arrMaxDelay: 12,
-            arrAvgDelay: 7,
-            arrDiverted: 2
-        }
-    }
+const API = {
+    summaries: '/api/results/summaries',
+    viewOrCompare: (name) => `/api/results/vieworcompare/${encodeURIComponent(name)}`,
+    deleteResult: (name) => `/api/results/delete/${encodeURIComponent(name)}`
 };
 
-/**
- * Initialize comparison page on load
- */
-document.addEventListener('DOMContentLoaded', function() {
-    // Load default simulations
-    const simA = mockSimulations['sim001'];
-    const simB = mockSimulations['sim002'];
+let simulationSummaries = [];
+const simulationDetailsCache = new Map();
+let currentSimNames = { A: null, B: null };
+let selectingFor = null;
 
-    // Populate both simulations
-    populateSimulationData(simA, 'A');
-    populateSimulationData(simB, 'B');
-
-    // Highlight differences
-    compareAndHighlight(simA, simB);
-});
-
-/**
- * Populate all data for a simulation
- */
-function populateSimulationData(simData, suffix) {
-    // Configuration Table
-    populateConfigTable(simData, `config${suffix}`);
-
-    // Events Table
-    populateEventsTable(simData, `events${suffix}`);
-
-    // Simulation Statistics
-    const stats = simData.statistics;
-    document.getElementById(`throughput${suffix}`).textContent = stats.throughput + ' /hr';
-    document.getElementById(`depAvgWait${suffix}`).textContent = stats.depAvgWait + ' mins';
-    document.getElementById(`depMaxQueue${suffix}`).textContent = stats.depMaxQueue;
-    document.getElementById(`depMaxDelay${suffix}`).textContent = stats.depMaxDelay + ' mins';
-    document.getElementById(`depAvgDelay${suffix}`).textContent = stats.depAvgDelay + ' mins';
-    document.getElementById(`depCancelled${suffix}`).textContent = stats.depCancelled;
-    document.getElementById(`arrAvgHold${suffix}`).textContent = stats.arrAvgHold + ' mins';
-    document.getElementById(`arrMaxHolding${suffix}`).textContent = stats.arrMaxHolding;
-    document.getElementById(`arrMaxDelay${suffix}`).textContent = stats.arrMaxDelay + ' mins';
-    document.getElementById(`arrAvgDelay${suffix}`).textContent = stats.arrAvgDelay + ' mins';
-    document.getElementById(`arrDiverted${suffix}`).textContent = stats.arrDiverted;
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
 }
 
-/**
- * Populate configuration table for a simulation
- */
+function enumToLabel(value) {
+    if (!value) return '--';
+    return String(value)
+        .toLowerCase()
+        .split('_')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+}
+
+function toNumber(value) {
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function formatNumber(value, decimals = 2) {
+    const n = toNumber(value);
+    return n === null ? '--' : n.toFixed(decimals);
+}
+
+function formatInteger(value) {
+    const n = toNumber(value);
+    return n === null ? '--' : Math.round(n).toString();
+}
+
+function formatDate(dateValue) {
+    if (!dateValue) return '--';
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return '--';
+    return date.toLocaleString();
+}
+
+async function fetchJson(url, options = {}) {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Request failed (${response.status})`);
+    }
+    return response.json();
+}
+
+function buildEventRows(config) {
+    const rows = [];
+
+    const scheduledRunwayEvents = config?.scheduledRunwayEvents || {};
+    Object.entries(scheduledRunwayEvents).forEach(([runwayKey, events]) => {
+        if (!Array.isArray(events)) return;
+
+        events.forEach(event => {
+            const runwayId = Number.isInteger(event?.runwayID) ? event.runwayID : Number.parseInt(runwayKey, 10);
+            const runwayLabel = Number.isInteger(runwayId) ? `Runway ${runwayId + 1}` : `Runway ${runwayKey}`;
+            const tick = Number.isFinite(event?.tick) ? event.tick : '--';
+            const duration = event?.duration === -1 || event?.duration == null ? 'Indefinite' : `${event.duration} mins`;
+
+            rows.push({
+                event: `${enumToLabel(event?.type)} on ${runwayLabel}`,
+                time: `${tick} mins`,
+                duration,
+                scheduled: 'Yes',
+                tickSort: Number.isFinite(event?.tick) ? event.tick : Number.MAX_SAFE_INTEGER
+            });
+        });
+    });
+
+    const scheduledAircraftEvents = config?.scheduledAircraftEvents || {};
+    Object.values(scheduledAircraftEvents).forEach(events => {
+        if (!Array.isArray(events)) return;
+
+        events.forEach(event => {
+            const tick = Number.isFinite(event?.tick) ? event.tick : '--';
+            const callsign = event?.callsign ? ` (${event.callsign})` : '';
+
+            rows.push({
+                event: `${enumToLabel(event?.type)}${callsign}`,
+                time: `${tick} mins`,
+                duration: 'Indefinite',
+                scheduled: 'Yes',
+                tickSort: Number.isFinite(event?.tick) ? event.tick : Number.MAX_SAFE_INTEGER
+            });
+        });
+    });
+
+    rows.sort((a, b) => a.tickSort - b.tickSort);
+    return rows;
+}
+
+function mapSavedResult(savedResult) {
+    const config = savedResult?.config || {};
+    const stats = savedResult?.stats || {};
+
+    const runwayCount = Array.isArray(config.runwaySettings) ? config.runwaySettings.length : 0;
+
+    return {
+        id: savedResult?.simulationName || '',
+        name: savedResult?.simulationName || 'Unnamed Simulation',
+        timestamp: formatDate(savedResult?.dateExecuted),
+        config: {
+            'Number of Runways': runwayCount,
+            'Inbound Rate': `${config.inboundRate ?? '--'} /hr`,
+            'Outbound Rate': `${config.outboundRate ?? '--'} /hr`,
+            'Simulation Duration': `${config.duration ?? '--'} mins`,
+            'Max Wait Time': `${config.maxWaitTime ?? '--'} mins`,
+            'Passenger Health Issue Rate': config.passengerHealthIssueRate ?? '--',
+            'Runway Inspection Rate': config.runwayInspectionRate ?? '--',
+            'Snow Clearance Rate': config.snowClearanceRate ?? '--',
+            'Equipment Failure Rate': config.equipmentFailureRate ?? '--'
+        },
+        events: buildEventRows(config),
+        statistics: {
+            throughput: toNumber(stats.hourlyThroughput),
+            depAvgWait: toNumber(stats.avgWaitTime),
+            depMaxQueue: toNumber(stats.maxTakeOffQueueSize),
+            depMaxDelay: toNumber(stats.maxTakeOffDelay),
+            depAvgDelay: toNumber(stats.avgTakeOffDelay),
+            depCancelled: toNumber(stats.cancellationCount),
+            arrAvgHold: toNumber(stats.avgHoldingTime),
+            arrMaxHolding: toNumber(stats.maxHoldingSize),
+            arrMaxDelay: toNumber(stats.maxArrivalDelay),
+            arrAvgDelay: toNumber(stats.avgArrivalDelay),
+            arrDiverted: toNumber(stats.diversionCount)
+        }
+    };
+}
+
+async function fetchSummaries() {
+    simulationSummaries = await fetchJson(API.summaries);
+    return simulationSummaries;
+}
+
+async function fetchSimulationByName(name) {
+    if (simulationDetailsCache.has(name)) {
+        return simulationDetailsCache.get(name);
+    }
+
+    const raw = await fetchJson(API.viewOrCompare(name));
+    const mapped = mapSavedResult(raw);
+    simulationDetailsCache.set(name, mapped);
+    return mapped;
+}
+
+async function loadComparison(simAName, simBName) {
+    const [simA, simB] = await Promise.all([
+        fetchSimulationByName(simAName),
+        fetchSimulationByName(simBName)
+    ]);
+
+    currentSimNames.A = simAName;
+    currentSimNames.B = simBName;
+
+    setText('simNameA', simA.name.toUpperCase());
+    setText('simNameB', simB.name.toUpperCase());
+
+    hideSelectModal();
+    populateSimulationData(simA, 'A');
+    populateSimulationData(simB, 'B');
+    compareAndHighlight(simA, simB);
+}
+
+async function showViewModal(simName) {
+    try {
+        const sim = await fetchSimulationByName(simName);
+        const stats = sim.statistics;
+
+        setText('viewModalTitle', sim.name);
+        setText('viewThroughput', formatNumber(stats.throughput));
+        setText('viewDepAvgWait', formatNumber(stats.depAvgWait));
+        setText('viewDepMaxQueue', formatInteger(stats.depMaxQueue));
+        setText('viewDepMaxDelay', formatNumber(stats.depMaxDelay));
+        setText('viewDepAvgDelay', formatNumber(stats.depAvgDelay));
+        setText('viewDepCancelled', formatInteger(stats.depCancelled));
+        setText('viewArrAvgHold', formatNumber(stats.arrAvgHold));
+        setText('viewArrMaxHolding', formatInteger(stats.arrMaxHolding));
+        setText('viewArrMaxDelay', formatNumber(stats.arrMaxDelay));
+        setText('viewArrAvgDelay', formatNumber(stats.arrAvgDelay));
+        setText('viewArrDiverted', formatInteger(stats.arrDiverted));
+
+        document.getElementById('viewModal').classList.remove('hidden');
+    } catch (error) {
+        console.error('Error loading simulation details:', error);
+        alert('Failed to load simulation details.');
+    }
+}
+
+function hideViewModal() {
+    document.getElementById('viewModal').classList.add('hidden');
+}
+
+function hideSelectModal() {
+    document.getElementById('selectModal').classList.add('hidden');
+}
+
+function getSummaryByName(name) {
+    return simulationSummaries.find(sim => sim.simulationName === name);
+}
+
+async function deleteSimulation(simName) {
+    await fetch(API.deleteResult(simName), { method: 'DELETE' }).then(async response => {
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || 'Delete failed');
+        }
+    });
+
+    simulationDetailsCache.delete(simName);
+    await fetchSummaries();
+
+    if (currentSimNames.A === simName) currentSimNames.A = null;
+    if (currentSimNames.B === simName) currentSimNames.B = null;
+
+    await ensureCurrentSelectionAndLoad();
+}
+
+function renderSelectTableRows(summaries, tbody) {
+    tbody.innerHTML = '';
+
+    if (!summaries.length) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="4" style="text-align: center; color: #999;">No saved simulations found</td>';
+        tbody.appendChild(tr);
+        return;
+    }
+
+    summaries.forEach(sim => {
+        const tr = document.createElement('tr');
+        const infoLines = [
+            `Runways: ${sim.runwayCount ?? '--'}`,
+            `Inbound Rate: ${sim.inboundRate ?? '--'} /hr`,
+            `Outbound Rate: ${sim.outboundRate ?? '--'} /hr`,
+            `Scheduled Events: ${sim.scheduledEventsCount ?? '--'}`,
+            `Throughput: ${formatNumber(sim.throughput)} /hr`
+        ];
+
+        tr.innerHTML = `
+            <td class="sim-name">${sim.simulationName}</td>
+            <td class="sim-date">${formatDate(sim.dateExecuted)}</td>
+            <td class="sim-info">${infoLines.join('<br>')}</td>
+            <td class="sim-options">
+                <button class="btn-option btn-view" data-sim-name="${sim.simulationName}" title="View this simulation">View</button>
+                <button class="btn-option btn-compare" data-sim-name="${sim.simulationName}" title="Compare with this simulation">Compare</button>
+                <button class="btn-option btn-delete" data-sim-name="${sim.simulationName}" title="Delete this simulation">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('button.btn-view').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const simName = e.target.getAttribute('data-sim-name');
+            showViewModal(simName);
+        });
+    });
+
+    tbody.querySelectorAll('button.btn-compare').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const simName = e.target.getAttribute('data-sim-name');
+            try {
+                if (selectingFor === 'A') {
+                    await loadComparison(simName, currentSimNames.B || simName);
+                } else if (selectingFor === 'B') {
+                    await loadComparison(currentSimNames.A || simName, simName);
+                } else {
+                    await loadComparison(simName, currentSimNames.B || simName);
+                }
+            } catch (error) {
+                console.error('Error loading comparison:', error);
+                alert('Failed to load comparison data.');
+            }
+        });
+    });
+
+    tbody.querySelectorAll('button.btn-delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const simName = e.target.getAttribute('data-sim-name');
+            if (!confirm(`Delete simulation ${simName}?`)) return;
+
+            try {
+                await deleteSimulation(simName);
+                await showSelectModal(selectingFor);
+            } catch (error) {
+                console.error('Error deleting simulation:', error);
+                alert('Failed to delete simulation.');
+            }
+        });
+    });
+}
+
+async function showSelectModal(columnLetter = null) {
+    selectingFor = columnLetter;
+    const tbody = document.querySelector('#selectList tbody');
+
+    if (selectingFor) {
+        setText('selectModalTitle', `Select simulation for SIMULATION ${selectingFor}`);
+    } else {
+        setText('selectModalTitle', 'Select simulations to compare');
+    }
+
+    let simsList = [...simulationSummaries];
+    if (selectingFor === 'A' && currentSimNames.B) {
+        simsList = simsList.filter(sim => sim.simulationName !== currentSimNames.B);
+    } else if (selectingFor === 'B' && currentSimNames.A) {
+        simsList = simsList.filter(sim => sim.simulationName !== currentSimNames.A);
+    }
+
+    let sortState = { column: null, ascending: true };
+
+    const renderAndBind = () => {
+        renderSelectTableRows(simsList, tbody);
+    };
+
+    renderAndBind();
+
+    const thead = document.querySelector('#selectList thead');
+    const headers = thead.querySelectorAll('th.sortable');
+
+    headers.forEach(header => {
+        header.onclick = () => {
+            const columnIndex = Array.from(header.parentNode.children).indexOf(header);
+            const columnName = columnIndex === 0 ? 'name' : 'date';
+
+            if (sortState.column === columnName) {
+                sortState.ascending = !sortState.ascending;
+            } else {
+                sortState.column = columnName;
+                sortState.ascending = true;
+            }
+
+            if (columnName === 'name') {
+                simsList.sort((a, b) => {
+                    const comparison = (a.simulationName || '').localeCompare(b.simulationName || '');
+                    return sortState.ascending ? comparison : -comparison;
+                });
+            } else {
+                simsList.sort((a, b) => {
+                    const timeA = new Date(a.dateExecuted).getTime();
+                    const timeB = new Date(b.dateExecuted).getTime();
+                    return sortState.ascending ? timeA - timeB : timeB - timeA;
+                });
+            }
+
+            headers.forEach(h => {
+                const arrow = h.querySelector('.sort-arrow');
+                if (arrow) arrow.textContent = '↑↓';
+            });
+
+            const activeArrow = header.querySelector('.sort-arrow');
+            if (activeArrow) activeArrow.textContent = sortState.ascending ? '↑' : '↓';
+
+            renderAndBind();
+        };
+    });
+
+    document.getElementById('selectModal').classList.remove('hidden');
+}
+
+async function ensureCurrentSelectionAndLoad() {
+    const names = simulationSummaries.map(s => s.simulationName);
+
+    if (!names.length) {
+        throw new Error('No saved simulations available for comparison');
+    }
+
+    if (!currentSimNames.A || !names.includes(currentSimNames.A)) {
+        currentSimNames.A = names[0];
+    }
+
+    if (!currentSimNames.B || !names.includes(currentSimNames.B) || currentSimNames.B === currentSimNames.A) {
+        currentSimNames.B = names.find(name => name !== currentSimNames.A) || currentSimNames.A;
+    }
+
+    await loadComparison(currentSimNames.A, currentSimNames.B);
+}
+
+function populateSimulationData(simData, suffix) {
+    populateConfigTable(simData, `config${suffix}`);
+    populateEventsTable(simData.events, `events${suffix}`);
+
+    const stats = simData.statistics;
+    setText(`throughput${suffix}`, `${formatNumber(stats.throughput)} /hr`);
+    setText(`depAvgWait${suffix}`, `${formatNumber(stats.depAvgWait)} mins`);
+    setText(`depMaxQueue${suffix}`, formatInteger(stats.depMaxQueue));
+    setText(`depMaxDelay${suffix}`, `${formatNumber(stats.depMaxDelay)} mins`);
+    setText(`depAvgDelay${suffix}`, `${formatNumber(stats.depAvgDelay)} mins`);
+    setText(`depCancelled${suffix}`, formatInteger(stats.depCancelled));
+    setText(`arrAvgHold${suffix}`, `${formatNumber(stats.arrAvgHold)} mins`);
+    setText(`arrMaxHolding${suffix}`, formatInteger(stats.arrMaxHolding));
+    setText(`arrMaxDelay${suffix}`, `${formatNumber(stats.arrMaxDelay)} mins`);
+    setText(`arrAvgDelay${suffix}`, `${formatNumber(stats.arrAvgDelay)} mins`);
+    setText(`arrDiverted${suffix}`, formatInteger(stats.arrDiverted));
+}
+
 function populateConfigTable(simData, targetId) {
     const table = document.getElementById(targetId);
     table.innerHTML = '';
 
-    for (const [key, value] of Object.entries(simData.config)) {
+    Object.entries(simData.config).forEach(([key, value]) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${key}</td>
             <td>${value}</td>
         `;
-        row.id = `config-${simData.id}-${key.toLowerCase().replace(/\s+/g, '-')}`;
         table.appendChild(row);
-    }
+    });
 }
 
-/**
- * Populate events table for a simulation
- */
-function populateEventsTable(simData, targetId) {
+function populateEventsTable(events, targetId) {
     const tbody = document.querySelector(`#${targetId} tbody`);
     tbody.innerHTML = '';
 
-    if (!simData.events || simData.events.length === 0) {
+    if (!Array.isArray(events) || events.length === 0) {
         const row = document.createElement('tr');
         row.innerHTML = '<td colspan="4" style="text-align: center; color: #999;">No events scheduled</td>';
         tbody.appendChild(row);
         return;
     }
 
-    simData.events.forEach(event => {
+    events.forEach(event => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${event.event}</td>
@@ -187,62 +439,73 @@ function populateEventsTable(simData, targetId) {
     });
 }
 
-/**
- * Compare two simulations and highlight differences
- */
 function compareAndHighlight(simA, simB) {
     const metricConfig = {
-        // Higher is better
-        'throughput': { higherBetter: true },
-        // Lower is better
-        'depAvgWait': { higherBetter: false },
-        'depMaxQueue': { higherBetter: false },
-        'depMaxDelay': { higherBetter: false },
-        'depAvgDelay': { higherBetter: false },
-        'depCancelled': { higherBetter: false },
-        'arrAvgHold': { higherBetter: false },
-        'arrMaxHolding': { higherBetter: false },
-        'arrMaxDelay': { higherBetter: false },
-        'arrAvgDelay': { higherBetter: false },
-        'arrDiverted': { higherBetter: false }
+        throughput: { higherBetter: true },
+        depAvgWait: { higherBetter: false },
+        depMaxQueue: { higherBetter: false },
+        depMaxDelay: { higherBetter: false },
+        depAvgDelay: { higherBetter: false },
+        depCancelled: { higherBetter: false },
+        arrAvgHold: { higherBetter: false },
+        arrMaxHolding: { higherBetter: false },
+        arrMaxDelay: { higherBetter: false },
+        arrAvgDelay: { higherBetter: false },
+        arrDiverted: { higherBetter: false }
     };
 
-    // Compare each metric
     Object.keys(metricConfig).forEach(metric => {
         const valA = simA.statistics[metric];
         const valB = simB.statistics[metric];
 
-        if (valA === undefined || valB === undefined) return;
-
-        const config = metricConfig[metric];
-        let aIsBetter, bIsBetter;
-
-        if (config.higherBetter) {
-            // Higher is better
-            aIsBetter = valA > valB;
-            bIsBetter = valB > valA;
-        } else {
-            // Lower is better
-            aIsBetter = valA < valB;
-            bIsBetter = valB < valA;
-        }
-
-        // Apply highlighting
         const elementA = document.getElementById(metric + 'A');
         const elementB = document.getElementById(metric + 'B');
 
-        if (elementA && elementB) {
-            // Remove all highlight classes first
-            elementA.classList.remove('better', 'worse');
-            elementB.classList.remove('better', 'worse');
+        if (!elementA || !elementB) return;
 
-            if (aIsBetter) {
-                elementA.classList.add('better');
-                elementB.classList.add('worse');
-            } else if (bIsBetter) {
-                elementB.classList.add('better');
-                elementA.classList.add('worse');
-            }
+        elementA.classList.remove('better', 'worse');
+        elementB.classList.remove('better', 'worse');
+
+        if (valA == null || valB == null || valA === valB) return;
+
+        const { higherBetter } = metricConfig[metric];
+        const aIsBetter = higherBetter ? valA > valB : valA < valB;
+        const bIsBetter = higherBetter ? valB > valA : valB < valA;
+
+        if (aIsBetter) {
+            elementA.classList.add('better');
+            elementB.classList.add('worse');
+        } else if (bIsBetter) {
+            elementB.classList.add('better');
+            elementA.classList.add('worse');
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await fetchSummaries();
+        await ensureCurrentSelectionAndLoad();
+    } catch (error) {
+        console.error('Error initialising comparison page:', error);
+        alert('No saved simulation results found. Save at least one result from the results page first.');
+    }
+
+    document.getElementById('switchBtnA').addEventListener('click', () => {
+        showSelectModal('A');
+    });
+
+    document.getElementById('switchBtnB').addEventListener('click', () => {
+        showSelectModal('B');
+    });
+
+    document.getElementById('closeSelectModal').addEventListener('click', hideSelectModal);
+    document.getElementById('selectModal').addEventListener('click', (e) => {
+        if (e.target.id === 'selectModal') hideSelectModal();
+    });
+
+    document.getElementById('closeViewModal').addEventListener('click', hideViewModal);
+    document.getElementById('viewModal').addEventListener('click', (e) => {
+        if (e.target.id === 'viewModal') hideViewModal();
+    });
+});
