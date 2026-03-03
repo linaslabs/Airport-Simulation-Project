@@ -201,9 +201,10 @@ function startSimulation() {
         },
         body: JSON.stringify(payload)
     })
-        .then(response => {
+        .then(async response => {
             if (!response.ok) {
-                throw new Error('Failed to validate configuration');
+                const errorText = await response.text();
+                throw new Error(errorText || `Failed to validate configuration (HTTP ${response.status})`);
             }
             return response.text();
         })
@@ -218,9 +219,10 @@ function startSimulation() {
                 body: JSON.stringify(payload)
             });
         })
-        .then(response => {
+        .then(async response => {
             if (!response.ok) {
-                throw new Error('Failed to start simulation');
+                const errorText = await response.text();
+                throw new Error(errorText || `Failed to start simulation (HTTP ${response.status})`);
             }
             return response.text();
         })
