@@ -9,7 +9,7 @@ public class Statistics {
     private int totalHoldingTime = 0;
     private int maxHoldingTime = 0;
     private int totalWaitTime = 0;
-    private int maxWaitTime = 0; // Added this, not on diagram.
+    private int maxWaitTime = 0;
 
     private int totalAircraftLanded = 0;
     private int totalArrivalDelay = 0;
@@ -105,4 +105,32 @@ public class Statistics {
     public int getDiversionCount() { return diversionCount; }
 
     public int getCancellationCount() { return cancellationCount; }
+
+    public double getRollingAvgHoldingTime() {
+        return (totalAircraftLanded == 0) ? 0 : (double) totalHoldingTime / totalAircraftLanded;
+    }
+
+    public double getRollingAvgWaitTime() {
+        return (totalAircraftDeparted == 0) ? 0 : (double) totalWaitTime / totalAircraftDeparted;
+    }
+
+    public double getRollingAvgArrivalDelay() {
+        return (totalAircraftLanded == 0) ? 0 : (double) totalArrivalDelay / totalAircraftLanded;
+    }
+
+    public double getRollingAvgTakeOffDelay() {
+        return (totalAircraftDeparted == 0) ? 0 : (double) totalTakeOffDelay / totalAircraftDeparted;
+    }
+
+    public int getMaxHoldingSize() { return maxHoldingSize; }
+
+    public int getMaxTakeOffQueueSize() { return maxTakeOffQueueSize; }
+
+    public int getMaxHoldingTime() { return maxHoldingTime; }
+
+    public int getMaxWaitTime() { return maxWaitTime; }
+
+    public int getMaxArrivalDelay() { return maxArrivalDelay; }
+
+    public int getMaxTakeOffDelay() { return maxTakeOffDelay; }
 }
