@@ -1,69 +1,84 @@
-// Polling variables
-let pollingInterval;
+let stompClient = null;
 let startTime;
-let tickCount = 0;
 
 function updateProgress(progressDecimal) {
     const progressPercentage = progressDecimal * 100;
+
     // Update progress bar width
     const progressBar = document.getElementById('progressBar');
-    progressBar.style.width = progressPercentage + '%';
+    if (progressBar) progressBar.style.width = progressPercentage + '%';
 
     // Update percentage text
-    document.getElementById('progressPercentage').textContent = Math.round(progressPercentage);
+    const percentageText = document.getElementById('progressPercentage');
+    if (percentageText) percentageText.textContent = Math.round(progressPercentage).toString();
 
     // Update elapsed time
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
-    document.getElementById('elapsedTime').textContent = elapsed + 's';
+    const timeText = document.getElementById('elapsedTime');
+    if (timeText) timeText.textContent = elapsed + 's';
 }
 
-function startPolling() {
-    // Start time tracking
+function connectWebSocket() {
     startTime = Date.now();
 
-    // Poll every 500ms
-    pollingInterval = setInterval(() => {
-        fetch('/api/simulation/progress')
-            .then(response => {
-                if (!response.ok) {
-                    console.error('Failed to fetch progress');
-                    return;
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!data) return;
+    // Connect to the websocket endpoint defined in the backend (config/WebSocketConfig)
+    const socket = new SockJS('/simulation-websocket');
+    stompClient = Stomp.over(socket);
 
-                const percentage = data.progressPercentage;
-                updateProgress(percentage);
+    // Set to null to hide STOMP debug messages in the browser console (can enable if needed)
+    stompClient.debug = null;
 
-                // If simulation is complete, redirect to results
-                if (percentage >= 1.0) {
-                    stopPolling();
-                    // Small delay to show 100%
-                    setTimeout(() => {
-                        window.location.href = '/results.html';
-                    }, 500);
-                }
-            })
-            .catch(error => {
-                console.error('Error polling progress:', error);
-            });
-    }, 500);
+    stompClient.connect({}, function (frame) {
+        console.log('Connected to WebSocket: ' + frame);
+
+        // Subscribe to snapshot stream
+        const snapshotSubscription = stompClient.subscribe('/simulation/snapshot', function (message) {
+            // Parse the body into a JS object
+            const snapshotData = JSON.parse(message.body);
+
+            console.log("Received Snapshot Data:", snapshotData);
+
+            // Extract the progress and update the UI
+            updateProgress(snapshotData.progressPercent);
+
+            // Update the current tick count display, if present
+            const tickCountElement = document.getElementById('tickCount');
+            if (tickCountElement && typeof snapshotData.currentTick !== 'undefined') {
+                tickCountElement.textContent = snapshotData.currentTick.toString();
+            }
+
+            // snapshotData.holdingAircraft and snapshotData.runways can be used here to draw out the real-time simulation
+            // ...
+        });
+
+        // Subscribe to the summary stream so we know when the simulation finishes
+        const summarySubscription = stompClient.subscribe('/simulation/summary', function () {
+            console.log('Simulation complete. Redirecting to results...');
+
+            // Close connection
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+
+            // Wait 2 secs for the user to see the bar hit 100% (for UI) then redirect
+            setTimeout(() => {
+                window.location.href = '/results.html';
+            }, 2000);
+        });
+
+    }, function(error) {
+        console.error('WebSocket Error: ', error);
+        // Web socket failure handling can happen here if necessary (maybe fallback to polling?)
+    });
 }
 
-function stopPolling() {
-    if (pollingInterval) {
-        clearInterval(pollingInterval);
-    }
-}
-
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    startPolling();
+    connectWebSocket();
 });
 
-// Clean up polling if user leaves the page
+// If user leaves page early, clean-up
 window.addEventListener('beforeunload', () => {
-    stopPolling();
+    if (stompClient !== null) {
+        stompClient.disconnect();
+    }
 });

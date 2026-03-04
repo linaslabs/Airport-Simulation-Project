@@ -22,6 +22,33 @@ public class Statistics {
     private int diversionCount = 0;
     private int cancellationCount = 0;
 
+    // If the calculation involves division by 0, we set the answer to 0.
+    public StatisticsSummary generateSummary(int duration) {
+        double avgHoldingTime = (totalAircraftLanded == 0) ? 0 : (double) totalHoldingTime / totalAircraftLanded;
+        double avgTakeOffDelay = (totalAircraftDeparted == 0) ? 0 : (double) totalTakeOffDelay / totalAircraftDeparted;
+        double avgArrivalDelay = (totalAircraftLanded == 0) ? 0 : (double) totalArrivalDelay / totalAircraftLanded;
+        double avgWaitTime = (totalAircraftDeparted == 0) ? 0 : (double) totalWaitTime / totalAircraftDeparted;
+
+        int totalOperations = totalAircraftDeparted + totalAircraftLanded;
+        double hourlyThroughput = (duration == 0) ? 0 : (totalOperations / (double) duration) * 60.0;
+
+        return new StatisticsSummary(
+                avgHoldingTime,
+                maxHoldingTime,
+                avgTakeOffDelay,
+                maxTakeOffDelay,
+                avgArrivalDelay,
+                maxArrivalDelay,
+                avgWaitTime,
+                maxWaitTime,
+                maxHoldingSize,
+                maxTakeOffQueueSize,
+                diversionCount,
+                cancellationCount,
+                hourlyThroughput
+        );
+    }
+
     public void recordHoldingSize(int size) {
         maxHoldingSize = Math.max(size, maxHoldingSize);
     }
@@ -70,30 +97,12 @@ public class Statistics {
         cancellationCount++;
     }
 
-    // If the calculation involves division by 0, we set the answer to 0. 
-    public StatisticsSummary generateSummary(int duration) {
-        double avgHoldingTime = (totalAircraftLanded == 0) ? 0 : (double) totalHoldingTime / totalAircraftLanded; 
-        double avgTakeOffDelay = (totalAircraftDeparted == 0) ? 0 : (double) totalTakeOffDelay / totalAircraftDeparted;
-        double avgArrivalDelay = (totalAircraftLanded == 0) ? 0 : (double) totalArrivalDelay / totalAircraftLanded; 
-        double avgWaitTime = (totalAircraftDeparted == 0) ? 0 : (double) totalWaitTime / totalAircraftDeparted;
+    // Getters for the real time SimulationSnapshot (add more if more stats needed)
+    public int getTotalAircraftLanded() { return totalAircraftLanded; }
 
-        int totalOperations = totalAircraftDeparted + totalAircraftLanded;
-        double hourlyThroughput = (duration == 0) ? 0 : (totalOperations / (double) duration) * 60.0;
+    public int getTotalAircraftDeparted() { return totalAircraftDeparted; }
 
-        return new StatisticsSummary(
-                avgHoldingTime,
-                maxHoldingTime,
-                avgTakeOffDelay,
-                maxTakeOffDelay,
-                avgArrivalDelay,
-                maxArrivalDelay,
-                avgWaitTime,
-                maxWaitTime,
-                maxHoldingSize,
-                maxTakeOffQueueSize,
-                diversionCount,
-                cancellationCount,
-                hourlyThroughput
-        );
-    }
+    public int getDiversionCount() { return diversionCount; }
+
+    public int getCancellationCount() { return cancellationCount; }
 }

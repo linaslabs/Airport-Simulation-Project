@@ -1,5 +1,7 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.AircraftEvent;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayEvent;
@@ -11,6 +13,9 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
 import java.util.*;
 
 public class EventManager {
+
+    private static final Logger log = LoggerFactory.getLogger(EventManager.class);
+
     private final EventLogger logger;
     private final Map<Integer, List<RunwayEvent>> scheduledRunwayEvents;
     private final Map<Integer, List<AircraftEvent>> scheduledAircraftEvents;
@@ -80,10 +85,15 @@ public class EventManager {
     public void triggerRunwayEvent(int runwayID, RunwayStatus status,  RunwayMode mode, int currentTick, int duration, boolean isNaturalEvent) {
         // If duration is > 0, this is a scheduled event, set another scheduled event in the future to reverse the changes
         // NOTE: this will currently override any user set runway events for that runway when a reversion happens
+
+        log.info("[TICK {}] [RUNWAY] ID: {} | Status: {} | Mode: {} | Duration: {} | Natural: {}", currentTick, runwayID, status, mode, duration, isNaturalEvent);
+
         if (duration > 0){
             RunwayConfig runwayPrevSnapshot = this.airport.getRunwaySnapshot(runwayID);
 
             int endTick = currentTick + duration;
+            log.info("            -> Scheduled Reversion created for Tick: {}", endTick);
+
             // Create the new runway reversion (that is of duration 0) to reverse this event when it finishes
             RunwayEvent reversionEvent = new RunwayEvent(endTick, runwayID, runwayPrevSnapshot.getStatus(), runwayPrevSnapshot.getMode(), RunwayEventType.REVERSION, 0);
 
@@ -112,8 +122,10 @@ public class EventManager {
         double emergencyRoll = this.random.nextDouble();
 
         if (emergencyRoll < tickMechanicalRate) {
+            log.info("[TICK {}] [RANDOM] Rolled Aircraft Emergency: MECHANICAL", currentTick);
             triggerAircraftEmergency(null, EmergencyStatus.MECHANICAL, currentTick, true);
         } else if (emergencyRoll < (tickMechanicalRate + tickHealthRate)) {
+            log.info("[TICK {}] [RANDOM] Rolled Aircraft Emergency: PASSENGER", currentTick);
             triggerAircraftEmergency(null, EmergencyStatus.PASSENGER, currentTick, true);
         }
 
@@ -140,6 +152,8 @@ public class EventManager {
 
                 // Checking if the roll landed to satisfy one of the rates
                 if (newRunwayStatus != null) {
+                    log.info("[TICK {}] [RANDOM] Rolled Runway Closure: {} on ID: {}", currentTick, newRunwayStatus, runway.getRunwayID());
+
                     // Generating a random number between 10 and 60 ticks
                     int duration = 10 + this.random.nextInt(51);
 
@@ -148,6 +162,7 @@ public class EventManager {
 
                     // Make sure that the duration of this random event is CAPPED so it finishes before the next scheduled runway event
                     if (ticksUntilNextEvent > 0 && duration > ticksUntilNextEvent) {
+                        log.info("            -> TRUNCATED duration from {} to {} to prevent overlap with user schedule.", duration, ticksUntilNextEvent);
                         duration = ticksUntilNextEvent;
                     }
 
@@ -196,32 +211,40 @@ public class EventManager {
     // Updates the aircraft status and logs the event respective to whether it was a scheduled emergency or a manual one
 
     public void triggerAircraftEmergency(String callsign, EmergencyStatus status, int currentTick, boolean isNaturalEvent){
+
+        log.info("[TICK {}] [AIRCRAFT] Triggering {} Emergency: {}", currentTick, (isNaturalEvent ? "NATURAL" : "SCHEDULED/MANUAL"), status);
+
         if (callsign == null){
             String randomCallsign = this.airport.getRandomHoldingAircraft(this.random);
             // If there is no current aircraft in the holding queue, there are no aircraft to set emergencies to
             if (randomCallsign != null) {
+                log.info("            -> Random callsign selected: {}", randomCallsign);
                 this.airport.updateAircraftStatus(randomCallsign, status);
                 this.logger.addEvent(new AircraftEvent(currentTick, randomCallsign, isNaturalEvent ? AircraftEventType.NATURAL_EMERGENCY : AircraftEventType.SCHEDULED_EMERGENCY, status));
             } else {
                 String emergencyType = isNaturalEvent ? "Natural" : "Scheduled";
-                System.out.println("Tick " + currentTick + ": " + emergencyType + " emergency skipped, holding pattern is empty.");
+                log.info("            -> WARNING: {} emergency skipped (holding pattern is empty).", emergencyType);
             }
         } else {
+            log.info("            -> Applying to specific callsign: {}", callsign);
             this.airport.updateAircraftStatus(callsign, status);
             this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.MANUAL_EMERGENCY, status));
         }
     }
 
     public void reportAircraftEmergency(String callsign, EmergencyStatus status, int currentTick){
+        log.info("[TICK {}] [REPORT] Escalating Natural Emergency for {} (Status: {})", currentTick, callsign, status);
         this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.NATURAL_EMERGENCY, status));
     }
 
     public void reportDiversion(String callsign, int currentTick){
+        log.info("[TICK {}] [REPORT] Aircraft Diverted due to low fuel: {}", currentTick, callsign);
         this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.DIVERSION, EmergencyStatus.FUEL));
         this.statistics.recordDiversion();
     }
 
     public void reportCancellation(String callsign, int currentTick){
+        log.info("[TICK {}] [REPORT] Aircraft Cancelled: {}", currentTick, callsign);
         this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.CANCELLATION, EmergencyStatus.NONE));
         this.statistics.recordCancellation();
     }
@@ -229,14 +252,16 @@ public class EventManager {
     // For each event scheduled for the current tick, this method triggers them
     public void processScheduledEvents(int currentTick){
         List<RunwayEvent> runwayEvents =  scheduledRunwayEvents.get(currentTick);
-        if (runwayEvents != null) {
+        if (runwayEvents != null && !runwayEvents.isEmpty()) {
+            log.info("[TICK {}] [SCHEDULE] Processing {} scheduled Runway Event(s).", currentTick, runwayEvents.size());
             for (RunwayEvent runwayEvent : runwayEvents) {
                 triggerRunwayEvent(runwayEvent.getRunwayID(), runwayEvent.getRunwayStatus(), runwayEvent.getRunwayMode(), currentTick, runwayEvent.getDuration(), false);
             }
         }
 
         List<AircraftEvent> aircraftEvents =  scheduledAircraftEvents.get(currentTick);
-        if (aircraftEvents != null) {
+        if (aircraftEvents != null && !aircraftEvents.isEmpty()) {
+            log.info("[TICK {}] [SCHEDULE] Processing {} scheduled Aircraft Event(s).", currentTick, aircraftEvents.size());
             for (AircraftEvent aircraftEvent : aircraftEvents) {
                 triggerAircraftEmergency(null, aircraftEvent.getStatus(),  currentTick, false);
             }

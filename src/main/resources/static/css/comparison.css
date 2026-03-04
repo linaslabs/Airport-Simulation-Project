@@ -59,6 +59,41 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.column-title span {
+    flex: 1;
+    text-align: center;
+}
+
+.btn-switch {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.btn-switch:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.btn-switch:active {
+    transform: translateY(0px);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* Comparison Sections */
@@ -383,5 +418,254 @@
     .param-value {
         font-size: 11px;
     }
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    position: relative;
+    margin: 0 auto;
+    /* 覆盖 results.css 的绝对定位 */
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+}
+
+/* Select Modal (Switch button) - 更大的弹窗 */
+#selectModal .modal-content {
+    max-width: 1400px;
+    width: 95%;
+    max-height: 85vh;
+}
+
+/* View Modal - 保持原样 */
+.view-modal-content {
+    max-width: 750px;
+}
+
+.view-modal-content .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.view-modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #0f172a;
+}
+
+.view-modal-body {
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    flex: 1;
+}
+
+.close-btn {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #64748b;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: #0f172a;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #0f172a;
+}
+
+.modal-table-container {
+    overflow-x: auto;
+}
+
+#selectList {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#selectList th,
+#selectList td {
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    text-align: left;
+}
+
+#selectList th {
+    background: #f8fafc;
+    font-weight: 700;
+}
+
+#selectList tr:hover {
+    background: #f1f5f9;
+}
+
+.btn.small {
+    padding: 8px 16px;
+    font-size: 14px;
+    min-width: auto;
+}
+
+/* Modal table styling */
+#selectList {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#selectList thead {
+    background: #f0f4f8;
+}
+
+#selectList th {
+    padding: 14px 12px;
+    border: 1px solid #cbd5e1;
+    text-align: left;
+    font-weight: 700;
+    color: #0f172a;
+    user-select: none;
+}
+
+#selectList th.sortable {
+    cursor: pointer;
+}
+
+#selectList th.sortable:hover {
+    background: #e2e8f0;
+}
+
+.sort-arrow {
+    margin-left: 6px;
+    opacity: 0.6;
+    font-size: 12px;
+}
+
+#selectList td {
+    padding: 16px 12px;
+    border: 1px solid #cbd5e1;
+    vertical-align: middle;
+    height: 130px;
+}
+
+#selectList td.sim-name {
+    font-weight: 700;
+    color: #0f172a;
+    min-width: 120px;
+}
+
+#selectList td.sim-date {
+    white-space: nowrap;
+    min-width: 140px;
+}
+
+#selectList td.sim-info {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #475569;
+    min-width: 280px;
+}
+
+#selectList tr:hover {
+    background: #f8fafc;
+}
+
+#selectList tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+/* Options buttons styling */
+#selectList td.sim-options {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    min-width: 200px;
+}
+
+.btn-option {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    min-width: 85px;
+}
+
+.btn-view {
+    background: #10b981;
+    border-color: #059669;
+}
+
+.btn-view:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.btn-compare {
+    background: #1f2937;
+    border-color: #111827;
+}
+
+.btn-compare:hover {
+    background: #111827;
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background: #ef4444;
+    border-color: #dc2626;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
 }
 
