@@ -41,9 +41,9 @@ public class SimulationConfig {
 
     // This isn't in class diagram, but it would be good to include in configuration page.
     @NotNull(message = "Tick time is required")
-    @Min(value = 100, message = "Tick time must be at least 100ms to prevent system overload.")
-    @Max(value = 10000, message = "Tick time cannont exceed 10,000ms (10 seconds).")
-    private Integer tickTime = 1000;
+    @Min(value = 1, message = "Tick time must be at least 1ms to prevent system overload.")
+    @Max(value = 10000, message = "Tick time cannot exceed 10,000ms (10 seconds).")
+    private Integer tickTime = 100;
 
     @NotNull(message = "Simulation duration is required")
     @Range(min = 60, max = 1440, message = "Simulation duration must be between 60 and 1440 minutes.")
