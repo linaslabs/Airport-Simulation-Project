@@ -78,8 +78,8 @@ function connectWebSocket() {
             // ...
         });
 
-        // Subscribe to the summary stream so we know when the simulation finishes
-        const summarySubscription = stompClient.subscribe('/simulation/summary', function () {
+        // Subscribe to the complete stream so we know when the simulation finishes
+        const completeSubscription = stompClient.subscribe('/simulation/complete', function () {
             console.log('Simulation complete. Redirecting to results...');
 
             // Close connection
@@ -93,6 +93,8 @@ function connectWebSocket() {
             }, 2000);
         });
 
+        // Tell the backend when we're ready to start.
+        stompClient.send("/app/simulation/ready", {}, "");
     }, function(error) {
         console.error('WebSocket Error: ', error);
         // Web socket failure handling can happen here if necessary (maybe fallback to polling?)

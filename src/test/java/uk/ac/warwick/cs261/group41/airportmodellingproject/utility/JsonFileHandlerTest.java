@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.SimulationMode;
 
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -50,7 +51,8 @@ class JsonFileHandlerTest {
                 false,
                 0.0, 0.0, 0.0, 0.0, 0.0,
                 42L,
-                new HashMap<>(), new HashMap<>()
+                new HashMap<>(), new HashMap<>(),
+                SimulationMode.QUICK_SIM
         );
     }
 
