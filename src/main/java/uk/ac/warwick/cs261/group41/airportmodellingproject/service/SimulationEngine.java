@@ -145,7 +145,7 @@ public class SimulationEngine {
     }
 
 
-    public List<SimulationEvent> getEventLog() { return this.eventLogger.getEventLog(); }
+    public EventLogger getEventLog() { return this.eventLogger; }
 
     public Airport getAirport() { return this.airport; }
 

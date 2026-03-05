@@ -254,7 +254,7 @@ public class SimulationService {
         }
 
         // Otherwise, a simulation must have been run, and it is finished so return its result.
-        return new SimulationResult(engine.getConfig(), engine.getStatistics());
+        return new SimulationResult(engine.getConfig(), engine.getStatistics(), engine.getEventLog());
     }
 
     public void saveSimulationResult(String name) {
@@ -270,6 +270,7 @@ public class SimulationService {
         SimulationResultSaved savedResult = new SimulationResultSaved(
                 engine.getConfig(),
                 engine.getStatistics(),
+                engine.getEventLog(),
                 safeName,
                 new Date()
         );
