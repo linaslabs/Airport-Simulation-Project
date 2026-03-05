@@ -44,6 +44,82 @@ function formatDate(dateValue) {
     return date.toLocaleString();
 }
 
+function toReadableText(rawValue) {
+    if (rawValue === null || rawValue === undefined || rawValue === '') {
+        return 'unknown';
+    }
+
+    const text = String(rawValue).toLowerCase();
+    const parts = text.split('_');
+    const outputParts = [];
+
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (!part) continue;
+        outputParts.push(part.charAt(0).toUpperCase() + part.slice(1));
+    }
+
+    return outputParts.join(' ');
+}
+
+function formatRawEventLog(rawEvents) {
+    const formatted = [];
+    if (!Array.isArray(rawEvents)) {
+        return formatted;
+    }
+
+    const sorted = rawEvents.slice();
+    sorted.sort(function (a, b) {
+        const tickA = (a && typeof a.tick === 'number') ? a.tick : Number.MAX_SAFE_INTEGER;
+        const tickB = (b && typeof b.tick === 'number') ? b.tick : Number.MAX_SAFE_INTEGER;
+        return tickA - tickB;
+    });
+
+    for (let i = 0; i < sorted.length; i++) {
+        const event = sorted[i] || {};
+        const tick = (typeof event.tick === 'number') ? event.tick : '--';
+
+        if (typeof event.runwayID === 'number') {
+            const runwayLabel = 'Runway ' + (event.runwayID + 1);
+            const eventType = toReadableText(event.type);
+            const status = toReadableText(event.runwayStatus);
+            const mode = toReadableText(event.runwayMode);
+
+            let duration = 'duration: unknown';
+            if (typeof event.duration === 'number') {
+                if (event.duration < 0) {
+                    duration = 'duration: indefinite';
+                } else if (event.duration === 0) {
+                    duration = 'duration: immediate';
+                } else {
+                    duration = 'duration: ' + event.duration + ' mins';
+                }
+            }
+
+            formatted.push('Minute ' + tick + ': ' + runwayLabel + ' ' + eventType + '. Status: ' + status + ', mode: ' + mode + ', ' + duration + '.');
+        } else {
+            const callsign = event.callsign ? ('aircraft ' + event.callsign) : 'an aircraft';
+            const eventType = toReadableText(event.type);
+            const status = toReadableText(event.status);
+            formatted.push('Minute ' + tick + ': ' + callsign + ' triggered ' + eventType + ' (' + status + ').');
+        }
+    }
+
+    return formatted;
+}
+
+function getEventLogLines(savedResult) {
+    if (savedResult && Array.isArray(savedResult.eventLog)) {
+        return savedResult.eventLog;
+    }
+
+    if (savedResult && savedResult.log && Array.isArray(savedResult.log.eventLog)) {
+        return formatRawEventLog(savedResult.log.eventLog);
+    }
+
+    return [];
+}
+
 async function fetchJson(url, options = {}) {
     const response = await fetch(url, options);
     if (!response.ok) {
@@ -120,6 +196,7 @@ function mapSavedResult(savedResult) {
             'Equipment Failure Rate': config.equipmentFailureRate ?? '--'
         },
         events: buildEventRows(config),
+        eventLog: getEventLogLines(savedResult),
         statistics: {
             throughput: toNumber(stats.hourlyThroughput),
             depAvgWait: toNumber(stats.avgWaitTime),
@@ -387,6 +464,7 @@ async function ensureCurrentSelectionAndLoad() {
 function populateSimulationData(simData, suffix) {
     populateConfigTable(simData, `config${suffix}`);
     populateEventsTable(simData.events, `events${suffix}`);
+    populateEventLog(simData.eventLog, `eventLog${suffix}`);
 
     const stats = simData.statistics;
     setText(`throughput${suffix}`, `${formatNumber(stats.throughput)} /hr`);
@@ -400,6 +478,27 @@ function populateSimulationData(simData, suffix) {
     setText(`arrMaxDelay${suffix}`, `${formatNumber(stats.arrMaxDelay)} mins`);
     setText(`arrAvgDelay${suffix}`, `${formatNumber(stats.arrAvgDelay)} mins`);
     setText(`arrDiverted${suffix}`, formatInteger(stats.arrDiverted));
+}
+
+function populateEventLog(eventLog, targetId) {
+    const list = document.getElementById(targetId);
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    if (!Array.isArray(eventLog) || eventLog.length === 0) {
+        const emptyItem = document.createElement('li');
+        emptyItem.className = 'event-log-empty';
+        emptyItem.textContent = 'No events logged.';
+        list.appendChild(emptyItem);
+        return;
+    }
+
+    eventLog.forEach(line => {
+        const item = document.createElement('li');
+        item.textContent = line;
+        list.appendChild(item);
+    });
 }
 
 function populateConfigTable(simData, targetId) {

@@ -7,6 +7,103 @@ function formatNumber(num) {
     return typeof num === 'number' ? num.toFixed(2) : '--';
 }
 
+function toReadableText(rawValue) {
+    if (rawValue === null || rawValue === undefined || rawValue === '') {
+        return 'unknown';
+    }
+
+    const text = String(rawValue).toLowerCase();
+    const parts = text.split('_');
+    const outputParts = [];
+
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (!part) continue;
+        outputParts.push(part.charAt(0).toUpperCase() + part.slice(1));
+    }
+
+    return outputParts.join(' ');
+}
+
+function formatRawEventLog(rawEvents) {
+    const formatted = [];
+    if (!Array.isArray(rawEvents)) {
+        return formatted;
+    }
+
+    const sorted = rawEvents.slice();
+    sorted.sort(function (a, b) {
+        const tickA = (a && typeof a.tick === 'number') ? a.tick : Number.MAX_SAFE_INTEGER;
+        const tickB = (b && typeof b.tick === 'number') ? b.tick : Number.MAX_SAFE_INTEGER;
+        return tickA - tickB;
+    });
+
+    for (let i = 0; i < sorted.length; i++) {
+        const event = sorted[i] || {};
+        const tick = (typeof event.tick === 'number') ? event.tick : '--';
+
+        if (typeof event.runwayID === 'number') {
+            const runwayLabel = 'Runway ' + (event.runwayID + 1);
+            const eventType = toReadableText(event.type);
+            const status = toReadableText(event.runwayStatus);
+            const mode = toReadableText(event.runwayMode);
+
+            let duration = 'duration: unknown';
+            if (typeof event.duration === 'number') {
+                if (event.duration < 0) {
+                    duration = 'duration: indefinite';
+                } else if (event.duration === 0) {
+                    duration = 'duration: immediate';
+                } else {
+                    duration = 'duration: ' + event.duration + ' mins';
+                }
+            }
+
+            formatted.push('Minute ' + tick + ': ' + runwayLabel + ' ' + eventType + '. Status: ' + status + ', mode: ' + mode + ', ' + duration + '.');
+        } else {
+            const callsign = event.callsign ? ('aircraft ' + event.callsign) : 'an aircraft';
+            const eventType = toReadableText(event.type);
+            const status = toReadableText(event.status);
+            formatted.push('Minute ' + tick + ': ' + callsign + ' triggered ' + eventType + ' (' + status + ').');
+        }
+    }
+
+    return formatted;
+}
+
+function getEventLogLines(data) {
+    if (data && Array.isArray(data.eventLog)) {
+        return data.eventLog;
+    }
+
+    if (data && data.log && Array.isArray(data.log.eventLog)) {
+        return formatRawEventLog(data.log.eventLog);
+    }
+
+    return [];
+}
+
+function renderEventLog(eventLog) {
+    const list = document.getElementById('resultEventLog');
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    if (!Array.isArray(eventLog) || eventLog.length === 0) {
+        const emptyItem = document.createElement('li');
+        emptyItem.className = 'event-log-empty';
+        emptyItem.textContent = 'No events logged.';
+        list.appendChild(emptyItem);
+        return;
+    }
+
+    eventLog.forEach(line => {
+        const item = document.createElement('li');
+        item.textContent = line;
+        list.appendChild(item);
+    });
+}
+
 function loadResults(){
     fetch('/api/results/lastresult')
         .then(response => {
@@ -41,6 +138,8 @@ function loadResults(){
             setText("arrMaxDelay", formatNumber(statistics.maxArrivalDelay));
             setText("arrAvgDelay", formatNumber(statistics.avgArrivalDelay));
             setText("arrDiverted", statistics.diversionCount);
+
+            renderEventLog(getEventLogLines(data));
         })
         .catch(error => {
             console.error('Error loading results:', error);
