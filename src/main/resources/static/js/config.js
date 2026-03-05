@@ -167,7 +167,7 @@ function startSimulation() {
         // Logic Configuration
         automaticGenerationEnabled: document.getElementById("input-auto_gen")?.checked || false,
         seed: parseInt(document.getElementById("input-seed")?.value) || 0,
-        tickTime: 1000,
+        tickTime: 20,
 
         // Parameters
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
@@ -180,7 +180,9 @@ function startSimulation() {
         passengerHealthIssueRate: parseFloat(document.getElementById("input-health_issue_rate")?.value) || 0.01,
         runwayInspectionRate: parseFloat(document.getElementById("input-inspection_rate")?.value) || 0.01,
         snowClearanceRate: parseFloat(document.getElementById("input-snow_rate")?.value) || 0.01,
-        equipmentFailureRate: parseFloat(document.getElementById("input-equip_failure_rate")?.value) || 0.01
+        equipmentFailureRate: parseFloat(document.getElementById("input-equip_failure_rate")?.value) || 0.01,
+
+        simulationMode: document.getElementById("simulation-mode").value
     };
 
     console.log("Sending Payload:", payload); // Debug check
