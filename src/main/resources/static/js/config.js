@@ -211,7 +211,7 @@ function startSimulation() {
         .then(data => {
             console.log('Configuration validated:', data);
             // Now start the simulation
-            return fetch('/api/simulation/start', {
+            return fetch('/api/simulation/initialise', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
