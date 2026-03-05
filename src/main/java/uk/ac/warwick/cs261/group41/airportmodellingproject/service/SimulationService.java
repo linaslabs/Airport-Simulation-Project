@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.SimulationMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandler;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -46,8 +47,6 @@ public class SimulationService {
         // Stop any simulations previously
         stopSimulation();
 
-        config.setTickTime(10);
-
         this.isFinished = false;
         this.engine = new SimulationEngine(config);
 
@@ -83,8 +82,16 @@ public class SimulationService {
             simulationTask.cancel(false);
         }
 
-        // Comment or uncomment the below line to switch between fast forwarding the simulation or not.
-        fastForwardToEnd();
+        if (engine.getConfig().getSimulationMode() == SimulationMode.QUICK_SIM) {
+            fastForwardToEnd();
+            return;
+        }
+        else if (engine.getConfig().getSimulationMode() == SimulationMode.TABLE_VIEW) {
+            System.out.println("Add function to tell the frontend to show the table view.");
+        }
+        else if (engine.getConfig().getSimulationMode() == SimulationMode.GRAPHICAL_VIEW) {
+            System.out.println("Add function to tell the frontend to show the graphical view.");
+        }
 
         // Schedule the runTick method (which will call performTick) to execute at the currentTickDelay rate
         simulationTask = executor.scheduleWithFixedDelay(
@@ -347,7 +354,6 @@ public class SimulationService {
         log.info("\n==================================================");
         log.info("===     SIMULATION CONFIGURATION RECEIVED      ===");
         log.info("==================================================");
-        log.info("-> Simulation ID: {}", config.getSimulationID());
         log.info("-> Seed:          {}", config.getSeed());
         log.info("-> Duration:      {} ticks", config.getDuration());
         log.info("-> Tick Time:     {} ms", config.getTickTime());
