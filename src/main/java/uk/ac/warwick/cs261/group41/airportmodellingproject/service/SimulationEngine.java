@@ -98,7 +98,7 @@ public class SimulationEngine {
     }
 
     public SimulationProgress getSimulationProgress() {
-        return new SimulationProgress((double) this.currentTick / this.durationTicks);
+        return new SimulationProgress(this.currentTick, (double) this.currentTick / this.durationTicks);
     }
 
     public SimulationSnapshot getSimulationSnapshot(){

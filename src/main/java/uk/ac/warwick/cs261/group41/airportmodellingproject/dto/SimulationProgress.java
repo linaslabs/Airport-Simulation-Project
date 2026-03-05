@@ -4,14 +4,19 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SimulationProgress {
-    private final double progressPercentage;
+    private final Integer currentTick;
+    private final double progressPercent;
 
-    @JsonCreator
-    public SimulationProgress(@JsonProperty("progressPercentage") double progressPercentage) {
-        this.progressPercentage = progressPercentage;
+    public SimulationProgress(int currentTick, double progressPercent) {
+        this.currentTick = currentTick;
+        this.progressPercent = progressPercent;
     }
 
-    public double getProgressPercentage() {
-        return progressPercentage;
+    public int getCurrentTick() {
+        return currentTick;
+    }
+
+    public double getProgressPercent() {
+        return progressPercent;
     }
 }
