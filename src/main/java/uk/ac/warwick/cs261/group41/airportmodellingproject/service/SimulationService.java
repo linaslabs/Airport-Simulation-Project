@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.SimulationMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandler;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -42,7 +43,7 @@ public class SimulationService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public void startSimulation(SimulationConfig config) {
+    public void initialiseSimulation(SimulationConfig config) {
         // Stop any simulations previously
         stopSimulation();
 
@@ -61,6 +62,14 @@ public class SimulationService {
         // Set the configuration tick time (the real-delay in ms between each tick)
         this.currentTickDelay = config.getTickTime();
         this.isPaused = false;
+    }
+
+    // This is only called once the frontend sends a message back to tell the backend its websockets are set up.
+    public void startSimulation() {
+        if (isFinished || engine == null) {
+            log.warn("Ignoring ready signal - no simulation is waiting to start, the user likely clicked back in their browser.");
+            return;
+        }
 
         scheduleNextTick();
     }
@@ -71,6 +80,17 @@ public class SimulationService {
         // If there is a task already running, send a cancel signal to gracefully shut down the task once its complete, so we can make a new one (with a shorter interval)
         if (simulationTask != null) {
             simulationTask.cancel(false);
+        }
+
+        if (engine.getConfig().getSimulationMode() == SimulationMode.QUICK_SIM) {
+            fastForwardToEnd();
+            return;
+        }
+        else if (engine.getConfig().getSimulationMode() == SimulationMode.TABLE_VIEW) {
+            System.out.println("Add function to tell the frontend to show the table view.");
+        }
+        else if (engine.getConfig().getSimulationMode() == SimulationMode.GRAPHICAL_VIEW) {
+            System.out.println("Add function to tell the frontend to show the graphical view.");
         }
 
         // Schedule the runTick method (which will call performTick) to execute at the currentTickDelay rate
@@ -96,8 +116,8 @@ public class SimulationService {
             stopSimulation();
             log.info("Simulation ended.");
 
-            // Final statistics summary are sent to the channel "/simulation/summary" which the front end is subscribed to (the web socket)
-            messagingTemplate.convertAndSend("/simulation/summary", this.engine.getStatistics());
+            // Notification that the simulation has completed is sent to the channel "/simulation/complete" which the front end is subscribed to (the web socket)
+            messagingTemplate.convertAndSend("/simulation/complete", "done");
         } else{
 
             // Simulation snapshot is sent to the channel "/simulation/snapshot" which the front end is subscribed to (the web socket)
@@ -142,16 +162,33 @@ public class SimulationService {
             return;
         }
 
-        // Submit a task to performTick as fast as possible (note, the user cannot stop the simulation while this runs)
+        // Submit a task to performTick as fast as possible (note, the user cannot stop the simulation while this runs).
+        // I added a notion of ticks to this so the progress indicator can update while this is being executed.
         executor.submit(() -> {
+            int tickCount = 0;
             while (currentEngine.performTick()) {
-                // Engine runs to the end without delays
+                // Engine runs to the end without delays - Comment no longer true.
+                // Now the engine runs to the end almost as fast as possible.
+                // The only thing it does it track the number of ticks and every 100 ticks it updates the progress percentage shown in the progress screen.
+                tickCount++;
+                if (tickCount % 100 == 0) {
+                    messagingTemplate.convertAndSend("/simulation/snapshot",
+                            new SimulationProgress(
+                                    currentEngine.getCurrentTick(),
+                                    (double) currentEngine.getCurrentTick() / currentEngine.getDurationTicks()
+                            )
+                    );
+                }
             }
-            stopSimulation();
+            this.isFinished = true;
 
-            // Send the final summary to the frontend
-            messagingTemplate.convertAndSend("/simulation/summary", this.engine.getStatistics());
+            // Notify the frontend that the simulation has completed.
+            // We don't send the results here as we get the results using a GET request when we swap to the results page.
+            messagingTemplate.convertAndSend("/simulation/complete", "done");
             log.info("Simulation ended.");
+
+            // Shut down from a separate thread, not from within the executor itself.
+            new Thread(this::stopSimulation).start();
         });
     }
 
@@ -166,7 +203,7 @@ public class SimulationService {
 
     public SimulationProgress getSimulationProgress() {
         // Return percentage of time through duration the simulation is.
-        if (this.engine == null) return new SimulationProgress(0.0);
+        if (this.engine == null) return new SimulationProgress(0, 0.0);
         return this.engine.getSimulationProgress();
     }
 
@@ -317,7 +354,6 @@ public class SimulationService {
         log.info("\n==================================================");
         log.info("===     SIMULATION CONFIGURATION RECEIVED      ===");
         log.info("==================================================");
-        log.info("-> Simulation ID: {}", config.getSimulationID());
         log.info("-> Seed:          {}", config.getSeed());
         log.info("-> Duration:      {} ticks", config.getDuration());
         log.info("-> Tick Time:     {} ms", config.getTickTime());
