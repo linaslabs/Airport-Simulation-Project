@@ -42,9 +42,11 @@ public class SimulationService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public void startSimulation(SimulationConfig config) {
+    public void initialiseSimulation(SimulationConfig config) {
         // Stop any simulations previously
         stopSimulation();
+
+        config.setTickTime(10);
 
         this.isFinished = false;
         this.engine = new SimulationEngine(config);
@@ -61,6 +63,14 @@ public class SimulationService {
         // Set the configuration tick time (the real-delay in ms between each tick)
         this.currentTickDelay = config.getTickTime();
         this.isPaused = false;
+    }
+
+    // This is only called once the frontend sends a message back to tell the backend its websockets are set up.
+    public void startSimulation() {
+        if (isFinished || engine == null) {
+            log.warn("Ignoring ready signal - no simulation is waiting to start, the user likely clicked back in their browser.");
+            return;
+        }
 
         scheduleNextTick();
     }
@@ -72,6 +82,9 @@ public class SimulationService {
         if (simulationTask != null) {
             simulationTask.cancel(false);
         }
+
+        // Comment or uncomment the below line to switch between fast forwarding the simulation or not.
+        fastForwardToEnd();
 
         // Schedule the runTick method (which will call performTick) to execute at the currentTickDelay rate
         simulationTask = executor.scheduleWithFixedDelay(
@@ -96,8 +109,8 @@ public class SimulationService {
             stopSimulation();
             log.info("Simulation ended.");
 
-            // Final statistics summary are sent to the channel "/simulation/summary" which the front end is subscribed to (the web socket)
-            messagingTemplate.convertAndSend("/simulation/summary", this.engine.getStatistics());
+            // Notification that the simulation has completed is sent to the channel "/simulation/complete" which the front end is subscribed to (the web socket)
+            messagingTemplate.convertAndSend("/simulation/complete", "done");
         } else{
 
             // Simulation snapshot is sent to the channel "/simulation/snapshot" which the front end is subscribed to (the web socket)
@@ -142,16 +155,33 @@ public class SimulationService {
             return;
         }
 
-        // Submit a task to performTick as fast as possible (note, the user cannot stop the simulation while this runs)
+        // Submit a task to performTick as fast as possible (note, the user cannot stop the simulation while this runs).
+        // I added a notion of ticks to this so the progress indicator can update while this is being executed.
         executor.submit(() -> {
+            int tickCount = 0;
             while (currentEngine.performTick()) {
-                // Engine runs to the end without delays
+                // Engine runs to the end without delays - Comment no longer true.
+                // Now the engine runs to the end almost as fast as possible.
+                // The only thing it does it track the number of ticks and every 100 ticks it updates the progress percentage shown in the progress screen.
+                tickCount++;
+                if (tickCount % 100 == 0) {
+                    messagingTemplate.convertAndSend("/simulation/snapshot",
+                            new SimulationProgress(
+                                    currentEngine.getCurrentTick(),
+                                    (double) currentEngine.getCurrentTick() / currentEngine.getDurationTicks()
+                            )
+                    );
+                }
             }
-            stopSimulation();
+            this.isFinished = true;
 
-            // Send the final summary to the frontend
-            messagingTemplate.convertAndSend("/simulation/summary", this.engine.getStatistics());
+            // Notify the frontend that the simulation has completed.
+            // We don't send the results here as we get the results using a GET request when we swap to the results page.
+            messagingTemplate.convertAndSend("/simulation/complete", "done");
             log.info("Simulation ended.");
+
+            // Shut down from a separate thread, not from within the executor itself.
+            new Thread(this::stopSimulation).start();
         });
     }
 
@@ -166,7 +196,7 @@ public class SimulationService {
 
     public SimulationProgress getSimulationProgress() {
         // Return percentage of time through duration the simulation is.
-        if (this.engine == null) return new SimulationProgress(0.0);
+        if (this.engine == null) return new SimulationProgress(0, 0.0);
         return this.engine.getSimulationProgress();
     }
 
