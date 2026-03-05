@@ -39,7 +39,8 @@ public class ConfigurationTemplate extends SimulationConfig {
                 config.getEquipmentFailureRate(),
                 config.getSeed(),
                 config.getScheduledRunwayEvents(),
-                config.getScheduledAircraftEvents()
+                config.getScheduledAircraftEvents(),
+                config.getSimulationMode()
         );
         this.templateName = templateName;
         this.dateCreated = dateCreated;
