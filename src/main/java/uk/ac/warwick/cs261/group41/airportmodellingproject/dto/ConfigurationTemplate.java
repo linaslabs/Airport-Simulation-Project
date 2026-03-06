@@ -1,5 +1,6 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.Date;
@@ -22,6 +23,7 @@ public class ConfigurationTemplate extends SimulationConfig {
     public ConfigurationTemplate() { super(); }
 
     // Constructor used to create a ConfigurationTemplate from an existing SimulationConfig object, used for testing.
+    @JsonIgnore
     public ConfigurationTemplate(String templateName, Date dateCreated, SimulationConfig config) {
         // Pass the data up to the parent's parameterised constructor.
         super(
