@@ -3,7 +3,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.enums;
 public enum AircraftEventType {
     SCHEDULED_EMERGENCY,
     MANUAL_EMERGENCY,
-    NATURAL_EMERGENCY,
+    RANDOMLY_GENERATED_EMERGENCY,
     CANCELLATION,
     DIVERSION
 }
