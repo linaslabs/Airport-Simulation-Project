@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Range;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.SimulationMode;
 
 import java.util.*;
 
@@ -41,9 +42,9 @@ public class SimulationConfig {
 
     // This isn't in class diagram, but it would be good to include in configuration page.
     @NotNull(message = "Tick time is required")
-    @Min(value = 100, message = "Tick time must be at least 100ms to prevent system overload.")
-    @Max(value = 10000, message = "Tick time cannont exceed 10,000ms (10 seconds).")
-    private Integer tickTime = 1000;
+    @Min(value = 1, message = "Tick time must be at least 1ms to prevent system overload.")
+    @Max(value = 10000, message = "Tick time cannot exceed 10,000ms (10 seconds).")
+    private Integer tickTime = 10;
 
     @NotNull(message = "Simulation duration is required")
     @Range(min = 60, max = 1440, message = "Simulation duration must be between 60 and 1440 minutes.")
@@ -87,7 +88,7 @@ public class SimulationConfig {
     @Valid
     private Map<Integer, List<AircraftEvent>> scheduledAircraftEvents = new HashMap<>();
 
-    private String simulationID; // Generated using the current time when the user clicks start.
+    private SimulationMode simulationMode;
 
     // Default constructor required for Jackson to turn the JSON into this object.
     public SimulationConfig() {}
@@ -97,7 +98,8 @@ public class SimulationConfig {
                             Integer duration, Integer tickTime, Boolean automaticGenerationEnabled, Double mechanicalFailureRate, Double passengerHealthIssueRate,
                             Double runwayInspectionRate, Double snowClearanceRate, Double equipmentFailureRate, Long seed,
                             Map<Integer, List<RunwayEvent>> scheduledRunwayEvents,
-                            Map<Integer, List<AircraftEvent>> scheduledAircraftEvents) {
+                            Map<Integer, List<AircraftEvent>> scheduledAircraftEvents,
+                            SimulationMode simulationMode) {
         // Copy the runway list in case the original list is modified.
         this.runwaySettings = (runwaySettings != null) ? new ArrayList<>(runwaySettings) : new ArrayList<>();
         this.inboundRate = inboundRate;
@@ -117,6 +119,8 @@ public class SimulationConfig {
         this.seed = seed;
         this.scheduledRunwayEvents = (scheduledRunwayEvents != null) ? new HashMap<>(scheduledRunwayEvents) : new HashMap<>();
         this.scheduledAircraftEvents = (scheduledAircraftEvents != null) ? new HashMap<>(scheduledAircraftEvents) : new HashMap<>();
+
+        this.simulationMode = simulationMode;
     }
 
     public List<RunwayConfig> getRunwaySettings() {
@@ -188,10 +192,6 @@ public class SimulationConfig {
         this.seed = seed;
     }
 
-    public String getSimulationID() { return simulationID; }
-
-    public void setSimulationID(String simulationID) { this.simulationID = simulationID; }
-
     public Double getMechanicalFailureRate() { return mechanicalFailureRate; }
 
     public void setMechanicalFailureRate(Double mechanicalFailureRate) { this.mechanicalFailureRate = mechanicalFailureRate; }
@@ -211,6 +211,14 @@ public class SimulationConfig {
     public Double getEquipmentFailureRate() { return equipmentFailureRate; }
 
     public void setEquipmentFailureRate(Double equipmentFailureRate) { this.equipmentFailureRate = equipmentFailureRate; }
+
+    public SimulationMode getSimulationMode() {
+        return simulationMode;
+    }
+
+    public void setSimulationMode(SimulationMode simulationMode) {
+        this.simulationMode = simulationMode;
+    }
 }
 
 
