@@ -53,7 +53,7 @@ function formatRawEventLog(rawEvents) {
                 if (event.duration < 0) {
                     duration = 'duration: indefinite';
                 } else if (event.duration === 0) {
-                    duration = 'duration: immediate';
+                    duration = 'duration: unspecified';
                 } else {
                     duration = 'duration: ' + event.duration + ' mins';
                 }
@@ -61,7 +61,7 @@ function formatRawEventLog(rawEvents) {
 
             formatted.push('Minute ' + tick + ': ' + runwayLabel + ' ' + eventType + '. Status: ' + status + ', mode: ' + mode + ', ' + duration + '.');
         } else {
-            const callsign = event.callsign ? ('aircraft ' + event.callsign) : 'an aircraft';
+            const callsign = event.callsign ? ('Aircraft ' + event.callsign) : 'an aircraft';
             const eventType = toReadableText(event.type);
             const status = toReadableText(event.status);
             formatted.push('Minute ' + tick + ': ' + callsign + ' triggered ' + eventType + ' (' + status + ').');
