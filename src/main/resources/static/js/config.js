@@ -603,8 +603,8 @@ function applyConfigToPage(data) {
     const backendToEventName = {
         'AVAILABLE': 'Available',
         'INSPECTION': 'Runway Inspection',
-        'SNOWCLEARANCE': 'Snow Clearance',
-        'FAILURE': 'Equipment Failure',
+        'SNOW_CLEARANCE': 'Snow Clearance',
+        'EQUIPMENT_FAILURE': 'Equipment Failure',
         'MECHANICAL': 'Mechanical Failure',
         'PASSENGER': 'Passenger Health'
     };
