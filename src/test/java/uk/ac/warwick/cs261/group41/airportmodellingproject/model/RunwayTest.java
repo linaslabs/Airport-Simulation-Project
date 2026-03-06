@@ -35,12 +35,12 @@ class RunwayTest {
     void isAvailable_shouldBeFalse_whenStatusNotAvailable_evenIfNotOccupied() {
         // Ensures non-AVAILABLE runway statuses block use of the runway.
         Runway runwayInspection = newRunway(RunwayMode.MIXED, RunwayStatus.INSPECTION);
-        Runway runwaySnow = newRunway(RunwayMode.MIXED, RunwayStatus.SNOWCLEARANCE);
-        Runway runwayFailure = newRunway(RunwayMode.MIXED, RunwayStatus.FAILURE);
+        Runway runwaySnow = newRunway(RunwayMode.MIXED, RunwayStatus.SNOW_CLEARANCE);
+        Runway runwayFailure = newRunway(RunwayMode.MIXED, RunwayStatus.EQUIPMENT_FAILURE);
 
         assertFalse(runwayInspection.isAvailable(100), "Runway should not be available during INSPECTION.");
-        assertFalse(runwaySnow.isAvailable(100), "Runway should not be available during SNOWCLEARANCE.");
-        assertFalse(runwayFailure.isAvailable(100), "Runway should not be available during FAILURE.");
+        assertFalse(runwaySnow.isAvailable(100), "Runway should not be available during SNOW_CLEARANCE.");
+        assertFalse(runwayFailure.isAvailable(100), "Runway should not be available during EQUIPMENT_FAILURE.");
     }
 
     @Test
@@ -107,10 +107,10 @@ class RunwayTest {
         Runway runway = newRunway(RunwayMode.MIXED, RunwayStatus.AVAILABLE);
 
         runway.setMode(RunwayMode.LANDING);
-        runway.setStatus(RunwayStatus.FAILURE);
+        runway.setStatus(RunwayStatus.EQUIPMENT_FAILURE);
 
         assertEquals(RunwayMode.LANDING, runway.getMode(), "Expected mode setter to update runway mode.");
-        assertEquals(RunwayStatus.FAILURE, runway.getStatus(), "Expected status setter to update runway status.");
-        assertFalse(runway.isAvailable(100), "FAILURE status should block availability.");
+        assertEquals(RunwayStatus.EQUIPMENT_FAILURE, runway.getStatus(), "Expected status setter to update runway status.");
+        assertFalse(runway.isAvailable(100), "EQUIPMENT_FAILURE status should block availability.");
     }
 }
