@@ -43,7 +43,7 @@ function connectWebSocket() {
 
             // Update the current tick count display, if present
             const tickCountElement = document.getElementById('tickCount');
-            if (tickCountElement && typeof snapshotData.currentTick !== 'undefined') {
+            if (tickCountElement && typeof snapshotData.currentTick !== null) {
                 tickCountElement.textContent = snapshotData.currentTick.toString();
             }
         });
@@ -60,7 +60,7 @@ function connectWebSocket() {
                 stompClient.disconnect();
             }
 
-            // Wait half a second secs for the user to see the bar hit 100% (for UI) then redirect
+            // Wait half a second for the user to see the bar hit 100% (for UI) then redirect
             setTimeout(() => {
                 window.location.href = '/results.html';
             }, 500);

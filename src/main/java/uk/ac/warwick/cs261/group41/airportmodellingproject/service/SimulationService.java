@@ -114,7 +114,7 @@ public class SimulationService {
         if (!continueSimulation){
             this.isFinished = true;
             stopSimulation();
-            log.info("Simulation ended.");
+            log.info("Simulation ended naturally.");
 
             // Notification that the simulation has completed is sent to the channel "/simulation/complete" which the front end is subscribed to (the web socket)
             messagingTemplate.convertAndSend("/simulation/complete", "done");
@@ -193,10 +193,16 @@ public class SimulationService {
     }
 
     public void stopSimulation() {
+        this.isFinished = true;
+        this.isPaused = false; // in case
+
         // Let the simulation shut down gracefully
         if (simulationTask != null) {
             simulationTask.cancel(false);
         }
+
+        log.info("Simulation ended forcefully.");
+
 
         // executor.shutdown() can be called to shut it down completely, but leaving it alive means the user can start a new simulation later
     }

@@ -126,10 +126,6 @@
     to { transform: rotate(360deg); }
 }
 
-.progress-wrap {
-    padding-top: 20px;
-}
-
 .progress-header {
     display: flex;
     justify-content: space-between;
@@ -222,10 +218,13 @@
 body {
     height: 100vh;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .progress-wrap {
-    height: 100vh;
+    flex-grow: 1;
+    min-height: 0;
     padding-bottom: 20px !important;
     display: flex;
     flex-direction: column;

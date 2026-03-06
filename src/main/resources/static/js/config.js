@@ -248,7 +248,7 @@ function startSimulation() {
         .then(data => {
             console.log('Simulation started:', data);
             // Redirect to progress page
-            simMode = payload.simulationMode
+            const simMode = payload.simulationMode
 
             if (simMode == "QUICK_SIM"){
                 window.location.href = '/quick-progress.html';
