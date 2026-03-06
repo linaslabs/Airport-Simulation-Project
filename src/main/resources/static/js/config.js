@@ -441,29 +441,40 @@ function formatEventsForBackend(frontendEvents) {
     let aircraftMap = {};
 
     frontendEvents.forEach(ev => {
-        const tick = parseInt(ev.time);
+        const tickTime = parseInt(ev.time);
+
         if (ev.type === "Runway") {
-            if (!runwayMap[tick]) runwayMap[tick] = [];
+            let status = 'AVAILABLE';
 
-            // THE FIX: Catch "No Change" and turn it into null
-            const safeMode = (ev.mode === "null" || ev.mode === "No Change" || ev.mode === "" || !ev.mode) ? null : ev.mode;
+            if (ev.name === "Runway Inspection") status = 'INSPECTION';
+            else if (ev.name === "Snow Clearance") {
+                status = 'SNOW_CLEARANCE'; // UPDATED TO MATCH MAIN
+            } else if (ev.name === "Equipment Failure") {
+                status = 'EQUIPMENT_FAILURE'; // UPDATED TO MATCH MAIN
+            }
 
-            runwayMap[tick].push({
-                tick: tick,
+            if (!runwayMap[tickTime]) runwayMap[tickTime] = [];
+
+            runwayMap[tickTime].push({
+                tick: tickTime,
                 runwayID: parseInt(ev.locationId),
+                status: status,
+                mode: ev.mode || 'MIXED',
                 type: 'SCHEDULED_CHANGE',
-                duration: parseInt(ev.duration) || 30,
-                // THE FIX: Catch "No Change" for the status as well
-                status: (ev.name === "No Change" || !ev.name) ? null : (eventNameToStatusEnum[ev.name] ?? null),
-                mode: safeMode
+                duration: ev.duration
             });
-        } else {
-            if (!aircraftMap[tick]) aircraftMap[tick] = [];
-            aircraftMap[tick].push({
-                tick: tick,
-                callsign: "BAW" + Math.floor(Math.random() * 900 + 100),
+        }
+        else if (ev.type === "Aircraft") {
+            let status = 'NONE';
+            if (ev.name === "Mechanical Failure") status = 'MECHANICAL';
+            else if (ev.name === "Passenger Health") status = 'PASSENGER';
+
+            if (!aircraftMap[tickTime]) aircraftMap[tickTime] = [];
+            aircraftMap[tickTime].push({
+                tick: tickTime,
+                callsign: null,
                 type: 'SCHEDULED_EMERGENCY',
-                status: eventNameToEmergencyEnum[ev.name] ?? 'MECHANICAL'
+                status: status
             });
         }
     });
