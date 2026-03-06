@@ -106,7 +106,7 @@ public class EventManager {
         // If the duration is less than 0, then we know it's a manual change by the user, if it's a scheduled change (since it wasn't a natural event to begin with)
         // If the duration is therefore equal to 0, we know its a reversion
         this.logger.addEvent(new RunwayEvent(currentTick, runwayID, status, mode,
-                isNaturalEvent ? RunwayEventType.NATURAL_CLOSURE : (duration < 0) ? RunwayEventType.MANUAL_CHANGE :
+                isNaturalEvent ? RunwayEventType.RANDOMLY_GENERATED_CLOSURE : (duration < 0) ? RunwayEventType.MANUAL_CHANGE :
                         (duration > 0) ? RunwayEventType.SCHEDULED_CHANGE : RunwayEventType.REVERSION, duration));
     }
 
@@ -145,9 +145,9 @@ public class EventManager {
                 if (runwayRoll < tickInspectionRate) {
                     newRunwayStatus = RunwayStatus.INSPECTION;
                 } else if (runwayRoll < (tickInspectionRate + tickSnowRate)) {
-                    newRunwayStatus = RunwayStatus.SNOWCLEARANCE;
+                    newRunwayStatus = RunwayStatus.SNOW_CLEARANCE;
                 } else if (runwayRoll < (tickInspectionRate + tickSnowRate + tickFailureRate)) {
-                    newRunwayStatus = RunwayStatus.FAILURE;
+                    newRunwayStatus = RunwayStatus.EQUIPMENT_FAILURE;
                 }
 
                 // Checking if the roll landed to satisfy one of the rates
@@ -167,7 +167,7 @@ public class EventManager {
                     }
 
                     // Trigger the event
-                    triggerRunwayEvent(runway.getRunwayID(),  newRunwayStatus, null, currentTick, duration, true);
+                    triggerRunwayEvent(runway.getRunwayID(),  newRunwayStatus, RunwayMode.CLOSED, currentTick, duration, true);
                 }
             }
         }
@@ -220,7 +220,7 @@ public class EventManager {
             if (randomCallsign != null) {
                 log.info("            -> Random callsign selected: {}", randomCallsign);
                 this.airport.updateAircraftStatus(randomCallsign, status);
-                this.logger.addEvent(new AircraftEvent(currentTick, randomCallsign, isNaturalEvent ? AircraftEventType.NATURAL_EMERGENCY : AircraftEventType.SCHEDULED_EMERGENCY, status));
+                this.logger.addEvent(new AircraftEvent(currentTick, randomCallsign, isNaturalEvent ? AircraftEventType.RANDOMLY_GENERATED_EMERGENCY : AircraftEventType.SCHEDULED_EMERGENCY, status));
             } else {
                 String emergencyType = isNaturalEvent ? "Natural" : "Scheduled";
                 log.info("            -> WARNING: {} emergency skipped (holding pattern is empty).", emergencyType);
@@ -234,7 +234,7 @@ public class EventManager {
 
     public void reportAircraftEmergency(String callsign, EmergencyStatus status, int currentTick){
         log.info("[TICK {}] [REPORT] Escalating Natural Emergency for {} (Status: {})", currentTick, callsign, status);
-        this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.NATURAL_EMERGENCY, status));
+        this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.RANDOMLY_GENERATED_EMERGENCY, status));
     }
 
     public void reportDiversion(String callsign, int currentTick){

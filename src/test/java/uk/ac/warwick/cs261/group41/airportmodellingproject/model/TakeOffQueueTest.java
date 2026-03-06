@@ -12,10 +12,8 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for TakeOffQueue.
  *
- * Focus:
- * - FIFO ordering of departures
- * - Cancellation when wait time >= maxWaitTime
- * - Reporting cancellations via EventManager
+ * Validates FIFO ordering of departures, cancellation when wait time reaches maxWaitTime,
+ * and that each cancellation is reported to EventManager.
  */
 class TakeOffQueueTest {
 

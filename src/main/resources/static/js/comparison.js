@@ -108,16 +108,132 @@ function formatRawEventLog(rawEvents) {
     return formatted;
 }
 
-function getEventLogLines(savedResult) {
-    if (savedResult && Array.isArray(savedResult.eventLog)) {
+function buildFallbackEventLogFromConfig(config) {
+    const lines = [];
+
+    if (!config) {
+        return lines;
+    }
+
+    const scheduled = [];
+    const runwaySettings = Array.isArray(config.runwaySettings) ? config.runwaySettings : [];
+
+    function getInitialRunwaySetting(runwayId) {
+        if (!Number.isInteger(runwayId)) return null;
+
+        for (let i = 0; i < runwaySettings.length; i++) {
+            const setting = runwaySettings[i];
+            if (setting && Number.isInteger(setting.runwayID) && setting.runwayID === runwayId) {
+                return setting;
+            }
+        }
+
+        if (runwayId >= 0 && runwayId < runwaySettings.length) {
+            return runwaySettings[runwayId] || null;
+        }
+
+        return null;
+    }
+
+    const runwayEventsByRunway = config.scheduledRunwayEvents || {};
+    Object.entries(runwayEventsByRunway).forEach(function ([runwayKey, events]) {
+        if (!Array.isArray(events)) return;
+
+        events.forEach(function (event) {
+            const tick = Number.isFinite(event && event.tick) ? event.tick : Number.MAX_SAFE_INTEGER;
+            const runwayId = Number.isInteger(event && event.runwayID) ? event.runwayID : Number.parseInt(runwayKey, 10);
+            const eventTypeRaw = event && event.type ? String(event.type).toUpperCase() : '';
+
+            scheduled.push({
+                tick: tick,
+                category: 'runway',
+                event: event || {},
+                runwayId: Number.isInteger(runwayId) ? runwayId : null
+            });
+
+            if (Number.isFinite(event && event.duration) && event.duration > 0 && eventTypeRaw !== 'REVERSION') {
+                const initialSetting = getInitialRunwaySetting(runwayId);
+                scheduled.push({
+                    tick: tick + event.duration,
+                    category: 'runway-reversion',
+                    runwayId: Number.isInteger(runwayId) ? runwayId : null,
+                    runwayStatus: initialSetting ? initialSetting.status : null,
+                    runwayMode: initialSetting ? initialSetting.mode : null
+                });
+            }
+        });
+    });
+
+    const aircraftEventsByCallsign = config.scheduledAircraftEvents || {};
+    Object.entries(aircraftEventsByCallsign).forEach(function ([callsignKey, events]) {
+        if (!Array.isArray(events)) return;
+
+        events.forEach(function (event) {
+            const tick = Number.isFinite(event && event.tick) ? event.tick : Number.MAX_SAFE_INTEGER;
+            scheduled.push({
+                tick: tick,
+                category: 'aircraft',
+                event: event || {},
+                callsign: (event && event.callsign) ? event.callsign : callsignKey
+            });
+        });
+    });
+
+    scheduled.sort(function (a, b) {
+        return a.tick - b.tick;
+    });
+
+    for (let i = 0; i < scheduled.length; i++) {
+        const item = scheduled[i];
+        const tick = item.tick === Number.MAX_SAFE_INTEGER ? '--' : item.tick;
+
+        if (item.category === 'runway') {
+            const runwayLabel = item.runwayId === null ? 'Runway ?' : 'Runway ' + (item.runwayId + 1);
+            const eventType = toReadableText(item.event.type);
+            const status = toReadableText(item.event.runwayStatus);
+            const mode = toReadableText(item.event.runwayMode);
+
+            let durationText = 'duration: unknown';
+            if (typeof item.event.duration === 'number') {
+                if (item.event.duration < 0) {
+                    durationText = 'duration: indefinite';
+                } else if (item.event.duration === 0) {
+                    durationText = 'duration: immediate';
+                } else {
+                    durationText = 'duration: ' + item.event.duration + ' mins';
+                }
+            }
+
+            lines.push('Minute ' + tick + ': ' + runwayLabel + ' ' + eventType + '. Status: ' + status + ', mode: ' + mode + ', ' + durationText + '.');
+        } else if (item.category === 'runway-reversion') {
+            const runwayLabel = item.runwayId === null ? 'Runway ?' : 'Runway ' + (item.runwayId + 1);
+            const status = toReadableText(item.runwayStatus);
+            const mode = toReadableText(item.runwayMode);
+            lines.push('Minute ' + tick + ': ' + runwayLabel + ' Reversion. Status: ' + status + ', mode: ' + mode + ', duration: immediate.');
+        } else {
+            const callsign = item.callsign ? ('aircraft ' + item.callsign) : 'an aircraft';
+            const eventType = toReadableText(item.event.type);
+            const status = toReadableText(item.event.status);
+            lines.push('Minute ' + tick + ': ' + callsign + ' ' + eventType + ' (' + status + ').');
+        }
+    }
+
+    return lines;
+}
+
+function getEventLogLines(savedResult, config) {
+    if (savedResult && Array.isArray(savedResult.eventLog) && savedResult.eventLog.length > 0) {
         return savedResult.eventLog;
     }
 
     if (savedResult && savedResult.log && Array.isArray(savedResult.log.eventLog)) {
-        return formatRawEventLog(savedResult.log.eventLog);
+        const formatted = formatRawEventLog(savedResult.log.eventLog);
+        if (formatted.length > 0) {
+            return formatted;
+        }
     }
 
-    return [];
+    return buildFallbackEventLogFromConfig(config);
 }
 
 async function fetchJson(url, options = {}) {
@@ -196,7 +312,7 @@ function mapSavedResult(savedResult) {
             'Equipment Failure Rate': config.equipmentFailureRate ?? '--'
         },
         events: buildEventRows(config),
-        eventLog: getEventLogLines(savedResult),
+        eventLog: getEventLogLines(savedResult, config),
         statistics: {
             throughput: toNumber(stats.hourlyThroughput),
             depAvgWait: toNumber(stats.avgWaitTime),
@@ -386,11 +502,6 @@ async function showSelectModal(columnLetter = null) {
     }
 
     let simsList = [...simulationSummaries];
-    if (selectingFor === 'A' && currentSimNames.B) {
-        simsList = simsList.filter(sim => sim.simulationName !== currentSimNames.B);
-    } else if (selectingFor === 'B' && currentSimNames.A) {
-        simsList = simsList.filter(sim => sim.simulationName !== currentSimNames.A);
-    }
 
     let sortState = { column: null, ascending: true };
 
@@ -454,7 +565,7 @@ async function ensureCurrentSelectionAndLoad() {
         currentSimNames.A = names[0];
     }
 
-    if (!currentSimNames.B || !names.includes(currentSimNames.B) || currentSimNames.B === currentSimNames.A) {
+    if (!currentSimNames.B || !names.includes(currentSimNames.B)) {
         currentSimNames.B = names.find(name => name !== currentSimNames.A) || currentSimNames.A;
     }
 

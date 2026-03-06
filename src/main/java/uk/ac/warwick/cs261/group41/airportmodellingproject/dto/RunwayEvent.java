@@ -39,10 +39,11 @@ public class RunwayEvent extends SimulationEvent {
         return this.runwayID;
     }
 
+    @JsonProperty("status")
     public RunwayStatus getRunwayStatus() {
         return this.runwayStatus;
     }
-
+    @JsonProperty("mode")
     public RunwayMode getRunwayMode() {
         return this.runwayMode;
     }
