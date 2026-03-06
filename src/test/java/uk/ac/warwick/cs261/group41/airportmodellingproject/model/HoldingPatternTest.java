@@ -17,12 +17,9 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for HoldingPattern.
  *
- * Focus:
- * - Priority behaviour (emergencies first / ordering)
- * - Fuel consumption + diversion rule at the minimum fuel threshold
- * - Status updates re-prioritise the queue
- * - Random selection only picks aircraft with EmergencyStatus.NONE
- * - Diversions are reported via EventManager
+ * Validates priority ordering (emergencies first, lower fuel first, earliest entry last),
+ * fuel consumption and diversion at the minimum threshold, the fuel emergency escalation rule,
+ * status-driven re-prioritisation, and random aircraft selection.
  */
 class HoldingPatternTest {
 
@@ -134,6 +131,38 @@ class HoldingPatternTest {
 
         assertEquals(1, hp.getSize(), "Aircraft should remain in holding pattern if fuel > 10 after tick.");
         assertNotEquals(AircraftState.DIVERTED, okFuel.getState(), "Aircraft should not be marked diverted.");
+        verify(eventManager, never()).reportDiversion(anyString(), anyInt());
+    }
+
+    /**
+     * Verifies that when fuel drops to or below the emergency threshold (15) but stays above the
+     * diversion threshold (10), the aircraft receives EmergencyStatus.FUEL, remains in the queue,
+     * and reportAircraftEmergency is called exactly once on the EventManager.
+     */
+    @Test
+    void update_shouldAssignFuelEmergency_whenFuelDropsToOrBelowEmergencyLevel() {
+        HoldingPattern hp = new HoldingPattern();
+        EventManager eventManager = mock(EventManager.class);
+        hp.setEventManager(eventManager);
+
+        // 16.0 - 1.0 (one tick) = 15.0, which is <= emergencyFuelLevel (15) and > minFuelLevel (10).
+        Aircraft aircraft = newArrival("FUELEM-1", 16.0, 0, 0);
+        hp.addAircraft(aircraft);
+
+        hp.update(5);
+
+        // Aircraft must still be in the holding pattern — fuel is above the diversion threshold.
+        assertEquals(1, hp.getSize(), "Aircraft should not be removed; fuel is above the diversion threshold.");
+        assertNotEquals(AircraftState.DIVERTED, aircraft.getState(), "Aircraft should not be marked as diverted.");
+
+        // Status must be escalated to FUEL emergency.
+        assertEquals(EmergencyStatus.FUEL, aircraft.getStatus(),
+                "Aircraft with fuel at or below the emergency level should have EmergencyStatus.FUEL.");
+
+        // The emergency must be reported to EventManager.
+        verify(eventManager, times(1)).reportAircraftEmergency("FUELEM-1", EmergencyStatus.FUEL, 5);
+
+        // A diversion must NOT have been reported.
         verify(eventManager, never()).reportDiversion(anyString(), anyInt());
     }
 

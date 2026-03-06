@@ -22,18 +22,22 @@ class RunwayTest {
         return new Runway(1, mode, status);
     }
 
+    /**
+     * Verifies that a runway is available when status is AVAILABLE and it is not occupied.
+     */
     @Test
     void isAvailable_shouldBeTrue_whenStatusAvailable_andNotOccupied() {
-        // Checks the base condition for runway availability.
         Runway runway = newRunway(RunwayMode.MIXED, RunwayStatus.AVAILABLE);
 
         assertTrue(runway.isAvailable(0), "Expected runway to be available at tick 0 when not occupied.");
         assertTrue(runway.isAvailable(5), "Expected runway to be available at later ticks when not occupied.");
     }
 
+    /**
+     * Verifies that non-AVAILABLE runway statuses block availability even when not occupied.
+     */
     @Test
     void isAvailable_shouldBeFalse_whenStatusNotAvailable_evenIfNotOccupied() {
-        // Ensures non-AVAILABLE runway statuses block use of the runway.
         Runway runwayInspection = newRunway(RunwayMode.MIXED, RunwayStatus.INSPECTION);
         Runway runwaySnow = newRunway(RunwayMode.MIXED, RunwayStatus.SNOW_CLEARANCE);
         Runway runwayFailure = newRunway(RunwayMode.MIXED, RunwayStatus.EQUIPMENT_FAILURE);
@@ -43,9 +47,11 @@ class RunwayTest {
         assertFalse(runwayFailure.isAvailable(100), "Runway should not be available during EQUIPMENT_FAILURE.");
     }
 
+    /**
+     * Verifies that assigning an aircraft stores the aircraft reference, sets occupiedUntil, and records lastAircraftType.
+     */
     @Test
     void assignAircraft_shouldSetCurrentAircraft_andOccupiedUntil_andLastAircraftType() {
-        // Verifies assignment stores the aircraft and updates occupiedUntil and lastAircraftType.
         Runway runway = newRunway(RunwayMode.MIXED, RunwayStatus.AVAILABLE);
 
         Aircraft a = mock(Aircraft.class);
@@ -58,9 +64,11 @@ class RunwayTest {
         assertEquals(FlightType.ARRIVAL, runway.getLastAircraftType(), "Expected lastAircraftType to match aircraft type.");
     }
 
+    /**
+     * Verifies that the runway is unavailable before occupiedUntil and available at or after it.
+     */
     @Test
     void isAvailable_shouldBeFalse_beforeOccupiedUntil_andTrueAtOrAfter() {
-        // Ensures occupation time correctly blocks runway availability.
         Runway runway = newRunway(RunwayMode.MIXED, RunwayStatus.AVAILABLE);
 
         Aircraft a = mock(Aircraft.class);
@@ -74,9 +82,11 @@ class RunwayTest {
         assertTrue(runway.isAvailable(11), "Expected runway to remain available after occupiedUntil.");
     }
 
+    /**
+     * Verifies that update clears the current aircraft once the occupation time has expired, preventing ghost aircraft.
+     */
     @Test
     void update_shouldClearCurrentAircraft_whenOccupationExpires() {
-        // Prevents "ghost aircraft": when the runway is no longer occupied, the aircraft should be cleared.
         Runway runway = newRunway(RunwayMode.MIXED, RunwayStatus.AVAILABLE);
 
         Aircraft a = mock(Aircraft.class);
@@ -91,9 +101,11 @@ class RunwayTest {
         assertNull(runway.getCurrentAircraft(), "Aircraft should be cleared when currentTick >= occupiedUntil.");
     }
 
+    /**
+     * Verifies that update is safe when no aircraft has been assigned to the runway.
+     */
     @Test
     void update_shouldNotClear_whenNoAircraftAssigned() {
-        // Sanity check: update should be safe when no aircraft is on the runway.
         Runway runway = newRunway(RunwayMode.MIXED, RunwayStatus.AVAILABLE);
 
         assertNull(runway.getCurrentAircraft(), "Precondition: no aircraft should be assigned.");
@@ -101,9 +113,11 @@ class RunwayTest {
         assertNull(runway.getCurrentAircraft(), "update() should not introduce an aircraft.");
     }
 
+    /**
+     * Verifies that the mode and status setters update the runway correctly.
+     */
     @Test
     void setters_shouldUpdateModeAndStatus() {
-        // Confirms basic mutators behave as expected (used by Airport/Event logic later).
         Runway runway = newRunway(RunwayMode.MIXED, RunwayStatus.AVAILABLE);
 
         runway.setMode(RunwayMode.LANDING);
