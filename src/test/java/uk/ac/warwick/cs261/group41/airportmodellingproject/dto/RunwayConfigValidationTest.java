@@ -14,6 +14,12 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Validation tests for RunwayConfig.
+ *
+ * Verifies that runwayID must be within 0–9, status and mode cannot be null,
+ * boundary values are accepted, and multiple invalid fields each produce a violation.
+ */
 class RunwayConfigValidationTest {
 
     private static Validator validator;
