@@ -248,7 +248,15 @@ function startSimulation() {
         .then(data => {
             console.log('Simulation started:', data);
             // Redirect to progress page
-            window.location.href = '/progress.html';
+            simMode = payload.simulationMode
+
+            if (simMode == "QUICK_SIM"){
+                window.location.href = '/quick-progress.html';
+            } else if(simMode == "TABLE_VIEW"){
+                window.location.href = '/tabular-progress.html';
+            } else {
+                // Redirect to graphical progress html file
+            }
         })
         .catch(error => {
             console.error('Error:', error);

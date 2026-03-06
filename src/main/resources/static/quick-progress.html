@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Simulation Progress</title>
+
+    <link rel="stylesheet" href="/css/results.css">
+    <link rel="stylesheet" href="/css/progress.css">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <div class="nav-left">
+        <div class="nav-title">Airport Simulation</div>
+    </div>
+</header>
+
+<div class="progress-container">
+    <div class="progress-card">
+        <div class="spinner"></div>
+
+        <h1 class="progress-title">Running Simulation</h1>
+        <p class="progress-subtitle">Processing airport operations...</p>
+
+        <div class="progress-bar-wrapper">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+
+        <div class="progress-percentage"><span id="progressPercentage">0</span>%</div>
+        <div class="progress-label">Simulation Progress</div>
+
+        <div class="progress-info">
+            <div class="info-item">
+                <div class="info-value" id="tickCount">0</div>
+                <div class="info-label">Ticks</div>
+            </div>
+            <div class="info-item">
+                <div class="info-value" id="elapsedTime">0s</div>
+                <div class="info-label">Elapsed</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="/js/quick-progress.js" defer></script>
+</body>
+</html>
