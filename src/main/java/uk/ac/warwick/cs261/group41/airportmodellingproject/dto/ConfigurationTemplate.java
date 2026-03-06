@@ -23,7 +23,7 @@ public class ConfigurationTemplate extends SimulationConfig {
     public ConfigurationTemplate() { super(); }
 
     // Constructor used to create a ConfigurationTemplate from an existing SimulationConfig object, used for testing.
-    @JsonIgnore //
+    @JsonIgnore
     public ConfigurationTemplate(String templateName, Date dateCreated, SimulationConfig config) {
         // Pass the data up to the parent's parameterised constructor.
         super(
