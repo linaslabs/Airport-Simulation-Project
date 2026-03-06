@@ -404,13 +404,14 @@ function deleteEvent(idToDelete) {
 function statusToEnum(statusVal) {
     const mapping = {
         'available': 'AVAILABLE',
-        'snowclearance': 'SNOWCLEARANCE', // Fixed: Matches your Enum exactly
+        'snowclearance': 'SNOW_CLEARANCE', // Updated: was SNOWCLEARANCE
         'inspection': 'INSPECTION',
-        'failure': 'FAILURE'
+        'failure': 'EQUIPMENT_FAILURE'     // Updated: was FAILURE
     };
     return mapping[statusVal.toLowerCase()] || 'AVAILABLE';
 }
 
+// Helper function to convert mode dropdown value to enum
 function modeToEnum(modeVal) {
     const mapping = {
         'mixed': 'MIXED',
