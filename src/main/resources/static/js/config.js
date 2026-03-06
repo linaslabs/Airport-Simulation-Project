@@ -549,6 +549,7 @@ const dummyConfigs = [
 // 3. The actual LOAD function
 function applyConfigToPage(data) {
     const fieldMapping = {
+        "input-sim_mode": data.simulationMode,
         "input-inbound_rate": data.inboundRate,
         "input-outbound_rate": data.outboundRate,
         "input-sim_duration": data.duration,
@@ -824,6 +825,7 @@ function saveConfiguration() {
         runwayInspectionRate: parseFloat(document.getElementById("input-inspection_rate").value) || 0.0,
         snowClearanceRate: parseFloat(document.getElementById("input-snow_rate").value) || 0.0,
         equipmentFailureRate: parseFloat(document.getElementById("input-equip_failure_rate").value) || 0.0,
+        simulationMode: document.getElementById("simulation-mode").value,
         scheduledRunwayEvents: backendEvents.runways || {},
         scheduledAircraftEvents: backendEvents.aircraft || {}
     };
@@ -851,6 +853,8 @@ function saveConfiguration() {
             alert("Server rejected save: " + err.message);
         });
 }
+
+
 
 
 document.getElementById("confirm-save-btn").onclick = saveConfiguration;
