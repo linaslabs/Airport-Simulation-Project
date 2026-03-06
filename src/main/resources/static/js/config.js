@@ -167,7 +167,7 @@ function startSimulation() {
         // Logic Configuration
         automaticGenerationEnabled: document.getElementById("input-auto_gen")?.checked || false,
         seed: parseInt(document.getElementById("input-seed")?.value) || 0,
-        tickTime: 20,
+        tickTime: 1000,
 
         // Parameters
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,

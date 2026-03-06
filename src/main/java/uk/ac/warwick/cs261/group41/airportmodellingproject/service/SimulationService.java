@@ -351,7 +351,7 @@ public class SimulationService {
 
     // Helper method to print out the full configuration received:
     private void printConfigurationSummary(SimulationConfig config) {
-        log.info("\n==================================================");
+        log.info("==================================================");
         log.info("===     SIMULATION CONFIGURATION RECEIVED      ===");
         log.info("==================================================");
         log.info("-> Seed:          {}", config.getSeed());
@@ -360,21 +360,21 @@ public class SimulationService {
         log.info("-> Traffic Rates: Inbound: {}/hr | Outbound: {}/hr", config.getInboundRate(), config.getOutboundRate());
         log.info("-> Max Wait Time: {} ticks", config.getMaxWaitTime());
 
-        log.info("\n--- RUNWAY SETTINGS ---");
+        log.info("--- RUNWAY SETTINGS ---");
         if (config.getRunwaySettings() != null) {
             config.getRunwaySettings().forEach(r ->
                     log.info("  - ID: {} | Mode: {} | Status: {}", r.getRunwayID(), r.getMode(), r.getStatus())
             );
         }
 
-        log.info("\n--- STATISTICAL MODELLING ---");
+        log.info("--- STATISTICAL MODELLING ---");
         log.info("  - Enabled: {}", config.getAutomaticGenerationEnabled());
         if (Boolean.TRUE.equals(config.getAutomaticGenerationEnabled())) {
             log.info("  - Inspection: {} | Snow: {} | Equip Fail: {}", config.getRunwayInspectionRate(), config.getSnowClearanceRate(), config.getEquipmentFailureRate());
             log.info("  - Mech Fail:  {} | Passenger Health: {}", config.getMechanicalFailureRate(), config.getPassengerHealthIssueRate());
         }
 
-        log.info("\n--- SCHEDULED RUNWAY EVENTS ---");
+        log.info("--- SCHEDULED RUNWAY EVENTS ---");
         Map<Integer, List<RunwayEvent>> scheduledRunways = config.getScheduledRunwayEvents();
         if (scheduledRunways != null && !scheduledRunways.isEmpty()) {
             // Sort the keys so they print in chronological order
@@ -387,7 +387,7 @@ public class SimulationService {
             log.info("  - No pre-scheduled runway events.");
         }
 
-        log.info("\n--- SCHEDULED AIRCRAFT EVENTS ---");
+        log.info("--- SCHEDULED AIRCRAFT EVENTS ---");
         Map<Integer, List<AircraftEvent>> scheduledAircraft = config.getScheduledAircraftEvents();
         if (scheduledAircraft != null && !scheduledAircraft.isEmpty()) {
             // Sort the keys so they print in chronological order
@@ -399,6 +399,6 @@ public class SimulationService {
         } else {
             log.info("  - No pre-scheduled aircraft events.");
         }
-        log.info("==================================================\n");
+        log.info("==================================================");
     }
 }

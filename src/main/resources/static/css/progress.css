@@ -1,126 +1,120 @@
-.progress-container {
+
+.progress-wrap {
+    padding-top: 20px;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.progress-header h1 {
+    margin: 0;
+    font-size: 2.8rem;
+}
+.progress-header h2 {
+    margin: 0;
+    color: #555;
+}
+
+.custom-progress-bar {
     width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 10px;
+    margin-top: 10px;
+}
+.custom-progress-fill {
+    height: 100%;
+    background-color: #28a745;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.nav-stats {
+    color: white;
+    margin-right: 15px;
+    font-size: 0.9rem;
+}
+.btn-stop {
+    padding: 5px 15px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s ease;
+}
+.btn-stop:hover {
+    background: #c82333;
+}
+
+/* Column & Flex Layout Helpers */
+.progress-column {
+    height: 100%;
+}
+.half-section {
+    flex: 1 1 50%;
+    margin-top: 1px;
+}
+
+.scrollable-table-box {
+    border: 1px solid #ccc;
+    background: #fff;
+    overflow-y: auto;
+}
+.scrollable-table-box th {
+    position: sticky;
+    top: 0;
+    background: #f4f4f4;
+    z-index: 1;
+}
+
+.runways-container {
+    min-height: 294px;
+    border: 1px solid #ccc;
+    background: #fff;
+}
+
+.flex-table-container {
+    max-height: none;
+    min-height: 274px;
+    height: 0;
+}
+
+
+.events-table th,
+.events-table td {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+body {
     height: 100vh;
+    overflow: hidden;
+}
+
+.progress-wrap {
+    height: 100vh;
+    padding-bottom: 20px !important;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #f4f7fb 0%, #e8f0f8 100%);
 }
 
-.progress-card {
-    width: min(500px, 90%);
-    background: white;
-    border-radius: 28px;
-    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.15);
-    padding: 50px 40px;
-    text-align: center;
-}
-
-.progress-title {
-    font-size: 32px;
-    font-weight: 900;
-    color: #0f172a;
-    margin-bottom: 12px;
-    letter-spacing: 0.5px;
-}
-
-.progress-subtitle {
-    font-size: 16px;
-    color: #64748b;
-    margin-bottom: 40px;
-    font-weight: 500;
-}
-
-.progress-bar-wrapper {
-    position: relative;
-    width: 100%;
-    height: 12px;
-    background: #e5e7eb;
-    border-radius: 999px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
-    width: 0%;
-    border-radius: 999px;
-    transition: width 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.progress-bar-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-.progress-percentage {
-    font-size: 48px;
-    font-weight: 950;
-    color: #0f172a;
-    margin-bottom: 8px;
-}
-
-.progress-label {
-    font-size: 14px;
-    color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 30px;
-}
-
-.progress-info {
+.comparison-content {
+    flex-grow: 1;
     display: flex;
-    justify-content: space-around;
-    padding: 20px;
-    background: #f8fafc;
-    border-radius: 16px;
-    border: 1px solid #e5e7eb;
+    flex-direction: column;
+    min-height: 0;
 }
 
-.info-item {
-    text-align: center;
+.progress-wrap .page-title {
+    margin-bottom: 10px;
 }
 
-.info-value {
-    font-size: 20px;
-    font-weight: 900;
-    color: #0f172a;
-}
-
-.info-label {
-    font-size: 12px;
-    color: #64748b;
-    margin-top: 4px;
-    font-weight: 600;
-}
-
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid #e5e7eb;
-    border-top-color: #0f172a;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.progress-wrap .comparison-grid {
+    margin-top: 10px;
 }

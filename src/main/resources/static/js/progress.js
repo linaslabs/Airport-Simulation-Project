@@ -43,6 +43,103 @@ function updateGlobalStats(data) {
     document.getElementById('stat-cancellations').textContent = data.cancellationCount;
 }
 
+function updateHoldingTable(aircraftList) {
+    const tbody = document.getElementById('holding-table-body');
+    const countBadge = document.getElementById('holding-count');
+    if (!tbody || !aircraftList) return; // Don't update if there is no table or list
+
+    countBadge.textContent = aircraftList.length;
+    tbody.innerHTML = '';
+
+    if (aircraftList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #888; padding: 20px;">No aircraft in holding</td></tr>';
+        return;
+    }
+
+    aircraftList.forEach(aircraft => {
+        const isEmergency = aircraft.emergencyStatus && aircraft.emergencyStatus !== 'NONE';
+        const row = document.createElement('tr');
+
+        // Styling for emergencies
+        if (isEmergency) {
+            row.style.backgroundColor = '#ff9494';
+            row.style.color = '#dc3545';           // Dark red
+            row.style.fontWeight = 'bold';
+        }
+
+        // Insert the row
+        row.innerHTML = `
+            <td>${aircraft.callsign}</td>
+            <td>${aircraft.fuelLevel.toFixed(1)}</td>
+            <td>${aircraft.emergencyStatus}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function updateTakeoffTable(aircraftList) {
+    const tbody = document.getElementById('takeoff-table-body');
+    const countBadge = document.getElementById('takeoff-count');
+    if (!tbody || !aircraftList) return; // Don't update if there is no table or list
+
+    countBadge.textContent = aircraftList.length;
+    tbody.innerHTML = '';
+
+    if (aircraftList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #888; padding: 20px;">No aircraft in queue</td></tr>';
+        return;
+    }
+
+    aircraftList.forEach(aircraft => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td style="font-weight: bold;">${aircraft.callsign}</td>
+            <td>Minute ${aircraft.entryTick}</td>
+            <td>${aircraft.status}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function updateRunwayTable(runways) {
+    const tbody = document.getElementById('runway-table-body');
+    if (!tbody || !runways) return;
+
+    tbody.innerHTML = '';
+
+    // Loop 10 times, if the runway is not used, grey it out
+    for (let i = 0; i < 10; i++) {
+        const row = document.createElement('tr');
+
+        if (i < runways.length) {
+            // Render runway if active
+            const runway = runways[i];
+            const isOccupied = runway.aircraftCallsign && runway.aircraftCallsign.trim() !== '';
+            const aircraftText = isOccupied ? runway.aircraftCallsign : '-';
+            const aircraftStyle = isOccupied ? 'font-weight: bold; color: #0056b3;' : 'color: #999;';
+
+            row.innerHTML = `
+                <td style="font-weight: bold;">Runway ${runway.runwayID + 1}</td>
+                <td>${runway.mode}</td>
+                <td>${runway.status}</td>
+                <td style="${aircraftStyle}">${aircraftText}</td>
+            `;
+        } else {
+            // Grey out runway
+            row.style.backgroundColor = '#efefef';
+            row.style.color = '#ccc';
+            row.innerHTML = `
+                <td>Runway ${i + 1}</td>
+                <td>-</td>
+                <td>INACTIVE</td>
+                <td>-</td>
+            `;
+        }
+
+        tbody.appendChild(row);
+    }
+}
+
 function connectWebSocket() {
     startTime = Date.now();
 
@@ -66,13 +163,16 @@ function connectWebSocket() {
             // Extract the progress and update the UI
             updateProgress(snapshotData.progressPercent);
 
-            updateGlobalStats(snapshotData)
-
             // Update the current tick count display, if present
             const tickCountElement = document.getElementById('tickCount');
-            if (tickCountElement && typeof snapshotData.currentTick !== 'undefined') {
+            if (tickCountElement && typeof snapshotData.currentTick !== undefined) {
                 tickCountElement.textContent = snapshotData.currentTick.toString();
             }
+
+            updateGlobalStats(snapshotData)
+            updateRunwayTable(snapshotData.runways);
+            updateHoldingTable(snapshotData.holdingAircraft);
+            updateTakeoffTable(snapshotData.takeoffAircraft);
 
             // snapshotData.holdingAircraft and snapshotData.runways can be used here to draw out the real-time simulation
             // ...

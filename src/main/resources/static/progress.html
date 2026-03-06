@@ -8,67 +8,32 @@
     <link rel="stylesheet" href="/css/results.css">
     <link rel="stylesheet" href="/css/comparison.css">
     <link rel="stylesheet" href="/css/progress.css">
-    <style>
-        /* A few inline tweaks to adapt the comparison layout for real-time scrolling */
-        .scrollable-table-box {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            background: #fff;
-        }
-        .scrollable-table-box th {
-            position: sticky;
-            top: 0;
-            background: #f4f4f4;
-            z-index: 1;
-        }
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .custom-progress-bar {
-            width: 100%;
-            background-color: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-            height: 10px;
-            margin-top: 10px;
-        }
-        .custom-progress-fill {
-            height: 100%;
-            background-color: #28a745;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-    </style>
 </head>
 
 <body>
 
-<header class="navbar">
+<header class="navbar" style="margin-bottom: -15px">
     <div class="nav-left">
         <a class="nav-link" href="/">Home</a>
         <div class="nav-title">Airport Simulation</div>
     </div>
 
     <div class="nav-right">
-        <div style="color: white; margin-right: 15px; font-size: 0.9rem;">
+        <div class="nav-stats">
             Tick: <strong id="tickCount">0</strong> | Elapsed: <strong id="elapsedTime">0s</strong>
         </div>
-        <button onclick="stompClient.disconnect(); window.location.href='/config.html'" style="padding: 5px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+        <button class="btn-stop" onclick="stompClient.disconnect(); window.location.href='/config.html'">
             Stop Simulation
         </button>
     </div>
 </header>
 
-<main class="wrap">
+<main class="wrap progress-wrap">
 
-    <section class="page-title" style="margin-bottom: 20px;">
+    <section class="page-title">
         <div class="progress-header">
-            <h1 style="margin: 0;">REAL-TIME SIMULATION</h1>
-            <h2 style="margin: 0; color: #555;"><span id="progressPercentage">0</span>%</h2>
+            <h1>REAL-TIME SIMULATION</h1>
+            <h2><span id="progressPercentage">0</span>%</h2>
         </div>
         <div class="custom-progress-bar">
             <div class="custom-progress-fill" id="progressBar"></div>
@@ -76,7 +41,7 @@
     </section>
 
     <section id="comparisonContent" class="comparison-content">
-        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="comparison-grid">
 
             <div class="comparison-column d-flex flex-column">
 
@@ -108,33 +73,10 @@
                     </div>
                 </div>
 
-                <div class="comparison-section flex-grow-1 d-flex flex-column" style="margin-top: 20px;">
-                    <h3>HOLDING PATTERN <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="holding-count">0</span></span></h3>
-
-                    <div class="scrollable-table-box flex-grow-1" style="height: 0; min-height: 350px;">
-                        <table class="events-table m-0">
-                            <thead>
-                            <tr>
-                                <th>Callsign</th>
-                                <th>Fuel (mins)</th>
-                                <th>Status</th>
-                            </tr>
-                            </thead>
-                            <tbody id="holding-table-body">
-                            <tr><td colspan="3" style="text-align: center; color: #888;">Waiting for data...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="comparison-column d-flex flex-column">
-
-                <div class="comparison-section">
+                <div class="comparison-section flex-grow-1 d-flex flex-column" style="margin-top: 1px;">
                     <h3>ACTIVE RUNWAYS</h3>
-                    <div style="border: 1px solid #ccc; background: #fff;">
-                        <table class="events-table m-0">
+                    <div class="runways-container">
+                        <table class="events-table m-0 w-100">
                             <thead>
                             <tr>
                                 <th>ID</th>
@@ -144,25 +86,49 @@
                             </tr>
                             </thead>
                             <tbody id="runway-table-body">
-                            <tr><td colspan="4" style="text-align: center; color: #888;">Waiting for data...</td></tr>
+                            <tr><td colspan="4" style="color: #888;">Waiting for data...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div class="comparison-section flex-grow-1 d-flex flex-column" style="margin-top: 20px;">
-                    <h3>TAKE-OFF QUEUE <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="takeoff-count">0</span></span></h3>
-                    <div class="scrollable-table-box flex-grow-1" style="height: 0; min-height: 200px;">
-                        <table class="events-table m-0">
+            </div>
+
+            <div class="comparison-column d-flex flex-column progress-column">
+
+                <div class="comparison-section d-flex flex-column half-section">
+                    <h3>HOLDING PATTERN <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="holding-count">0</span></span></h3>
+
+                    <div class="scrollable-table-box flex-grow-1 flex-table-container">
+                        <table class="events-table m-0 w-100">
                             <thead>
                             <tr>
                                 <th>Callsign</th>
-                                <th>Entry Tick</th>
+                                <th>Fuel (mins)</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody id="holding-table-body">
+                            <tr><td colspan="3" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="comparison-section d-flex flex-column half-section">
+                    <h3>TAKE-OFF QUEUE <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="takeoff-count">0</span></span></h3>
+
+                    <div class="scrollable-table-box flex-grow-1 flex-table-container">
+                        <table class="events-table m-0 w-100">
+                            <thead>
+                            <tr>
+                                <th>Callsign</th>
+                                <th>Entry Time</th>
                                 <th>State</th>
                             </tr>
                             </thead>
                             <tbody id="takeoff-table-body">
-                            <tr><td colspan="3" style="text-align: center; color: #888;">Waiting for data...</td></tr>
+                            <tr><td colspan="3" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
                             </tbody>
                         </table>
                     </div>
