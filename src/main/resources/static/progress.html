@@ -136,6 +136,21 @@
 
             </div>
         </div>
+
+        <section class="comparison-section control-panel">
+            <button id="btn-play-pause" class="btn btn-control" onclick="togglePlayPause()">⏸ Pause</button>
+
+            <div class="control-divider"></div>
+
+            <span class="speed-label">SPEED:</span>
+            <button class="btn secondary btn-speed" onclick="setSpeed(1)">1x</button>
+            <button class="btn secondary btn-speed" onclick="setSpeed(5)">5x</button>
+            <button class="btn secondary btn-speed" onclick="setSpeed(20)">20x</button>
+
+            <div class="control-divider"></div>
+
+            <button id="btn-fast-forward" class="btn btn-control" onclick="triggerFastForward()">⏭ Fast Forward</button>
+        </section>
     </section>
 
 </main>

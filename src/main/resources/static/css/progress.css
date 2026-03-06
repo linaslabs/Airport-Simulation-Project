@@ -118,3 +118,38 @@ body {
 .progress-wrap .comparison-grid {
     margin-top: 10px;
 }
+
+.control-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px;
+}
+
+.btn-control {
+    min-width: 140px;
+    padding: 12px 20px;
+    font-size: 15px;
+}
+
+.btn-speed {
+    min-width: 60px;
+    padding: 12px 15px;
+    font-size: 14px;
+}
+
+.control-divider {
+    width: 2px;
+    height: 30px;
+    background: #cbd5e1;
+    margin: 0 10px;
+}
+
+.speed-label {
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}

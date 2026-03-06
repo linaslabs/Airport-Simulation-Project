@@ -1,6 +1,43 @@
 let stompClient = null;
 let startTime;
 
+let isSimulationPaused = false; // For playback controls
+
+function togglePlayPause(){
+    const btn = document.getElementById('btn-play-pause');
+
+    if (isSimulationPaused) {
+        // Resume
+        fetch('/api/simulation/resume', { method: 'POST' })
+            .then(() => {
+                btn.innerHTML = '⏸ Pause';
+                isSimulationPaused = false;
+            });
+    } else {
+        // Pause
+        fetch('/api/simulation/pause', { method: 'POST' })
+            .then(() => {
+                btn.innerHTML = '▶ Play';
+                isSimulationPaused = true;
+            });
+    }
+}
+
+function setSpeed(multiplier){
+    fetch(`/api/simulation/speed/${multiplier}`, { method: 'POST'})
+        .then(() => console.log(`Speed changed to ${multiplier}x`))
+}
+
+function triggerFastForward() {
+    // Disable controls in the event that we have state bugs
+    document.getElementById('btn-play-pause').disabled = true;
+    document.getElementById('btn-fast-forward').disabled = true;
+    document.getElementById('btn-fast-forward').innerHTML = '⏳ Processing...';
+
+    fetch('/api/simulation/fastforward', { method: 'POST' })
+        .then(() => console.log('Fast forwarding to end...'));
+}
+
 function updateProgress(progressDecimal) {
     const progressPercentage = progressDecimal * 100;
 
