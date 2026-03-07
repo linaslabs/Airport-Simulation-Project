@@ -147,9 +147,9 @@ function startSimulation() {
     function statusToEnum(statusVal) {
         const mapping = {
             'available': 'AVAILABLE',
-            'snowclearance': 'SNOWCLEARANCE',
+            'snowclearance': 'SNOW_CLEARANCE',
             'inspection': 'INSPECTION',
-            'failure': 'FAILURE'
+            'failure': 'EQUIPMENT_FAILURE'
         };
         return mapping[statusVal.toLowerCase()] || 'AVAILABLE';
     }
@@ -370,7 +370,8 @@ function addEvent() {
 
     // Inside updateEventForm() after populating nameSelect:
     nameSelect.value = "No Change";
-
+    nameSelect.disabled = false;
+    modeSelect.disabled = false;
 }
 
 
@@ -446,7 +447,12 @@ function formatEventsForBackend(frontendEvents) {
         if (ev.type === "Runway") {
             let status = 'AVAILABLE';
 
-            if (ev.name === "Runway Inspection") status = 'INSPECTION';
+            if (ev.name === "No Change") {
+                status = null;
+            }
+            else if (ev.name === "Runway Inspection") {
+                status = 'INSPECTION';
+            }
             else if (ev.name === "Snow Clearance") {
                 status = 'SNOW_CLEARANCE'; // UPDATED TO MATCH MAIN
             } else if (ev.name === "Equipment Failure") {
@@ -532,7 +538,37 @@ function updateEventForm() {
             durationContainer.style.display = 'block'; // adds duration
         }
     }
+
+    // Reset disabled states and mode value when form type changes.
+    nameSelect.disabled = false;
+    document.getElementById("new-event-mode").disabled = false;
+    document.getElementById("new-event-mode").value = "null";
 }
+
+// Lock mode if a closure status is selected
+document.getElementById("new-event-name").addEventListener("change", function () {
+    const closureStatuses = ["Runway Inspection", "Snow Clearance", "Equipment Failure"];
+    const modeSelect = document.getElementById("new-event-mode");
+
+    if (closureStatuses.includes(this.value)) {
+        modeSelect.value = "null";
+        modeSelect.disabled = true;
+    } else {
+        modeSelect.disabled = false;
+    }
+});
+
+// Lock status to "Available" if a mode other than "No Change" is selected
+document.getElementById("new-event-mode").addEventListener("change", function () {
+    const nameSelect = document.getElementById("new-event-name");
+
+    if (this.value !== "null") {
+        nameSelect.value = "Available";
+        nameSelect.disabled = true;
+    } else {
+        nameSelect.disabled = false;
+    }
+});
 
 const dummyConfigs = [
     {

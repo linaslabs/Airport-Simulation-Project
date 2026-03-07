@@ -86,7 +86,12 @@ public class EventManager {
         // If duration is > 0, this is a scheduled event, set another scheduled event in the future to reverse the changes
         // NOTE: this will currently override any user set runway events for that runway when a reversion happens
 
-        log.info("[TICK {}] [RUNWAY] ID: {} | Status: {} | Mode: {} | Duration: {} | Natural: {}", currentTick, runwayID, status, mode, duration, isNaturalEvent);
+        // Because the "No Change" option in the menu sets status or mode to null in the event, when we log this event we must replace this null with the current status/mode.
+        RunwayConfig runway = airport.getRunwaySnapshot(runwayID);
+        RunwayStatus nonNullStatus = (status != null) ? status : runway.getStatus();
+        RunwayMode nonNullMode = (mode != null) ? mode : runway.getMode();
+
+        log.info("[TICK {}] [RUNWAY] ID: {} | Status: {} | Mode: {} | Duration: {} | Natural: {}", currentTick, runwayID, nonNullStatus, nonNullMode, duration, isNaturalEvent);
 
         if (duration > 0){
             RunwayConfig runwayPrevSnapshot = this.airport.getRunwaySnapshot(runwayID);
@@ -104,8 +109,8 @@ public class EventManager {
 
         // If the event is a natural event, its event type being logged is as a natural (random) closure, else, we determine the event type by the duration
         // If the duration is less than 0, then we know it's a manual change by the user, if it's a scheduled change (since it wasn't a natural event to begin with)
-        // If the duration is therefore equal to 0, we know its a reversion
-        this.logger.addEvent(new RunwayEvent(currentTick, runwayID, status, mode,
+        // If the duration is therefore equal to 0, we know it's a reversion
+        this.logger.addEvent(new RunwayEvent(currentTick, runwayID, nonNullStatus, nonNullMode,
                 isNaturalEvent ? RunwayEventType.RANDOMLY_GENERATED_CLOSURE : (duration < 0) ? RunwayEventType.MANUAL_CHANGE :
                         (duration > 0) ? RunwayEventType.SCHEDULED_CHANGE : RunwayEventType.REVERSION, duration));
     }
@@ -167,7 +172,7 @@ public class EventManager {
                     }
 
                     // Trigger the event
-                    triggerRunwayEvent(runway.getRunwayID(),  newRunwayStatus, RunwayMode.CLOSED, currentTick, duration, true);
+                    triggerRunwayEvent(runway.getRunwayID(),  newRunwayStatus, runway.getMode(), currentTick, duration, true);
                 }
             }
         }
