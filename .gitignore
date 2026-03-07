@@ -37,4 +37,4 @@ build/
 data/results/*.json
 
 # Keep the folder but ignore personal temp configs
-data/configs/*.json
+data/configtemplates/*.json
