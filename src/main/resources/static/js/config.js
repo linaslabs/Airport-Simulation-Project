@@ -446,7 +446,12 @@ function formatEventsForBackend(frontendEvents) {
         if (ev.type === "Runway") {
             let status = 'AVAILABLE';
 
-            if (ev.name === "Runway Inspection") status = 'INSPECTION';
+            if (ev.name === "No Change") {
+                status = null;
+            }
+            else if (ev.name === "Runway Inspection") {
+                status = 'INSPECTION';
+            }
             else if (ev.name === "Snow Clearance") {
                 status = 'SNOW_CLEARANCE'; // UPDATED TO MATCH MAIN
             } else if (ev.name === "Equipment Failure") {
