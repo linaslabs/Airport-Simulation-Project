@@ -161,19 +161,6 @@
     margin-right: 15px;
     font-size: 0.9rem;
 }
-.btn-stop {
-    padding: 5px 15px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s ease;
-}
-.btn-stop:hover {
-    background: #c82333;
-}
 
 /* Column & Flex Layout Helpers */
 .progress-column {

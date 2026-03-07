@@ -62,7 +62,6 @@ public class SimulationController {
     @PostMapping("/stop")
     public ResponseEntity<String> stop() {
         simulationService.stopSimulation();
-        System.out.println("Simulation stop request received");
         return ResponseEntity.ok("Simulation stopped");
     }
 }

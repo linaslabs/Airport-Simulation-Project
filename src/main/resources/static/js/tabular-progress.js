@@ -26,6 +26,26 @@ function togglePlayPause(){
 function setSpeed(multiplier){
     fetch(`/api/simulation/speed/${multiplier}`, { method: 'POST'})
         .then(() => console.log(`Speed changed to ${multiplier}x`))
+
+    // Update UI buttons
+    const allSpeeds = [1, 5, 20];
+
+    allSpeeds.forEach(speed => {
+        const btn = document.getElementById(`btn-speed-${speed}`);
+        if (btn) {
+            // Mute buttons by ensuring they have the secondary css class
+            if (!btn.classList.contains('secondary')) {
+                btn.classList.add('secondary');
+            }
+        }
+    });
+
+    // Highlight the clicked button
+    const activeBtn = document.getElementById(`btn-speed-${multiplier}`);
+    if (activeBtn) {
+        activeBtn.classList.remove('secondary');
+    }
+
 }
 
 function triggerFastForward() {
@@ -179,7 +199,7 @@ function updateRunwayTable(runways) {
 
 async function stopSimulation() {
     // Disable button to stop spam
-    const btn = document.querySelector('.btn-stop');
+    const btn = document.getElementById('btn-stop-sim');
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = 'Stopping...';
@@ -230,7 +250,7 @@ function connectWebSocket() {
 
             // Update the current tick count display, if present
             const tickCountElement = document.getElementById('tickCount');
-            if (tickCountElement && typeof snapshotData.currentTick !== null) {
+            if (tickCountElement && snapshotData.currentTick != null) {
                 tickCountElement.textContent = snapshotData.currentTick.toString();
             }
 
