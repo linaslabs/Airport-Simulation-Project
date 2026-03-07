@@ -127,7 +127,6 @@ function openSaveModal() {
 function startSimulation() {
     // gathering data
 
-
     // input params data
     let inputParams = {};
     const inputs = document.querySelectorAll('input[type="number"]');
@@ -204,6 +203,8 @@ function startSimulation() {
 
         simulationMode: document.getElementById("simulation-mode").value
     };
+
+    sessionStorage.setItem('draftConfig', JSON.stringify(payload));
 
     console.log("Sending Payload:", payload); // Debug check
     alert(
@@ -799,11 +800,30 @@ function rebuildEventListUI() {
         list.appendChild(row);
     });
 }
+
 // initial run
 document.addEventListener('DOMContentLoaded', () => {
+    // Setup the drop downs
     updateEventForm();
-});
 
+    // Check if there was a saved draft from local storage (only created when the user starts the simulation)
+    const savedDraft = sessionStorage.getItem('draftConfig')
+    // Check if the user just aborted from a simulation
+    const wasAborted = sessionStorage.getItem('wasAborted');
+
+    // Restore their previous configuration only if they've just come after stopping the simulation
+    if (savedDraft && wasAborted === 'true') {
+        try {
+            const draftData = JSON.parse(savedDraft);
+            applyConfigToPage(draftData);
+            console.log("Restored previous configuration because simulation was aborted.");
+        } catch (e) {
+            console.error("Failed to restore draft config", e);
+        }
+    }
+
+    sessionStorage.removeItem('wasAborted');
+});
 
 // Attach the logic to the button inside the modal
 

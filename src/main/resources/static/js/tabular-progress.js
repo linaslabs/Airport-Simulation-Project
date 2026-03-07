@@ -192,6 +192,9 @@ async function stopSimulation() {
     } catch(err) {
         console.error("Error stopping backend simulation:", err);
     } finally {
+        // Setting this flag in storage as true, this is used to reload users configuration after starting sim and stopping
+        sessionStorage.setItem('wasAborted', 'true');
+
         if (typeof stompClient !== 'undefined' && stompClient !== null) {
             stompClient.disconnect(() => {
                 window.location.href = '/config.html';

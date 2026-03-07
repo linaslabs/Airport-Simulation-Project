@@ -12,33 +12,21 @@
 
 <body>
 
-<header class="navbar" style="margin-bottom: -15px">
+<header class="navbar" style="position: relative;">
     <div class="nav-left">
         <a class="nav-link" href="/">Home</a>
-        <div class="nav-title">Airport Simulation</div>
+    </div>
+
+    <div style="position: absolute; left: 50%; transform: translateX(-50%); font-weight: 900; font-size: 1.3rem; letter-spacing: 2px;">
+        REAL-TIME SIMULATION
     </div>
 
     <div class="nav-right">
-        <div class="nav-stats">
-            Tick: <strong id="tickCount">0</strong> | Elapsed: <strong id="elapsedTime">0s</strong>
-        </div>
-        <button class="btn-stop" onclick="stopSimulation()">
-            Stop Simulation
-        </button>
+        <div class="nav-title" style="opacity: 0.7;">Airport Simulation</div>
     </div>
 </header>
 
-<main class="wrap progress-wrap">
-
-    <section class="page-title">
-        <div class="progress-header">
-            <h1>REAL-TIME SIMULATION</h1>
-            <h2><span id="progressPercentage">0</span>%</h2>
-        </div>
-        <div class="custom-progress-bar">
-            <div class="custom-progress-fill" id="progressBar"></div>
-        </div>
-    </section>
+<main class="wrap progress-wrap" style="padding-top: 20px;">
 
     <section id="comparisonContent" class="comparison-content">
         <div class="comparison-grid">
@@ -137,20 +125,42 @@
             </div>
         </div>
 
-        <section class="comparison-section control-panel">
-            <button id="btn-play-pause" class="btn btn-control" onclick="togglePlayPause()">⏸ Pause</button>
+        <section class="comparison-section control-panel" style="flex-direction: column; padding: 15px 20px; gap: 15px;">
 
-            <div class="control-divider"></div>
+            <div style="width: 100%; display: flex; align-items: center; gap: 15px;">
+                <span style="font-weight: 900; font-size: 1.1rem; color: #0f172a; width: 55px;"><span id="progressPercentage">0</span>%</span>
 
-            <span class="speed-label">SPEED:</span>
-            <button class="btn secondary btn-speed" onclick="setSpeed(1)">1x</button>
-            <button class="btn secondary btn-speed" onclick="setSpeed(5)">5x</button>
-            <button class="btn secondary btn-speed" onclick="setSpeed(20)">20x</button>
+                <div class="custom-progress-bar" style="margin: 0; flex-grow: 1; height: 14px;">
+                    <div class="custom-progress-fill" id="progressBar"></div>
+                </div>
 
-            <div class="control-divider"></div>
+                <div style="color: #64748b; font-size: 0.95rem; min-width: 160px; text-align: right;">
+                    Tick: <strong id="tickCount" style="color: #0f172a;">0</strong> | Elapsed: <strong id="elapsedTime" style="color: #0f172a;">0s</strong>
+                </div>
+            </div>
 
-            <button id="btn-fast-forward" class="btn btn-control" onclick="triggerFastForward()">⏭ Fast Forward</button>
+            <div style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px;">
+
+                <button id="btn-play-pause" class="btn btn-control" onclick="togglePlayPause()">⏸ Pause</button>
+
+                <div class="control-divider"></div>
+
+                <span class="speed-label">SPEED:</span>
+                <button class="btn secondary btn-speed" onclick="setSpeed(1)">1x</button>
+                <button class="btn secondary btn-speed" onclick="setSpeed(5)">5x</button>
+                <button class="btn secondary btn-speed" onclick="setSpeed(20)">20x</button>
+
+                <div class="control-divider"></div>
+
+                <button id="btn-fast-forward" class="btn btn-control" style="background: #f59e0b; color: white; border: none;" onclick="triggerFastForward()">⏭ Fast Forward</button>
+
+                <div class="control-divider"></div>
+
+                <button class="btn btn-control" style="background: #dc2626; color: white; border: none;" onclick="stopSimulation()">⏹ Stop</button>
+
+            </div>
         </section>
+
     </section>
 
 </main>
