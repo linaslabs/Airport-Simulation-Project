@@ -104,11 +104,6 @@ function generateInputs() {
         if (config.max !== undefined) input.max = config.max;
         if (config.step !== undefined) input.step = config.step;
 
-        // 1. Set placeholder for duration
-        if (config.name === "sim_duration") {
-            input.placeholder = "Indefinite";
-        }
-
         // 2. Block invalid characters: 'e', 'E', '+', '-' from ever being typed
         input.addEventListener('keydown', function(e) {
             if (['e', 'E', '+', '-'].includes(e.key)) {
@@ -168,10 +163,6 @@ function startSimulation() {
 
     const processedEvents = formatEventsForBackend(scheduledEventsData);
 
-    // Handle blank duration as -1
-    const durationRaw = document.getElementById("input-sim_duration").value;
-    const durationFinal = durationRaw === "" ? -1 : parseInt(durationRaw);
-
     const payload = {
         runwaySettings: runwayData,
         scheduledRunwayEvents: processedEvents.runways,
@@ -187,7 +178,7 @@ function startSimulation() {
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
         outboundRate: parseInt(document.getElementById("input-outbound_rate").value) || 15,
         maxWaitTime: parseInt(document.getElementById("input-max_delay").value) || 30,
-        duration: durationFinal, // Uses our new blank-check logic
+        duration: parseInt(document.getElementById("input-sim_duration").value),
 
         // Statistical Rates (@NotNull in Java)
         mechanicalFailureRate: parseFloat(document.getElementById("input-mech_failure_rate")?.value) || 0.01,
@@ -316,6 +307,26 @@ function addEvent() {
             return;
         }
     }
+    if (eventType === "Runway") {
+        const newStart = startTime;
+        const newEnd = eventDuration === -1 ? Infinity : startTime + eventDuration;
+
+        const hasOverlap = scheduledEventsData.some(ev => {
+            // We only care about events on the EXACT SAME runway
+            if (ev.type !== "Runway" || ev.locationId !== eventLocId) return false;
+
+            const existingStart = parseInt(ev.time);
+            const existingEnd = parseInt(ev.duration) === -1 ? Infinity : existingStart + parseInt(ev.duration);
+
+            // The absolute mathematical rule for overlapping time ranges:
+            return (newStart < existingEnd) && (existingStart < newEnd);
+        });
+
+        if (hasOverlap) {
+            alert(`Error: This event overlaps with an existing event on ${eventLocText}.`);
+            return; // HALT!
+        }
+    }
 
     const uniqueId = Date.now();
 
@@ -361,6 +372,7 @@ function addEvent() {
     durationInput.value = "";
     modeSelect.value = "null";
     nameSelect.value = "No Change";
+    modeSelect.disabled = false;
 }
 
 
@@ -808,6 +820,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
+    // NEW: Lock 'Mode' if the Runway is closed
+    const nameSelect = document.getElementById("new-event-name");
+    const modeSelect = document.getElementById("new-event-mode");
+
+    if (nameSelect && modeSelect) {
+        nameSelect.addEventListener("change", function() {
+            if (["Runway Inspection", "Snow Clearance", "Equipment Failure"].includes(this.value)) {
+                modeSelect.value = "null"; // Force to "No Change"
+                modeSelect.disabled = true; // Lock the dropdown
+            } else {
+                modeSelect.disabled = false; // Unlock it for Available/No Change
+            }
+        });
+    }
 });
 
 
@@ -839,9 +866,6 @@ function saveConfiguration() {
     const seedRaw = document.getElementById("input-seed")?.value;
     const seed = (seedRaw !== "" && seedRaw != null) ? parseInt(seedRaw) : 0;
 
-    // Handle blank duration as -1
-    const durationRaw = document.getElementById("input-sim_duration").value;
-    const durationFinal = durationRaw === "" ? -1 : parseInt(durationRaw);
 
     const payload = {
         templateName: configName,
@@ -849,7 +873,7 @@ function saveConfiguration() {
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
         outboundRate: parseInt(document.getElementById("input-outbound_rate").value) || 15,
         maxWaitTime: parseInt(document.getElementById("input-max_delay").value) || 30,
-        duration: durationFinal, // Uses our new blank-check logic
+        duration: parseInt(document.getElementById("input-sim_duration").value),
         tickTime: 1000,
         automaticGenerationEnabled: document.getElementById("input-auto_gen").checked || false,
         seed: seed,
@@ -892,33 +916,33 @@ function saveConfiguration() {
 function validateInputs() {
     const inputs = document.querySelectorAll('.field-input');
 
-    for (let input of inputs) {
-        // Allow a completely empty duration (Indefinite)
-        if (input.id === "input-sim_duration" && input.value === "") {
-            input.style.border = ""; // Clear any previous red border
-            continue;
-        }
+    let isValid = true;
+    let firstInvalidInput = null;
 
+    for (let input of inputs) {
         const val = parseFloat(input.value);
         const min = parseFloat(input.min);
         const max = parseFloat(input.max);
 
-        // Find the label to make the error message helpful
-        let labelName = input.name;
-        const labelEl = input.closest('div')?.querySelector('.field-label');
-        if (labelEl) labelName = labelEl.innerText;
-
-        // Check for empty boxes (that aren't duration) or out-of-bounds numbers
+        // Check for empty boxes or out-of-bounds numbers
         if (input.value === "" || isNaN(val) || val < min || val > max) {
-            alert(`"${labelName}" must be between ${min} and ${max}.`);
-            input.focus();
-            input.style.border = "2px solid red";
-            return false; // HALT the submission
+            input.style.border = "2px solid red"; // Adds red border to ALL invalid boxes
+            isValid = false;
+
+            // Save the first one we find so we can focus their cursor on it
+            if (!firstInvalidInput) firstInvalidInput = input;
         } else {
-            input.style.border = ""; // Clears the red border if it's fixed
+            input.style.border = ""; // Clears the red border if it is perfectly valid
         }
     }
-    return true; // Everything is perfect
+
+    // Short, sweet, generic alert
+    if (!isValid) {
+        if (firstInvalidInput) firstInvalidInput.focus();
+        alert("Please fix the highlighted fields. Ensure all numbers are within their specified ranges.");
+    }
+
+    return isValid;
 }
 
 document.getElementById("confirm-save-btn").onclick = saveConfiguration;
