@@ -205,7 +205,6 @@ public class SimulationService {
         log.info("Simulation triggered to stop.");
 
         this.isAborted = true;
-        this.isFinished = true;
         this.isPaused = false; // in case
 
         // Shut down the simulation immediately
