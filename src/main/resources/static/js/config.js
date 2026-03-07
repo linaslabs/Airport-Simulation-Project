@@ -104,6 +104,18 @@ function generateInputs() {
         if (config.max !== undefined) input.max = config.max;
         if (config.step !== undefined) input.step = config.step;
 
+        // 1. Set placeholder for duration
+        if (config.name === "sim_duration") {
+            input.placeholder = "Indefinite";
+        }
+
+        // 2. Block invalid characters: 'e', 'E', '+', '-' from ever being typed
+        input.addEventListener('keydown', function(e) {
+            if (['e', 'E', '+', '-'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+
         // Enable Dice only for Seed
         if (config.name === "seed") {
             clone.querySelector(".dice-btn").style.display = "block";
@@ -125,15 +137,14 @@ function openSaveModal() {
 
 
 function startSimulation() {
-    // gathering data
-
+    // HALT if validation fails!
+    if (!validateInputs()) return;
 
     // input params data
     let inputParams = {};
     const inputs = document.querySelectorAll('input[type="number"]');
 
     inputs.forEach(input => {
-        // Example: id="num_runways" -> inputParams["num_runways"] = 10
         if (input.id) {
             inputParams[input.id] = parseFloat(input.value);
         }
@@ -143,27 +154,7 @@ function startSimulation() {
     let runwayData = [];
     const runwayCount = parseInt(runwayCounter.innerText);
 
-    // Helper function to convert status dropdown value to enum
-    function statusToEnum(statusVal) {
-        const mapping = {
-            'available': 'AVAILABLE',
-            'snowclearance': 'SNOWCLEARANCE',
-            'inspection': 'INSPECTION',
-            'failure': 'FAILURE'
-        };
-        return mapping[statusVal.toLowerCase()] || 'AVAILABLE';
-    }
-
-    // Helper function to convert mode dropdown value to enum
-    function modeToEnum(modeVal) {
-        const mapping = {
-            'mixed': 'MIXED',
-            'landing': 'LANDING',
-            'takeoff': 'TAKEOFF'
-        };
-        return mapping[modeVal.toLowerCase()] || 'MIXED';
-    }
-
+    // Note: statusToEnum and modeToEnum are global functions in your file
     for (let i = 1; i <= runwayCount; i++) {
         const statusVal = document.getElementById(`status_${i}`).value;
         const modeVal = document.getElementById(`mode_${i}`).value;
@@ -174,9 +165,12 @@ function startSimulation() {
             mode: modeToEnum(modeVal)
         });
     }
-    console.log("TRUTH TEST - What is in the array?:", scheduledEventsData);
 
     const processedEvents = formatEventsForBackend(scheduledEventsData);
+
+    // Handle blank duration as -1
+    const durationRaw = document.getElementById("input-sim_duration").value;
+    const durationFinal = durationRaw === "" ? -1 : parseInt(durationRaw);
 
     const payload = {
         runwaySettings: runwayData,
@@ -193,7 +187,7 @@ function startSimulation() {
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
         outboundRate: parseInt(document.getElementById("input-outbound_rate").value) || 15,
         maxWaitTime: parseInt(document.getElementById("input-max_delay").value) || 30,
-        duration: parseInt(document.getElementById("input-sim_duration").value) || 120,
+        duration: durationFinal, // Uses our new blank-check logic
 
         // Statistical Rates (@NotNull in Java)
         mechanicalFailureRate: parseFloat(document.getElementById("input-mech_failure_rate")?.value) || 0.01,
@@ -202,18 +196,11 @@ function startSimulation() {
         snowClearanceRate: parseFloat(document.getElementById("input-snow_rate")?.value) || 0.01,
         equipmentFailureRate: parseFloat(document.getElementById("input-equip_failure_rate")?.value) || 0.01,
 
-        simulationMode: document.getElementById("simulation-mode").value
+        // Force to uppercase to match the Java Enum perfectly!
+        simulationMode: document.getElementById("simulation-mode").value.toUpperCase()
     };
 
     console.log("Sending Payload:", payload); // Debug check
-    alert(
-        "1. RAW ARRAY (If this is empty, you didn't add an event!):\n" +
-        JSON.stringify(scheduledEventsData, null, 2) +
-        "\n\n2. FORMATTED RUNWAYS:\n" +
-        JSON.stringify(payload.scheduledRunwayEvents, null, 2)
-    );
-
-    // sending
 
     fetch('/api/configuration/validate', {
         method: 'POST',
@@ -222,15 +209,15 @@ function startSimulation() {
         },
         body: JSON.stringify(payload)
     })
-        .then(response => {
+        .then(async response => {
             if (!response.ok) {
-                throw new Error('Failed to validate configuration'); // carry failure messages up
+                const errorText = await response.text();
+                throw new Error(errorText || `Failed to validate configuration (HTTP ${response.status})`);
             }
             return response.text();
         })
         .then(data => {
             console.log('Configuration validated:', data);
-            // Now start the simulation
             return fetch('/api/simulation/initialise', {
                 method: 'POST',
                 headers: {
@@ -239,15 +226,15 @@ function startSimulation() {
                 body: JSON.stringify(payload)
             });
         })
-        .then(response => {
+        .then(async response => {
             if (!response.ok) {
-                throw new Error('Failed to start simulation'); // carry failures messages up
+                const errorText = await response.text();
+                throw new Error(errorText || `Failed to start simulation (HTTP ${response.status})`);
             }
             return response.text();
         })
         .then(data => {
             console.log('Simulation started:', data);
-            // Redirect to progress page
             window.location.href = '/progress.html';
         })
         .catch(error => {
@@ -282,51 +269,56 @@ function addEvent() {
     const nameSelect = document.getElementById("new-event-name");
     const locSelect = document.getElementById("new-event-loc");
     const timeInput = document.getElementById("new-event-time");
+    const durationInput = document.getElementById("new-event-duration");
     const list = document.getElementById("scheduled-events-list");
     const emptyMsg = document.getElementById("empty-list-msg");
     const simInput = document.querySelector('input[id="input-sim_duration"]');
 
     const eventType = typeSelect.value;
-
-    // Logic Separation:
-    const eventEnum = nameSelect.value; // Raw Enum (e.g., SNOWCLEARANCE)
-    const displayLabel = nameSelect.options[nameSelect.selectedIndex].text; // Clean Label (e.g., Snow Clearance)
-
+    const eventEnum = nameSelect.value;
+    const displayLabel = nameSelect.options[nameSelect.selectedIndex].text;
     const eventLocText = locSelect.options[locSelect.selectedIndex].text;
     const eventLocId = locSelect.value;
-    const startTime = parseInt(timeInput.value);
-    const simLimit = parseInt(simInput.value);
 
-    // Validation
-    if (isNaN(startTime)) {
-        alert("Please enter a valid time.");
+    const startTime = parseInt(timeInput.value);
+    // If the main duration box is blank (-1), we give a massive allowance. Otherwise use the typed limit.
+    const simLimit = (simInput && simInput.value !== "") ? parseInt(simInput.value) : 999999;
+
+    // --- 1. TIME VALIDATION ---
+    if (isNaN(startTime) || startTime < 0) {
+        alert("Please enter a valid start time (0 or greater).");
+        timeInput.focus();
         return;
     }
     if (startTime > simLimit) {
-        alert(`Error: Simulation ends at ${simLimit}m.`);
+        alert(`Error: Cannot schedule past the simulation limit (${simLimit}m).`);
+        timeInput.focus();
         return;
     }
 
     const modeSelect = document.getElementById("new-event-mode");
     let rawMode = modeSelect.value;
-
-    // If it's a Runway, check if it's the "null" string. If so, make it a REAL null.
     const eventModeVal = eventType === "Runway" ? (rawMode === "null" ? null : rawMode) : "MIXED";
     const eventModeLabel = eventType === "Runway" ? modeSelect.options[modeSelect.selectedIndex].text : "";
 
-    const durationInput = document.getElementById("new-event-duration");
-    let eventDuration = parseInt(durationInput.value);
-
-    // Auto-fill logic
+    // --- 2. DURATION VALIDATION ---
+    let eventDuration;
     if (eventType === "Aircraft") {
-        eventDuration = -1; // Aircraft events don't use duration
-    } else if (isNaN(eventDuration)) {
-        eventDuration = 30; // Default runway duration if left blank
+        eventDuration = -1; // Aircraft events never have a duration
+    } else {
+        // If left blank, send -1 (Indefinite)
+        eventDuration = durationInput.value === "" ? -1 : parseInt(durationInput.value);
+
+        // Prevent 0 or negative typed durations
+        if (eventDuration !== -1 && eventDuration <= 0) {
+            alert("Duration must be at least 1 minute, or left blank for Indefinite.");
+            durationInput.focus();
+            return;
+        }
     }
 
     const uniqueId = Date.now();
 
-    // Data array gets the Enum for the DTO
     scheduledEventsData.push({
         id: uniqueId,
         type: eventType,
@@ -334,8 +326,8 @@ function addEvent() {
         locationId: eventLocId,
         time: startTime,
         duration: eventDuration,
-        mode: eventModeVal,        // e.g., "LANDING"
-        modeLabel: eventModeLabel  // e.g., "Landing"
+        mode: eventModeVal,
+        modeLabel: eventModeLabel
     });
 
     if (emptyMsg) emptyMsg.remove();
@@ -344,8 +336,9 @@ function addEvent() {
     row.className = "d-flex align-items-center small mb-2 pb-2 border-bottom pe-1";
     row.setAttribute("data-id", uniqueId.toString());
 
-    // 3. Add a cool blue badge for the mode!
-    let durationBadge = eventType === "Runway" ? `<span class="badge bg-secondary ms-1">${eventDuration}m</span>` : "";
+    // --- 3. THE INDEFINITE BADGE ---
+    let durationDisplay = eventDuration === -1 ? "Indefinite" : `${eventDuration}m`;
+    let durationBadge = eventType === "Runway" ? `<span class="badge bg-secondary ms-1">${durationDisplay}</span>` : "";
     let modeBadge = eventType === "Runway" ? `<span class="badge bg-info text-dark ms-1">${eventModeLabel}</span>` : "";
 
     row.innerHTML = `
@@ -366,11 +359,8 @@ function addEvent() {
 
     timeInput.value = "";
     durationInput.value = "";
-    modeSelect.value = "null"; // Change from "MIXED" to "null" for No Change default
-
-    // Inside updateEventForm() after populating nameSelect:
+    modeSelect.value = "null";
     nameSelect.value = "No Change";
-
 }
 
 
@@ -423,19 +413,18 @@ function modeToEnum(modeVal) {
 
 // HELPER FUNCTION: Turns our frontend UI array into perfect Java Maps
 // Lookup maps at the top level (outside any function, near statusToEnum/modeToEnum)
-const eventNameToStatusEnum = {
-    'No Change': null,
-    'Available': 'AVAILABLE',
-    'Runway Inspection': 'INSPECTION',
-    'Snow Clearance': 'SNOWCLEARANCE',
-    'Equipment Failure': 'FAILURE'
+const backendToStatusHTML = {
+    'AVAILABLE': 'available',
+    'SNOW_CLEARANCE': 'snowclearance',
+    'INSPECTION': 'inspection',
+    'EQUIPMENT_FAILURE': 'failure'
 };
 
-const eventNameToEmergencyEnum = {
-    'Mechanical Failure': 'MECHANICAL',
-    'Passenger Health': 'PASSENGER'
+const backendToModeHTML = {
+    'MIXED': 'mixed',
+    'LANDING': 'landing',
+    'TAKEOFF': 'takeoff'
 };
-
 function formatEventsForBackend(frontendEvents) {
     let runwayMap = {};
     let aircraftMap = {};
@@ -593,10 +582,13 @@ function applyConfigToPage(data) {
             const i = index + 1;
             const statusEl = document.getElementById(`status_${i}`);
             const modeEl = document.getElementById(`mode_${i}`);
-            if (statusEl) statusEl.value = runway.status.toLowerCase();
-            if (modeEl && runway.mode) modeEl.value = runway.mode.toLowerCase();
+
+            // This is the fixed way!
+            if (statusEl) statusEl.value = backendToStatusHTML[runway.status] || "available";
+            if (modeEl && runway.mode) modeEl.value = backendToModeHTML[runway.mode] || "mixed";
         });
     }
+
 
     scheduledEventsData = [];
 
@@ -772,7 +764,11 @@ function rebuildEventListUI() {
         row.className = "d-flex align-items-center small mb-2 pb-2 border-bottom pe-1";
         row.setAttribute("data-id", ev.id.toString());
 
-        let durationBadge = ev.type === "Runway" ? `<span class="badge bg-secondary ms-1">${ev.duration}m</span>` : "";
+        // Interpret -1 as Indefinite
+        let parsedDuration = parseInt(ev.duration);
+        let durationDisplay = (parsedDuration === -1 || isNaN(parsedDuration)) ? "Indefinite" : `${parsedDuration}m`;
+
+        let durationBadge = ev.type === "Runway" ? `<span class="badge bg-secondary ms-1">${durationDisplay}</span>` : "";
         let modeBadge = ev.type === "Runway" ? `<span class="badge bg-info text-dark ms-1">${ev.modeLabel || 'No Change'}</span>` : "";
         let eventLocText = ev.type === 'Runway' ? 'Runway ' + (parseInt(ev.locationId) + 1) : ev.locationId;
 
@@ -794,6 +790,24 @@ function rebuildEventListUI() {
 // initial run
 document.addEventListener('DOMContentLoaded', () => {
     updateEventForm();
+
+    // Set placeholder and block invalid characters for Event Inputs
+    const timeInput = document.getElementById("new-event-time");
+    const durationInput = document.getElementById("new-event-duration");
+
+    if (durationInput) {
+        durationInput.placeholder = "Indefinite";
+    }
+
+    [timeInput, durationInput].forEach(input => {
+        if (input) {
+            input.addEventListener('keydown', function(e) {
+                if (['e', 'E', '+', '-'].includes(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
 });
 
 
@@ -801,6 +815,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function saveConfiguration() {
+    // HALT if validation fails!
+    if (!validateInputs()) return;
+
     const nameInput = document.getElementById("new-config-name");
     const configName = nameInput ? nameInput.value.trim() : "";
     if (!configName) return alert("Please enter a name");
@@ -822,13 +839,17 @@ function saveConfiguration() {
     const seedRaw = document.getElementById("input-seed")?.value;
     const seed = (seedRaw !== "" && seedRaw != null) ? parseInt(seedRaw) : 0;
 
+    // Handle blank duration as -1
+    const durationRaw = document.getElementById("input-sim_duration").value;
+    const durationFinal = durationRaw === "" ? -1 : parseInt(durationRaw);
+
     const payload = {
         templateName: configName,
         runwaySettings: runwaySettings,
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
         outboundRate: parseInt(document.getElementById("input-outbound_rate").value) || 15,
         maxWaitTime: parseInt(document.getElementById("input-max_delay").value) || 30,
-        duration: parseInt(document.getElementById("input-sim_duration").value) || 120,
+        duration: durationFinal, // Uses our new blank-check logic
         tickTime: 1000,
         automaticGenerationEnabled: document.getElementById("input-auto_gen").checked || false,
         seed: seed,
@@ -837,12 +858,11 @@ function saveConfiguration() {
         runwayInspectionRate: parseFloat(document.getElementById("input-inspection_rate").value) || 0.0,
         snowClearanceRate: parseFloat(document.getElementById("input-snow_rate").value) || 0.0,
         equipmentFailureRate: parseFloat(document.getElementById("input-equip_failure_rate").value) || 0.0,
-        simulationMode: document.getElementById("simulation-mode").value,
+        simulationMode: document.getElementById("simulation-mode").value.toUpperCase(),
         scheduledRunwayEvents: backendEvents.runways || {},
         scheduledAircraftEvents: backendEvents.aircraft || {}
     };
 
-    // Shows exact payload in console before sending - remove once working
     console.log("Save payload:", JSON.stringify(payload, null, 2));
 
     fetch('/api/configuration/save', {
@@ -867,6 +887,38 @@ function saveConfiguration() {
 }
 
 
+// VALIDATION
 
+function validateInputs() {
+    const inputs = document.querySelectorAll('.field-input');
+
+    for (let input of inputs) {
+        // Allow a completely empty duration (Indefinite)
+        if (input.id === "input-sim_duration" && input.value === "") {
+            input.style.border = ""; // Clear any previous red border
+            continue;
+        }
+
+        const val = parseFloat(input.value);
+        const min = parseFloat(input.min);
+        const max = parseFloat(input.max);
+
+        // Find the label to make the error message helpful
+        let labelName = input.name;
+        const labelEl = input.closest('div')?.querySelector('.field-label');
+        if (labelEl) labelName = labelEl.innerText;
+
+        // Check for empty boxes (that aren't duration) or out-of-bounds numbers
+        if (input.value === "" || isNaN(val) || val < min || val > max) {
+            alert(`"${labelName}" must be between ${min} and ${max}.`);
+            input.focus();
+            input.style.border = "2px solid red";
+            return false; // HALT the submission
+        } else {
+            input.style.border = ""; // Clears the red border if it's fixed
+        }
+    }
+    return true; // Everything is perfect
+}
 
 document.getElementById("confirm-save-btn").onclick = saveConfiguration;
