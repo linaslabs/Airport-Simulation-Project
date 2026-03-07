@@ -1,3 +1,4 @@
+/* ===== ORIGINAL QUICK PROGRESS STYLES ===== */
 .progress-container {
     width: 100%;
     height: 100vh;
@@ -123,4 +124,145 @@
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.progress-header h1 {
+    margin: 0;
+    font-size: 2.8rem;
+}
+.progress-header h2 {
+    margin: 0;
+    color: #555;
+}
+
+.custom-progress-bar {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 10px;
+    margin-top: 10px;
+}
+.custom-progress-fill {
+    height: 100%;
+    background-color: #28a745;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.nav-stats {
+    color: white;
+    margin-right: 15px;
+    font-size: 0.9rem;
+}
+
+/* Column & Flex Layout Helpers */
+.progress-column {
+    height: 100%;
+}
+.half-section {
+    flex: 1 1 50%;
+    margin-top: 1px;
+}
+
+.scrollable-table-box {
+    border: 1px solid #ccc;
+    background: #fff;
+    overflow-y: auto;
+}
+.scrollable-table-box th {
+    position: sticky;
+    top: 0;
+    background: #f4f4f4;
+    z-index: 1;
+}
+
+.runways-container {
+    min-height: 294px;
+    border: 1px solid #ccc;
+    background: #fff;
+}
+
+.flex-table-container {
+    max-height: none;
+    min-height: 274px;
+    height: 0;
+}
+
+
+.events-table th,
+.events-table td {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+body {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.progress-wrap {
+    flex-grow: 1;
+    min-height: 0;
+    padding-bottom: 20px !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.comparison-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.progress-wrap .page-title {
+    margin-bottom: 10px;
+}
+
+.progress-wrap .comparison-grid {
+    margin-top: 10px;
+}
+
+.control-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px;
+}
+
+.btn-control {
+    min-width: 140px;
+    padding: 12px 20px;
+    font-size: 15px;
+}
+
+.btn-speed {
+    min-width: 60px;
+    padding: 12px 15px;
+    font-size: 14px;
+}
+
+.control-divider {
+    width: 2px;
+    height: 30px;
+    background: #cbd5e1;
+    margin: 0 10px;
+}
+
+.speed-label {
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
 }

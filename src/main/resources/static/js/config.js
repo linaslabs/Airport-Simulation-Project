@@ -127,7 +127,6 @@ function openSaveModal() {
 function startSimulation() {
     // gathering data
 
-
     // input params data
     let inputParams = {};
     const inputs = document.querySelectorAll('input[type="number"]');
@@ -187,7 +186,7 @@ function startSimulation() {
         // Logic Configuration
         automaticGenerationEnabled: document.getElementById("input-auto_gen")?.checked || false,
         seed: parseInt(document.getElementById("input-seed")?.value) || 0,
-        tickTime: 20,
+        tickTime: 1000,
 
         // Parameters
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
@@ -204,6 +203,8 @@ function startSimulation() {
 
         simulationMode: document.getElementById("simulation-mode").value
     };
+
+    sessionStorage.setItem('draftConfig', JSON.stringify(payload));
 
     console.log("Sending Payload:", payload); // Debug check
     alert(
@@ -248,7 +249,15 @@ function startSimulation() {
         .then(data => {
             console.log('Simulation started:', data);
             // Redirect to progress page
-            window.location.href = '/progress.html';
+            const simMode = payload.simulationMode
+
+            if (simMode == "QUICK_SIM"){
+                window.location.href = '/quick-progress.html';
+            } else if(simMode == "TABLE_VIEW"){
+                window.location.href = '/tabular-progress.html';
+            } else {
+                // Redirect to graphical progress html file
+            }
         })
         .catch(error => {
             console.error('Error:', error);
@@ -724,6 +733,14 @@ function loadFullConfig(name) {
         .catch(err => alert(err.message));
 }
 
+function resetConfig() {
+    if (confirm("Are you sure you want to reset all configurations to their default values?")) {
+        // Destroy the draft so it doesn't try to load it again
+        sessionStorage.removeItem('draftConfig');
+        // Reload the page to reset all HTML elements and JS arrays instantly
+        window.location.reload();
+    }
+}
 
 // load configuration modal/pop-up
 function openLoadConfigModal() {
@@ -827,11 +844,30 @@ function rebuildEventListUI() {
         list.appendChild(row);
     });
 }
+
 // initial run
 document.addEventListener('DOMContentLoaded', () => {
+    // Setup the drop downs
     updateEventForm();
-});
 
+    // Check if there was a saved draft from local storage (only created when the user starts the simulation)
+    const savedDraft = sessionStorage.getItem('draftConfig')
+    // Check if the user just aborted from a simulation
+    const wasAborted = sessionStorage.getItem('wasAborted');
+
+    // Restore their previous configuration only if they've just come after stopping the simulation
+    if (savedDraft && wasAborted === 'true') {
+        try {
+            const draftData = JSON.parse(savedDraft);
+            applyConfigToPage(draftData);
+            console.log("Restored previous configuration because simulation was aborted.");
+        } catch (e) {
+            console.error("Failed to restore draft config", e);
+        }
+    }
+
+    sessionStorage.removeItem('wasAborted');
+});
 
 // Attach the logic to the button inside the modal
 

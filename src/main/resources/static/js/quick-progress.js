@@ -43,27 +43,27 @@ function connectWebSocket() {
 
             // Update the current tick count display, if present
             const tickCountElement = document.getElementById('tickCount');
-            if (tickCountElement && typeof snapshotData.currentTick !== 'undefined') {
+            if (tickCountElement && typeof snapshotData.currentTick !== null) {
                 tickCountElement.textContent = snapshotData.currentTick.toString();
             }
-
-            // snapshotData.holdingAircraft and snapshotData.runways can be used here to draw out the real-time simulation
-            // ...
         });
 
         // Subscribe to the complete stream so we know when the simulation finishes
         const completeSubscription = stompClient.subscribe('/simulation/complete', function () {
             console.log('Simulation complete. Redirecting to results...');
 
+            // Simulation 100 percent completion
+            updateProgress(1.0);
+
             // Close connection
             if (stompClient !== null) {
                 stompClient.disconnect();
             }
 
-            // Wait 2 secs for the user to see the bar hit 100% (for UI) then redirect
+            // Wait half a second for the user to see the bar hit 100% (for UI) then redirect
             setTimeout(() => {
                 window.location.href = '/results.html';
-            }, 2000);
+            }, 500);
         });
 
         // Tell the backend when we're ready to start.
