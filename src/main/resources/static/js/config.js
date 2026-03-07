@@ -697,6 +697,14 @@ function loadFullConfig(name) {
         .catch(err => alert(err.message));
 }
 
+function resetConfig() {
+    if (confirm("Are you sure you want to reset all configurations to their default values?")) {
+        // Destroy the draft so it doesn't try to load it again
+        sessionStorage.removeItem('draftConfig');
+        // Reload the page to reset all HTML elements and JS arrays instantly
+        window.location.reload();
+    }
+}
 
 // load configuration modal/pop-up
 function openLoadConfigModal() {
