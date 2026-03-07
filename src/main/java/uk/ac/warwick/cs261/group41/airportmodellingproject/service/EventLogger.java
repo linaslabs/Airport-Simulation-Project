@@ -1,6 +1,6 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.service;
 
-import uk.ac.warwick.cs261.group41.airportmodellingproject.model.SimulationEvent;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationEvent;
 
 import java.util.ArrayList;
 import java.util.List;
