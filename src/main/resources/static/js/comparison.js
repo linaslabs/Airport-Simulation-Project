@@ -502,11 +502,6 @@ async function showSelectModal(columnLetter = null) {
     }
 
     let simsList = [...simulationSummaries];
-    if (selectingFor === 'A' && currentSimNames.B) {
-        simsList = simsList.filter(sim => sim.simulationName !== currentSimNames.B);
-    } else if (selectingFor === 'B' && currentSimNames.A) {
-        simsList = simsList.filter(sim => sim.simulationName !== currentSimNames.A);
-    }
 
     let sortState = { column: null, ascending: true };
 
@@ -570,7 +565,7 @@ async function ensureCurrentSelectionAndLoad() {
         currentSimNames.A = names[0];
     }
 
-    if (!currentSimNames.B || !names.includes(currentSimNames.B) || currentSimNames.B === currentSimNames.A) {
+    if (!currentSimNames.B || !names.includes(currentSimNames.B)) {
         currentSimNames.B = names.find(name => name !== currentSimNames.A) || currentSimNames.A;
     }
 

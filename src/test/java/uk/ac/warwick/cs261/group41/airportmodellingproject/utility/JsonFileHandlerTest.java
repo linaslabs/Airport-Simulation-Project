@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventLogger;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.SimulationMode;
 
@@ -11,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -19,13 +19,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for {@link JsonFileHandler}.
+ * Integration tests for JsonFileHandler.
  *
- * <p>Exercises the real filesystem under {@code /data/configtemplates} and {@code /data/results}.
- * Every test cleans up the files it creates in {@code @AfterEach} so the data directory is left
+ * Exercises the real filesystem under /data/configtemplates and /data/results.
+ * Every test cleans up the files it creates in @AfterEach so the data directory is left
  * in the same state it was found.
  *
- * <p>No mocking is used because {@link JsonFileHandler} is a static utility whose entire purpose
+ * No mocking is used because JsonFileHandler is a static utility whose entire purpose
  * is disk I/O — verifying the actual file is more valuable than mocking it away.
  */
 class JsonFileHandlerTest {
@@ -40,9 +40,7 @@ class JsonFileHandlerTest {
     // Helpers
 
     /**
-     * Builds a minimal but fully-populated {@link SimulationConfig} for use in tests.
-     *
-     * @return a valid {@link SimulationConfig} with a single MIXED/AVAILABLE runway.
+     * Builds a minimal but fully-populated SimulationConfig for use in tests.
      */
     private SimulationConfig buildConfig() {
         return new SimulationConfig(
@@ -57,9 +55,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Builds a {@link StatisticsSummary} with known, assertable field values.
-     *
-     * @return a {@link StatisticsSummary} with fixed numeric values.
+     * Builds a StatisticsSummary with known, assertable field values.
      */
     private StatisticsSummary buildStats() {
         return new StatisticsSummary(
@@ -74,26 +70,17 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Builds a {@link ConfigurationTemplate} wrapping the given config.
-     *
-     * @param name   the template name.
-     * @param config the {@link SimulationConfig} to embed.
-     * @return a new {@link ConfigurationTemplate}.
+     * Builds a ConfigurationTemplate wrapping the given config.
      */
     private ConfigurationTemplate buildTemplate(String name, SimulationConfig config) {
         return new ConfigurationTemplate(name, new Date(), config);
     }
 
     /**
-     * Builds a {@link SimulationResultSaved} with the given name, config, and stats.
-     *
-     * @param name   the simulation name used as the filename.
-     * @param config the {@link SimulationConfig} to embed.
-     * @param stats  the {@link StatisticsSummary} to embed.
-     * @return a new {@link SimulationResultSaved}.
+     * Builds a SimulationResultSaved with the given name, config, and stats.
      */
     private SimulationResultSaved buildResult(String name, SimulationConfig config, StatisticsSummary stats) {
-        return new SimulationResultSaved(config, stats, name, new Date());
+        return new SimulationResultSaved(config, stats, new EventLogger(), name, new Date());
     }
 
     // Cleanup
@@ -113,7 +100,7 @@ class JsonFileHandlerTest {
     // Configuration Template tests
 
     /**
-     * Verifies that saving a {@link ConfigurationTemplate} creates a JSON file on disk.
+     * Verifies that saving a ConfigurationTemplate creates a JSON file on disk.
      */
     @Test
     void saveConfigTemplate_shouldCreateJsonFileOnDisk() throws Exception {
@@ -126,7 +113,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that a saved {@link ConfigurationTemplate} can be reloaded with all fields intact.
+     * Verifies that a saved ConfigurationTemplate can be reloaded with all fields intact.
      */
     @Test
     void saveConfigTemplate_andGetConfigTemplate_shouldRoundTripCorrectly() throws Exception {
@@ -148,7 +135,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that loading a template that does not exist throws {@link NoSuchFileException}.
+     * Verifies that loading a template that does not exist throws NoSuchFileException.
      */
     @Test
     void getConfigTemplate_whenFileDoesNotExist_shouldThrowNoSuchFileException() {
@@ -158,7 +145,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that {@code templateNameExists} returns {@code true} after the template has been saved.
+     * Verifies that templateNameExists returns true after the template has been saved.
      */
     @Test
     void templateNameExists_whenTemplateHasBeenSaved_shouldReturnTrue() throws Exception {
@@ -169,7 +156,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that {@code templateNameExists} returns {@code false} for a template that was never saved.
+     * Verifies that templateNameExists returns false for a template that was never saved.
      */
     @Test
     void templateNameExists_whenTemplateHasNotBeenSaved_shouldReturnFalse() {
@@ -178,7 +165,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that deleting a {@link ConfigurationTemplate} removes its file from disk.
+     * Verifies that deleting a ConfigurationTemplate removes its file from disk.
      */
     @Test
     void deleteConfigTemplate_shouldRemoveFileFromDisk() throws Exception {
@@ -191,7 +178,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that deleting a template that does not exist throws {@link NoSuchFileException}.
+     * Verifies that deleting a template that does not exist throws NoSuchFileException.
      */
     @Test
     void deleteConfigTemplate_whenFileDoesNotExist_shouldThrowNoSuchFileException() {
@@ -201,7 +188,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that a saved template appears in the list returned by {@code listSavedConfigTemplateSummaries}.
+     * Verifies that a saved template appears in the list returned by listSavedConfigTemplateSummaries.
      */
     @Test
     void listSavedConfigTemplateSummaries_shouldContainSavedTemplate() throws Exception {
@@ -216,7 +203,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that each {@link ConfigurationTemplateSummary} carries the correct rates, runway count, and event count.
+     * Verifies that each ConfigurationTemplateSummary carries the correct rates, runway count, and event count.
      */
     @Test
     void listSavedConfigTemplateSummaries_summaryShouldCarryCorrectMetadata() throws Exception {
@@ -237,7 +224,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that {@code listSavedConfigTemplateSummaries} returns templates sorted newest-first by {@code dateCreated}.
+     * Verifies that listSavedConfigTemplateSummaries returns templates sorted newest-first by dateCreated.
      */
     @Test
     void listSavedConfigTemplateSummaries_shouldBeSortedNewestFirst() throws Exception {
@@ -264,7 +251,7 @@ class JsonFileHandlerTest {
     // Simulation Result tests
 
     /**
-     * Verifies that saving a {@link SimulationResultSaved} creates a JSON file on disk.
+     * Verifies that saving a SimulationResultSaved creates a JSON file on disk.
      */
     @Test
     void saveResults_shouldCreateJsonFileOnDisk() throws Exception {
@@ -277,8 +264,8 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that a saved {@link SimulationResultSaved} can be reloaded with both its embedded
-     * {@link SimulationConfig} and {@link StatisticsSummary} fields intact.
+     * Verifies that a saved SimulationResultSaved can be reloaded with both its embedded
+     * SimulationConfig and StatisticsSummary fields intact.
      */
     @Test
     void saveResults_andGetSimulationResult_shouldRoundTripCorrectly() throws Exception {
@@ -309,7 +296,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that loading a result that does not exist throws {@link NoSuchFileException}.
+     * Verifies that loading a result that does not exist throws NoSuchFileException.
      */
     @Test
     void getSimulationResult_whenFileDoesNotExist_shouldThrowNoSuchFileException() {
@@ -319,7 +306,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that {@code resultNameExists} returns {@code true} after the result has been saved.
+     * Verifies that resultNameExists returns true after the result has been saved.
      */
     @Test
     void resultNameExists_whenResultHasBeenSaved_shouldReturnTrue() throws Exception {
@@ -330,7 +317,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that {@code resultNameExists} returns {@code false} for a result that was never saved.
+     * Verifies that resultNameExists returns false for a result that was never saved.
      */
     @Test
     void resultNameExists_whenResultHasNotBeenSaved_shouldReturnFalse() {
@@ -339,7 +326,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that deleting a {@link SimulationResultSaved} removes its file from disk.
+     * Verifies that deleting a SimulationResultSaved removes its file from disk.
      */
     @Test
     void deleteSimulationResult_shouldRemoveFileFromDisk() throws Exception {
@@ -352,7 +339,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that deleting a result that does not exist throws {@link NoSuchFileException}.
+     * Verifies that deleting a result that does not exist throws NoSuchFileException.
      */
     @Test
     void deleteSimulationResult_whenFileDoesNotExist_shouldThrowNoSuchFileException() {
@@ -362,7 +349,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that a saved result appears in the list returned by {@code listResultSummaries}.
+     * Verifies that a saved result appears in the list returned by listResultSummaries.
      */
     @Test
     void listResultSummaries_shouldContainSavedResult() throws Exception {
@@ -376,7 +363,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that each {@link SimulationResultSummary} carries the correct rates, runway count,
+     * Verifies that each SimulationResultSummary carries the correct rates, runway count,
      * event count, and throughput.
      */
     @Test
@@ -400,7 +387,7 @@ class JsonFileHandlerTest {
     }
 
     /**
-     * Verifies that {@code listResultSummaries} returns results sorted newest-first by {@code dateExecuted}.
+     * Verifies that listResultSummaries returns results sorted newest-first by dateExecuted.
      */
     @Test
     void listResultSummaries_shouldBeSortedNewestFirst() throws Exception {
@@ -429,7 +416,7 @@ class JsonFileHandlerTest {
 
     /**
      * Verifies the core architectural guarantee of the new design: a single result file is
-     * self-contained, embedding both the {@link SimulationConfig} and {@link StatisticsSummary}
+     * self-contained, embedding both the SimulationConfig and StatisticsSummary
      * without requiring a separate config template file.
      */
     @Test

@@ -16,6 +16,12 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Validation tests for SimulationConfig.
+ *
+ * Verifies field constraints: runway list size, numeric ranges, required nullability,
+ * boundary values, nested RunwayConfig validation, and violation message content.
+ */
 class SimulationConfigValidationTest {
 
     private static Validator validator;
@@ -166,12 +172,12 @@ class SimulationConfigValidationTest {
     }
 
     /**
-     * Verifies that tickTime must be within the allowed range (100–10000 ms).
+     * Verifies that tickTime must be within the allowed range (1–10000 ms).
      */
     @Test
     void tickTime_outOfRange_shouldFailValidation() {
         SimulationConfig tooLow = validConfig();
-        tooLow.setTickTime(99);
+        tooLow.setTickTime(0);
 
         Set<ConstraintViolation<SimulationConfig>> vLow = validate(tooLow);
         assertFalse(vLow.isEmpty());
@@ -253,7 +259,7 @@ class SimulationConfigValidationTest {
         min.setInboundRate(0);
         min.setOutboundRate(0);
         min.setMaxWaitTime(1);
-        min.setTickTime(100);
+        min.setTickTime(1);
         min.setDuration(60);
         min.setSeed(1L);
 
