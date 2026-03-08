@@ -140,6 +140,7 @@ function startSimulation() {
     const inputs = document.querySelectorAll('input[type="number"]');
 
     inputs.forEach(input => {
+        // Example: id="num_runways" -> inputParams["num_runways"] = 10
         if (input.id) {
             inputParams[input.id] = parseFloat(input.value);
         }
@@ -178,7 +179,7 @@ function startSimulation() {
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
         outboundRate: parseInt(document.getElementById("input-outbound_rate").value) || 15,
         maxWaitTime: parseInt(document.getElementById("input-max_delay").value) || 30,
-        duration: parseInt(document.getElementById("input-sim_duration").value),
+        duration: parseInt(document.getElementById("input-sim_duration").value) || 120,
 
         // Statistical Rates (@NotNull in Java)
         mechanicalFailureRate: parseFloat(document.getElementById("input-mech_failure_rate")?.value) || 0.01,
@@ -209,6 +210,7 @@ function startSimulation() {
         })
         .then(data => {
             console.log('Configuration validated:', data);
+            // Now start the simulation
             return fetch('/api/simulation/initialise', {
                 method: 'POST',
                 headers: {
@@ -226,6 +228,7 @@ function startSimulation() {
         })
         .then(data => {
             console.log('Simulation started:', data);
+            // Redirect to progress page
             window.location.href = '/progress.html';
         })
         .catch(error => {
@@ -330,6 +333,7 @@ function addEvent() {
 
     const uniqueId = Date.now();
 
+    // Data array gets the Enum for the DTO
     scheduledEventsData.push({
         id: uniqueId,
         type: eventType,
@@ -372,6 +376,7 @@ function addEvent() {
     durationInput.value = "";
     modeSelect.value = "null";
     nameSelect.value = "No Change";
+    nameSelect.disabled = false;
     modeSelect.disabled = false;
 }
 
@@ -447,7 +452,12 @@ function formatEventsForBackend(frontendEvents) {
         if (ev.type === "Runway") {
             let status = 'AVAILABLE';
 
-            if (ev.name === "Runway Inspection") status = 'INSPECTION';
+            if (ev.name === "No Change") {
+                status = null;
+            }
+            else if (ev.name === "Runway Inspection") {
+                status = 'INSPECTION';
+            }
             else if (ev.name === "Snow Clearance") {
                 status = 'SNOW_CLEARANCE'; // UPDATED TO MATCH MAIN
             } else if (ev.name === "Equipment Failure") {
@@ -533,7 +543,37 @@ function updateEventForm() {
             durationContainer.style.display = 'block'; // adds duration
         }
     }
+
+    // Reset disabled states and mode value when form type changes.
+    nameSelect.disabled = false;
+    document.getElementById("new-event-mode").disabled = false;
+    document.getElementById("new-event-mode").value = "null";
 }
+
+// Lock mode if a closure status is selected
+document.getElementById("new-event-name").addEventListener("change", function () {
+    const closureStatuses = ["Runway Inspection", "Snow Clearance", "Equipment Failure"];
+    const modeSelect = document.getElementById("new-event-mode");
+
+    if (closureStatuses.includes(this.value)) {
+        modeSelect.value = "null";
+        modeSelect.disabled = true;
+    } else {
+        modeSelect.disabled = false;
+    }
+});
+
+// Lock status to "Available" if a mode other than "No Change" is selected
+document.getElementById("new-event-mode").addEventListener("change", function () {
+    const nameSelect = document.getElementById("new-event-name");
+
+    if (this.value !== "null") {
+        nameSelect.value = "Available";
+        nameSelect.disabled = true;
+    } else {
+        nameSelect.disabled = false;
+    }
+});
 
 const dummyConfigs = [
     {
@@ -873,7 +913,7 @@ function saveConfiguration() {
         inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
         outboundRate: parseInt(document.getElementById("input-outbound_rate").value) || 15,
         maxWaitTime: parseInt(document.getElementById("input-max_delay").value) || 30,
-        duration: parseInt(document.getElementById("input-sim_duration").value),
+        duration: parseInt(document.getElementById("input-sim_duration").value) || 120,
         tickTime: 1000,
         automaticGenerationEnabled: document.getElementById("input-auto_gen").checked || false,
         seed: seed,
@@ -887,6 +927,7 @@ function saveConfiguration() {
         scheduledAircraftEvents: backendEvents.aircraft || {}
     };
 
+    // Shows exact payload in console before sending - remove once working
     console.log("Save payload:", JSON.stringify(payload, null, 2));
 
     fetch('/api/configuration/save', {
@@ -915,34 +956,48 @@ function saveConfiguration() {
 
 function validateInputs() {
     const inputs = document.querySelectorAll('.field-input');
-
     let isValid = true;
+    let errorMessages = []; // Collector for all errors
     let firstInvalidInput = null;
 
+    // --- Part 1: Box Validation ---
     for (let input of inputs) {
         const val = parseFloat(input.value);
         const min = parseFloat(input.min);
         const max = parseFloat(input.max);
 
-        // Check for empty boxes or out-of-bounds numbers
         if (input.value === "" || isNaN(val) || val < min || val > max) {
-            input.style.border = "2px solid red"; // Adds red border to ALL invalid boxes
+            input.style.border = "2px solid red";
             isValid = false;
-
-            // Save the first one we find so we can focus their cursor on it
             if (!firstInvalidInput) firstInvalidInput = input;
         } else {
-            input.style.border = ""; // Clears the red border if it is perfectly valid
+            input.style.border = "";
         }
     }
 
-    // Short, sweet, generic alert
     if (!isValid) {
-        if (firstInvalidInput) firstInvalidInput.focus();
-        alert("Please fix the highlighted fields. Ensure all numbers are within their specified ranges.");
+        errorMessages.push("Please fix the highlighted fields. Ensure numbers are within specified ranges.");
     }
 
-    return isValid;
+    // --- Part 2: Runway Conflict Check ---
+    const currentRunwayCount = parseInt(document.getElementById("runway-counter").innerText);
+    const hasGhostEvents = scheduledEventsData.some(ev =>
+        ev.type === "Runway" && parseInt(ev.locationId) >= currentRunwayCount
+    );
+
+    if (hasGhostEvents) {
+        errorMessages.push("You have events scheduled for runways that no longer exist. Please adjust the runway count or delete those events.");
+        isValid = false;
+    }
+
+    // --- Part 3: Single Alert ---
+    if (!isValid) {
+        if (firstInvalidInput) firstInvalidInput.focus();
+        alert(errorMessages.join("\n\n")); // Shows both errors in one pop-up!
+        return false;
+    }
+
+    return true;
 }
 
 document.getElementById("confirm-save-btn").onclick = saveConfiguration;
