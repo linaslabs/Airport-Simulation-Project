@@ -38,7 +38,6 @@ public class RunwayEvent extends SimulationEvent {
     public RunwayStatus getRunwayStatus() {
         return this.runwayStatus;
     }
-
     public RunwayMode getRunwayMode() {
         return this.runwayMode;
     }
