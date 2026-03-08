@@ -285,7 +285,6 @@ function addEvent() {
     const eventLocId = locSelect.value;
 
     const startTime = parseInt(timeInput.value);
-    // If the main duration box is blank (-1), we give a massive allowance. Otherwise use the typed limit.
     const simLimit = (simInput && simInput.value !== "") ? parseInt(simInput.value) : 999999;
 
     // --- 1. TIME VALIDATION ---
@@ -358,23 +357,30 @@ function addEvent() {
     if (emptyMsg) emptyMsg.remove();
 
     const row = document.createElement("div");
-    row.className = "d-flex align-items-center small mb-2 pb-2 border-bottom pe-1";
+    row.className = "d-flex align-items-center justify-content-between small mb-2 pb-2 border-bottom pe-1";
     row.setAttribute("data-id", uniqueId.toString());
 
-    // --- 3. THE INDEFINITE BADGE ---
-    let durationDisplay = eventDuration === -1 ? "Indefinite" : `${eventDuration}m`;
-    let durationBadge = eventType === "Runway" ? `<span class="badge bg-secondary ms-1">${durationDisplay}</span>` : "";
-    let modeBadge = eventType === "Runway" ? `<span class="badge bg-info text-dark ms-1">${eventModeLabel}</span>` : "";
+    // --- 3. FORMATTING FOR UI ---
+    // Calculate End Display
+    let durationDisplay = eventDuration === -1 ? "∞" : `${startTime + eventDuration}m`;
+
+    // Always show badge, default to "No Change"
+    let modeBadge = eventType === "Runway" ? `<span class="badge bg-info text-dark ms-1">${eventModeLabel || 'No Change'}</span>` : "";
+
+    // Shorten Labels
+    let shortLabel = displayLabel.replace("Equipment Failure", "Equip. Failure").replace("Runway Inspection", "Inspection");
 
     row.innerHTML = `
-    <div class="flex-grow-1 text-truncate">
-        <strong>${displayLabel}</strong> ${modeBadge} ${durationBadge}
+    <div class="ps-1 pe-2" style="flex: 1; min-width: 0;">
+        <div class="d-flex flex-wrap align-items-center">
+            <strong class="me-1">${shortLabel}</strong> ${modeBadge}
+        </div>
         <span class="text-muted d-block" style="font-size: 0.75rem;">on ${eventLocText}</span>
     </div>
-    <div style="width: 50px;" class="text-end text-muted fw-bold">
-        ${startTime}m
+    <div class="text-end flex-shrink-0 px-2 d-flex align-items-center justify-content-end" style="min-width: 95px;">
+        <div class="fw-bold text-dark text-nowrap" style="font-size: 0.85rem;">${startTime}m - ${durationDisplay}</div>
     </div>
-    <div style="width: 30px;" class="text-end">
+    <div class="flex-shrink-0" style="width: 25px; text-align: right;">
         <button class="btn btn-link text-danger p-0 border-0 fs-5" onclick="deleteEvent(${uniqueId})">&times;</button>
     </div>
     `;
@@ -816,6 +822,7 @@ function openLoadConfigModal() {
 
 function rebuildEventListUI() {
     const list = document.getElementById("scheduled-events-list");
+    const currentRunwayCount = parseInt(document.getElementById("runway-counter").innerText);
     if (!list) return;
 
     list.innerHTML = "";
@@ -830,27 +837,32 @@ function rebuildEventListUI() {
     }
 
     scheduledEventsData.forEach(ev => {
+        const isGhost = ev.type === 'Runway' && parseInt(ev.locationId) >= currentRunwayCount;
+
         const row = document.createElement("div");
-        row.className = "d-flex align-items-center small mb-2 pb-2 border-bottom pe-1";
+        row.className = `d-flex align-items-center justify-content-between small mb-2 pb-2 border-bottom ${isGhost ? 'ghost-event' : ''}`;
         row.setAttribute("data-id", ev.id.toString());
 
-        // Interpret -1 as Indefinite
         let parsedDuration = parseInt(ev.duration);
-        let durationDisplay = (parsedDuration === -1 || isNaN(parsedDuration)) ? "Indefinite" : `${parsedDuration}m`;
+        let start = parseInt(ev.time);
+        let durationDisplay = (parsedDuration === -1 || isNaN(parsedDuration)) ? "∞" : `${start + parsedDuration}m`;
 
-        let durationBadge = ev.type === "Runway" ? `<span class="badge bg-secondary ms-1">${durationDisplay}</span>` : "";
         let modeBadge = ev.type === "Runway" ? `<span class="badge bg-info text-dark ms-1">${ev.modeLabel || 'No Change'}</span>` : "";
         let eventLocText = ev.type === 'Runway' ? 'Runway ' + (parseInt(ev.locationId) + 1) : ev.locationId;
+        let warning = isGhost ? `<span class="ghost-badge ms-1">INVALID RUNWAY</span>` : "";
+        let shortName = ev.name.replace("Equipment Failure", "Equip. Failure").replace("Runway Inspection", "Inspection");
 
         row.innerHTML = `
-            <div class="flex-grow-1 text-truncate">
-                <strong>${ev.name}</strong> ${modeBadge} ${durationBadge}
+            <div class="ps-1 pe-2" style="flex: 1; min-width: 0;">
+                <div class="d-flex flex-wrap align-items-center">
+                    <strong class="me-1 ${isGhost ? 'text-danger' : ''}">${shortName}</strong> ${modeBadge} ${warning}
+                </div>
                 <span class="text-muted d-block" style="font-size: 0.75rem;">on ${eventLocText}</span>
             </div>
-            <div style="width: 50px;" class="text-end text-muted fw-bold">
-                ${ev.time}m
+            <div class="text-end flex-shrink-0 px-2 d-flex align-items-center justify-content-end" style="min-width: 95px;">
+                <div class="fw-bold ${isGhost ? 'text-danger' : 'text-dark'} text-nowrap" style="font-size: 0.85rem;">${start}m - ${durationDisplay}</div>
             </div>
-            <div style="width: 30px;" class="text-end">
+            <div class="flex-shrink-0" style="width: 25px; text-align: right;">
                 <button class="btn btn-link text-danger p-0 border-0 fs-5" onclick="deleteEvent(${ev.id})">&times;</button>
             </div>
         `;
