@@ -30,6 +30,7 @@ public class SimulationService {
     private int currentTickDelay; // Milliseconds between each tick
     private volatile boolean isPaused = false;
     private volatile boolean isFinished = false;
+    private volatile boolean isAborted = false; // In order to better differentiate between natural finishing and abrupt stopping
 
     // The background worker
     private ScheduledExecutorService executor;
@@ -43,11 +44,23 @@ public class SimulationService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public void initialiseSimulation(SimulationConfig config) {
-        // Stop any simulations previously
-        stopSimulation();
+    // Helper method to cancel tasks and clean up threads
+    private void cancelCurrentTask(boolean forceInterrupt) {
+        // Let the simulation shut down gracefully if forceInterrupt is false (allows it to finish)
+        // If forceInterrupt is true, the thread is killed mid-task
+        if (simulationTask != null) {
+            simulationTask.cancel(forceInterrupt);
+        }
+    }
 
+    public void initialiseSimulation(SimulationConfig config) {
+        // Cancel any tasks previously
+        cancelCurrentTask(true);
+
+        this.isAborted = false;
         this.isFinished = false;
+        this.isPaused = false;
+
         this.engine = new SimulationEngine(config);
 
         printConfigurationSummary(config);
@@ -61,12 +74,11 @@ public class SimulationService {
 
         // Set the configuration tick time (the real-delay in ms between each tick)
         this.currentTickDelay = config.getTickTime();
-        this.isPaused = false;
     }
 
     // This is only called once the frontend sends a message back to tell the backend its websockets are set up.
     public void startSimulation() {
-        if (isFinished || engine == null) {
+        if (isFinished || isAborted || engine == null) {
             log.warn("Ignoring ready signal - no simulation is waiting to start, the user likely clicked back in their browser.");
             return;
         }
@@ -77,10 +89,8 @@ public class SimulationService {
     // This method is only called ONCE to initialise the scheduler to start the regular call the runTick function at intervals
     // However, this method is called AGAIN only when we want to SHORTEN THE INTERVAL between calling runTick to run a tick (i.e. increase the speed)
     private void scheduleNextTick(){
-        // If there is a task already running, send a cancel signal to gracefully shut down the task once its complete, so we can make a new one (with a shorter interval)
-        if (simulationTask != null) {
-            simulationTask.cancel(false);
-        }
+        // Cancel any tasks currently running
+        cancelCurrentTask(false);
 
         if (engine.getConfig().getSimulationMode() == SimulationMode.QUICK_SIM) {
             fastForwardToEnd();
@@ -104,7 +114,7 @@ public class SimulationService {
 
     private void runTick() {
         // If the user has paused, skip this tick process
-        if (isPaused) {
+        if (isPaused || isAborted) {
             return;
         }
 
@@ -113,8 +123,8 @@ public class SimulationService {
 
         if (!continueSimulation){
             this.isFinished = true;
-            stopSimulation();
-            log.info("Simulation ended.");
+            cancelCurrentTask(false);
+            log.info("Simulation ended naturally.");
 
             // Notification that the simulation has completed is sent to the channel "/simulation/complete" which the front end is subscribed to (the web socket)
             messagingTemplate.convertAndSend("/simulation/complete", "done");
@@ -132,7 +142,7 @@ public class SimulationService {
 
     public void resumeSimulation() {
         this.isPaused = false;
-        scheduleNextTick();
+        if (!isFinished && !isAborted) scheduleNextTick(); // Safety checks
     }
 
     // Pass in 1 for 1x, 5 for 5x, 20 for 20x
@@ -143,16 +153,14 @@ public class SimulationService {
         this.currentTickDelay = Math.max(1, this.engine.getConfig().getTickTime() / multiplier);
 
         // Reschedule the task with the new tick delay
-        if (!isPaused) {
+        if (!isPaused && !isFinished && !isAborted) {
             scheduleNextTick();
         }
     }
 
     public void fastForwardToEnd() {
-        // Cancel the current schedule gracefully
-        if (simulationTask != null) {
-            simulationTask.cancel(false);
-        }
+        // Cancel the current schedule
+        cancelCurrentTask(false);
 
         // Store the current engine as a variable, in case this.engine is overwritten with a new engine while this function works
         final SimulationEngine currentEngine = this.engine;
@@ -166,7 +174,8 @@ public class SimulationService {
         // I added a notion of ticks to this so the progress indicator can update while this is being executed.
         executor.submit(() -> {
             int tickCount = 0;
-            while (currentEngine.performTick()) {
+            // In case user managed to stop simulation mid fast-forward, this loop breaks
+            while (!this.isFinished && !this.isAborted && currentEngine.performTick()) {
                 // Engine runs to the end without delays - Comment no longer true.
                 // Now the engine runs to the end almost as fast as possible.
                 // The only thing it does it track the number of ticks and every 100 ticks it updates the progress percentage shown in the progress screen.
@@ -180,23 +189,26 @@ public class SimulationService {
                     );
                 }
             }
-            this.isFinished = true;
 
-            // Notify the frontend that the simulation has completed.
+            // Notify the frontend that the simulation has completed. ONLY if the user hasn't aborted
             // We don't send the results here as we get the results using a GET request when we swap to the results page.
-            messagingTemplate.convertAndSend("/simulation/complete", "done");
-            log.info("Simulation ended.");
-
-            // Shut down from a separate thread, not from within the executor itself.
-            new Thread(this::stopSimulation).start();
+            if (!this.isAborted) {
+                this.isFinished = true;
+                messagingTemplate.convertAndSend("/simulation/complete", "done");
+                log.info("Simulation ended via fast-forward.");
+            }
         });
     }
 
+    // This function will HARD stop the simulation (when user presses the "stop simulation" button)
     public void stopSimulation() {
-        // Let the simulation shut down gracefully
-        if (simulationTask != null) {
-            simulationTask.cancel(false);
-        }
+        log.info("Simulation triggered to stop.");
+
+        this.isAborted = true;
+        this.isPaused = false; // in case
+
+        // Shut down the simulation immediately
+        cancelCurrentTask(true);
 
         // executor.shutdown() can be called to shut it down completely, but leaving it alive means the user can start a new simulation later
     }
@@ -209,7 +221,7 @@ public class SimulationService {
 
     public boolean isPaused() { return this.isPaused; }
 
-    public boolean isRunning() { return this.engine != null && this.simulationTask != null && !this.simulationTask.isCancelled() && !this.isPaused; }
+    public boolean isRunning() { return this.engine != null && this.simulationTask != null && !this.simulationTask.isCancelled() && !this.isPaused && !this.isAborted; }
 
 
 
@@ -285,6 +297,11 @@ public class SimulationService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No simulation has been started.");
         }
 
+        // If user requests for results but simulation was killed, request is rejected instead of sending incomplete data from stopped simulation
+        if (isAborted) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Simulation was aborted manually and has no final results.");
+        }
+
         // Check that no simulation is currently running.
         if (!isFinished) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Simulation is still in progress.");
@@ -351,7 +368,7 @@ public class SimulationService {
 
     // Helper method to print out the full configuration received:
     private void printConfigurationSummary(SimulationConfig config) {
-        log.info("\n==================================================");
+        log.info("==================================================");
         log.info("===     SIMULATION CONFIGURATION RECEIVED      ===");
         log.info("==================================================");
         log.info("-> Seed:          {}", config.getSeed());
@@ -360,21 +377,21 @@ public class SimulationService {
         log.info("-> Traffic Rates: Inbound: {}/hr | Outbound: {}/hr", config.getInboundRate(), config.getOutboundRate());
         log.info("-> Max Wait Time: {} ticks", config.getMaxWaitTime());
 
-        log.info("\n--- RUNWAY SETTINGS ---");
+        log.info("--- RUNWAY SETTINGS ---");
         if (config.getRunwaySettings() != null) {
             config.getRunwaySettings().forEach(r ->
                     log.info("  - ID: {} | Mode: {} | Status: {}", r.getRunwayID(), r.getMode(), r.getStatus())
             );
         }
 
-        log.info("\n--- STATISTICAL MODELLING ---");
+        log.info("--- STATISTICAL MODELLING ---");
         log.info("  - Enabled: {}", config.getAutomaticGenerationEnabled());
         if (Boolean.TRUE.equals(config.getAutomaticGenerationEnabled())) {
             log.info("  - Inspection: {} | Snow: {} | Equip Fail: {}", config.getRunwayInspectionRate(), config.getSnowClearanceRate(), config.getEquipmentFailureRate());
             log.info("  - Mech Fail:  {} | Passenger Health: {}", config.getMechanicalFailureRate(), config.getPassengerHealthIssueRate());
         }
 
-        log.info("\n--- SCHEDULED RUNWAY EVENTS ---");
+        log.info("--- SCHEDULED RUNWAY EVENTS ---");
         Map<Integer, List<RunwayEvent>> scheduledRunways = config.getScheduledRunwayEvents();
         if (scheduledRunways != null && !scheduledRunways.isEmpty()) {
             // Sort the keys so they print in chronological order
@@ -387,7 +404,7 @@ public class SimulationService {
             log.info("  - No pre-scheduled runway events.");
         }
 
-        log.info("\n--- SCHEDULED AIRCRAFT EVENTS ---");
+        log.info("--- SCHEDULED AIRCRAFT EVENTS ---");
         Map<Integer, List<AircraftEvent>> scheduledAircraft = config.getScheduledAircraftEvents();
         if (scheduledAircraft != null && !scheduledAircraft.isEmpty()) {
             // Sort the keys so they print in chronological order
@@ -399,6 +416,6 @@ public class SimulationService {
         } else {
             log.info("  - No pre-scheduled aircraft events.");
         }
-        log.info("==================================================\n");
+        log.info("==================================================");
     }
 }

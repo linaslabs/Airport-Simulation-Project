@@ -128,6 +128,16 @@ public class SimulationEngine {
         return new SimulationSnapshot(
                 this.currentTick,
                 progress,
+                stats.getRollingAvgHoldingTime(),
+                stats.getRollingAvgWaitTime(),
+                stats.getMaxWaitTime(),
+                stats.getMaxTakeOffDelay(),
+                stats.getRollingAvgTakeOffDelay(),
+                stats.getMaxHoldingSize(),
+                stats.getMaxHoldingTime(),
+                stats.getMaxArrivalDelay(),
+                stats.getRollingAvgArrivalDelay(),
+                stats.getMaxTakeOffQueueSize(),
                 holdingDTOs.size(),
                 takeoffDTOs.size(),
                 stats.getTotalAircraftLanded(),
@@ -152,6 +162,7 @@ public class SimulationEngine {
     public int getCurrentTick() {
         return currentTick;
     }
+
     public int getDurationTicks() {
         return durationTicks;
     }

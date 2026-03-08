@@ -20,6 +20,13 @@
             <button class="btn btn-primary rounded-pill px-3 fw-bold shadow-sm" onclick="openSaveModal()">
                 Save Config
             </button>
+            <button class="btn btn-outline-danger rounded-pill px-3 fw-bold shadow-sm d-flex align-items-center gap-2" onclick="resetConfig()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                </svg>
+                Reset Configuration
+            </button>
         </div>
 
         <div class="col-auto text-center">
@@ -190,24 +197,24 @@
 
 <!--RUNWAY CONFIG TEMPLATES-->
 <template id="input-field-template">
-        <div class="mb-2 d-flex justify-content-between align-items-center">
-            <div class="me-2">
-                <label class="form-label mb-0 small fw-bold field-label text-dark"></label>
-                <div class="text-muted field-range" style="font-size: 0.7rem; line-height: 1;"></div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-secondary border-0 p-0 dice-btn"
-                        type="button" style="display: none; font-size: 1.1rem;"
-                        onclick="generateRandomSeed()" title="Generate Random Seed">🎲</button>
-
-                <input type="number"
-                       class="form-control form-control-sm rounded-pill ps-3 field-input"
-                       style="width: 100px; height: 31px;"
-                       required>
-            </div>
+    <div class="mb-2 d-flex justify-content-between align-items-center">
+        <div class="me-2">
+            <label class="form-label mb-0 small fw-bold field-label text-dark"></label>
+            <div class="text-muted field-range" style="font-size: 0.7rem; line-height: 1;"></div>
         </div>
-    </template>
+
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary fw-bold px-2 dice-btn"
+                    type="button" style="display: none; font-size: 0.75rem;"
+                    onclick="generateRandomSeed()">Generate</button>
+
+            <input type="number"
+                   class="form-control form-control-sm rounded-pill ps-3 field-input"
+                   style="width: 100px; height: 31px;"
+                   required>
+        </div>
+    </div>
+</template>
 
 <!-- LOADING CONFIGS -->
 <div class="modal fade" id="loadConfigModal" tabindex="-1" aria-hidden="true">

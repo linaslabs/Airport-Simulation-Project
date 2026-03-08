@@ -24,6 +24,36 @@ public class SimulationController {
         return ResponseEntity.ok("Simulation started");
     }
 
+    @PostMapping("/start")
+    public ResponseEntity<String> start() {
+        simulationService.startSimulation();
+        return ResponseEntity.ok("Simulation started");
+    }
+
+    @PostMapping("/pause")
+    public ResponseEntity<String> pause() {
+        simulationService.pauseSimulation();
+        return ResponseEntity.ok("Simulation paused");
+    }
+
+    @PostMapping("/resume")
+    public ResponseEntity<String> resume() {
+        simulationService.resumeSimulation();
+        return ResponseEntity.ok("Simulation resumed");
+    }
+
+    @PostMapping("/speed/{multiplier}")
+    public ResponseEntity<String> setSpeed(@PathVariable int multiplier) {
+        simulationService.setSpeedMultiplier(multiplier);
+        return ResponseEntity.ok("Speed set to " + multiplier + "x");
+    }
+
+    @PostMapping("/fastforward")
+    public ResponseEntity<String> fastForward() {
+        simulationService.fastForwardToEnd();
+        return ResponseEntity.ok("Fast forwarding to end");
+    }
+
     @GetMapping("/progress")
     public ResponseEntity<SimulationProgress> getProgress() {
         return ResponseEntity.ok(simulationService.getSimulationProgress());
