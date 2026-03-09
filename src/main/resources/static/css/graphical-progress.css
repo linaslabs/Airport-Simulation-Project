@@ -21,44 +21,6 @@
     flex-direction: column;
 }
 
-.progress-strip {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    border-bottom: 1px solid #cbd5e1;
-    background: #f8fafc;
-}
-
-.progress-label {
-    font-size: 13px;
-    font-weight: 800;
-    color: #334155;
-    letter-spacing: 0.2px;
-}
-
-.progress-bar-wrapper {
-    height: 12px;
-    border-radius: 999px;
-    background: #d9e2ee;
-    overflow: hidden;
-}
-
-.progress-bar-fill {
-    width: 0;
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%);
-    transition: width 0.2s linear;
-}
-
-.progress-percentage {
-    min-width: 52px;
-    text-align: right;
-    font-weight: 900;
-    color: #1e293b;
-}
-
 .scene-wrapper {
     flex: 1;
     min-height: 0;
@@ -77,75 +39,114 @@
 
 .scene-footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     border-top: 1px solid #cbd5e1;
     background: #f8fafc;
     color: #334155;
     font-weight: 800;
 }
 
-.scene-meta {
+.scene-progress-row {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 15px;
+    width: 100%;
+}
+
+.scene-progress-percentage {
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #0f172a;
+    width: 55px;
+}
+
+.custom-progress-bar {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 14px;
+}
+
+.custom-progress-fill {
+    height: 100%;
+    background-color: #28a745;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+.scene-progress-bar {
+    margin: 0;
+    flex-grow: 1;
+}
+
+.scene-progress-meta {
+    color: #64748b;
+    font-size: 0.95rem;
+    min-width: 180px;
+    text-align: right;
+}
+
+.scene-progress-meta strong {
+    color: #0f172a;
 }
 
 .scene-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 15px;
 }
 
-.ctrl-btn {
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    color: #1e293b;
-    border-radius: 4px;
-    min-width: 38px;
-    height: 34px;
-    padding: 0 10px;
+.scene-controls.control-panel {
+    justify-content: center;
+    width: 100%;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    gap: 10px;
+    background: transparent !important;
+    border-top: none;
+    flex-shrink: 0;
+}
+
+.btn-control {
+    min-width: 140px;
+    padding: 12px 20px;
     font-size: 15px;
-    font-weight: 900;
-    cursor: pointer;
-    transition: background 0.16s ease, border-color 0.16s ease, transform 0.08s ease;
 }
 
-.ctrl-btn:hover:not(:disabled) {
-    background: #e8f0fb;
-    border-color: #95b6da;
+.btn-speed {
+    min-width: 60px;
+    padding: 12px 15px;
+    font-size: 14px;
+    text-align: center;
 }
 
-.ctrl-btn:active:not(:disabled) {
-    transform: translateY(1px);
+.btn-speed.speed-active {
+    background: #0f172a;
+    color: #ffffff;
+    border: 1px solid #0f172a;
 }
 
-.ctrl-btn:disabled {
+.btn-speed:disabled {
     opacity: 0.45;
     cursor: not-allowed;
 }
 
-.ctrl-stop {
-    color: #b91c1c;
+.control-divider {
+    width: 2px;
+    height: 30px;
+    background: #cbd5e1;
+    margin: 0 10px;
 }
 
-.speed-pill {
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    border-radius: 999px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    font-size: 13px;
-    color: #334155;
-}
-
-#speedValue {
-    margin-left: 6px;
-    color: #0f172a;
+.speed-label {
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
 }
 
 .scene-big-number {
@@ -479,8 +480,18 @@
     }
 
     .scene-footer {
+        align-items: stretch;
+    }
+
+    .scene-progress-row {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+    }
+
+    .scene-progress-percentage,
+    .scene-progress-meta {
+        width: auto;
+        text-align: left;
     }
 
     .scene-controls {

@@ -3,6 +3,7 @@ let startTime;
 let wsReady = false;
 let isPaused = false;
 let isStopping = false;
+let isFastForwarding = false;
 let planeInfoCard = null;
 let planeInfoTitle = null;
 let planeInfoBody = null;
@@ -37,20 +38,40 @@ function setText(id, value) {
 }
 
 function updateControlUi() {
-    setText('speedValue', `${speedLevels[speedIndex]}x`);
-
     const pauseButton = document.getElementById('ctrlPause');
     if (pauseButton) {
-        pauseButton.textContent = isPaused ? '▶' : '⏸';
+        pauseButton.textContent = isPaused ? '▶ Play' : '⏸ Pause';
         pauseButton.title = isPaused ? 'Resume' : 'Pause';
-        pauseButton.disabled = isStopping;
+        pauseButton.disabled = isStopping || isFastForwarding;
     }
 
-    const slowerButton = document.getElementById('ctrlSlower');
-    if (slowerButton) slowerButton.disabled = isStopping || speedIndex === 0;
+    const speedButtonMap = [
+        { id: 'ctrlSpeed1', value: 1 },
+        { id: 'ctrlSpeed5', value: 5 },
+        { id: 'ctrlSpeed20', value: 20 }
+    ];
 
-    const fasterButton = document.getElementById('ctrlFaster');
-    if (fasterButton) fasterButton.disabled = isStopping || speedIndex === speedLevels.length - 1;
+    speedButtonMap.forEach(({ id, value }) => {
+        const button = document.getElementById(id);
+        if (!button) return;
+
+        const isActive = speedLevels[speedIndex] === value;
+        button.disabled = isStopping || isFastForwarding;
+        button.classList.toggle('secondary', !isActive);
+        button.classList.toggle('speed-active', isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    const fastForwardButton = document.getElementById('ctrlFastForward');
+    if (fastForwardButton) {
+        fastForwardButton.disabled = isStopping || isFastForwarding;
+        fastForwardButton.textContent = isFastForwarding ? '⏳ Processing...' : '⏭ Fast Forward';
+    }
+
+    const stopButton = document.getElementById('ctrlStop');
+    if (stopButton) {
+        stopButton.disabled = isStopping;
+    }
 }
 
 async function postControl(path) {
@@ -103,6 +124,7 @@ async function togglePauseResume() {
 async function stopSimulation() {
     if (isStopping) return;
     isStopping = true;
+    updateControlUi();
 
     try {
         await postControl('/api/simulation/stop');
@@ -117,21 +139,27 @@ async function stopSimulation() {
     window.location.href = '/index.html';
 }
 
+async function triggerFastForward() {
+    if (isStopping || isFastForwarding) return;
+
+    isFastForwarding = true;
+    updateControlUi();
+
+    try {
+        await postControl('/api/simulation/fastforward');
+    } catch (error) {
+        isFastForwarding = false;
+        updateControlUi();
+        notifyControlError('Fast Forward', error);
+    }
+}
+
 function bindControls() {
     const stopButton = document.getElementById('ctrlStop');
     if (stopButton) {
         stopButton.addEventListener('click', function () {
             stopSimulation().catch(error => {
                 console.error('Stop error:', error);
-            });
-        });
-    }
-
-    const slowerButton = document.getElementById('ctrlSlower');
-    if (slowerButton) {
-        slowerButton.addEventListener('click', function () {
-            applySpeedIndex(speedIndex - 1).catch(error => {
-                notifyControlError('Change speed', error);
             });
         });
     }
@@ -145,11 +173,31 @@ function bindControls() {
         });
     }
 
-    const fasterButton = document.getElementById('ctrlFaster');
-    if (fasterButton) {
-        fasterButton.addEventListener('click', function () {
-            applySpeedIndex(speedIndex + 1).catch(error => {
+    const speedButtonConfig = [
+        { id: 'ctrlSpeed1', targetValue: 1 },
+        { id: 'ctrlSpeed5', targetValue: 5 },
+        { id: 'ctrlSpeed20', targetValue: 20 }
+    ];
+
+    speedButtonConfig.forEach(({ id, targetValue }) => {
+        const speedButton = document.getElementById(id);
+        if (!speedButton) return;
+
+        speedButton.addEventListener('click', function () {
+            const targetIndex = speedLevels.indexOf(targetValue);
+            if (targetIndex < 0) return;
+
+            applySpeedIndex(targetIndex).catch(error => {
                 notifyControlError('Change speed', error);
+            });
+        });
+    });
+
+    const fastForwardButton = document.getElementById('ctrlFastForward');
+    if (fastForwardButton) {
+        fastForwardButton.addEventListener('click', function () {
+            triggerFastForward().catch(error => {
+                notifyControlError('Fast Forward', error);
             });
         });
     }
