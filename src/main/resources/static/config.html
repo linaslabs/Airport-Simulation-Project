@@ -225,21 +225,28 @@
 
 <!-- LOADING CONFIGS -->
 <div class="modal fade" id="loadConfigModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title fw-bold">Load Configuration</h5>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg" style="border: 2px solid #4a90e2; border-radius:12px;">
+            <div class="modal-header border-0 pb-0">
+                <h4 class="fw-bold" style="font-size:1.4rem;">Load Configuration</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
             <div class="modal-body p-3">
-                <div id="saved-configs-list" class="list-group">
-
-                    <div class="text-center text-muted small py-5" id="empty-configs-msg">
-                        No saved configurations found.
-                    </div>
-
-                </div>
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Configuration Name <button class="sort-btn btn btn-link btn-sm p-0" data-field="name" style="color:#6c757d; text-decoration:none;">↑↓</button></th>
+                        <th>Date Saved <button class="sort-btn btn btn-link btn-sm p-0" data-field="date" style="color:#6c757d;text-decoration:none;">↑↓</button></th>
+                        <th>Configuration Information</th>
+                        <th>Options</th>
+                    </tr>
+                    </thead>
+                    <tbody id="saved-configs-list">
+                    <tr id="empty-configs-msg">
+                        <td colspan="3" class="text-center text-muted py-4">No saved configurations found.</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

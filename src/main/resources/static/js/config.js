@@ -74,11 +74,11 @@ const inputConfig = [
     { label: "Inbound Rate /hr",        name: "inbound_rate",      range: "0 - 100", min: 0,  max: 100, step: 1, val: 15 },
     { label: "Outbound Rate /hr",       name: "outbound_rate",     range: "0 - 100", min: 0,  max: 100, step: 1, val: 15 },
     { label: "Simulation Duration (mins)", name: "sim_duration",      range: "60 - 1440", min: 60, max: 1440, step: 1, val: 120 },
-    { label: "Mech. Failure Rate",      name: "mech_failure_rate", range: "0.00 - 0.10", min: 0, max: 0.1, step: 0.01, val: 0.01 },
-    { label: "Health Issue Rate",       name: "health_issue_rate", range: "0.0 - 0.1",   min: 0, max: 0.1, step: 0.01, val: 0.01 },
-    { label: "Runway Inspection Rate",  name: "inspection_rate",   range: "0.0 - 0.1",   min: 0, max: 0.1, step: 0.01, val: 0.01 },
-    { label: "Snow Clearance Rate",     name: "snow_rate",         range: "0.0 - 0.1",   min: 0, max: 0.1, step: 0.01, val: 0.01 },
-    { label: "Equip. Failure Rate",     name: "equip_failure_rate",range: "0.0 - 0.1",   min: 0, max: 0.1, step: 0.01, val: 0.01 },
+    { label: "Mechanical Failure Rate",      name: "mech_failure_rate", range: "0.00 - 0.10", min: 0, max: 0.1, step: 0.01, val: 0.00 },
+    { label: "Health Issue Rate",       name: "health_issue_rate", range: "0.00 - 0.10",   min: 0, max: 0.1, step: 0.01, val: 0.00 },
+    { label: "Runway Inspection Rate",  name: "inspection_rate",   range: "0.00- 0.10",   min: 0, max: 0.1, step: 0.01, val: 0.00 },
+    { label: "Snow Clearance Rate",     name: "snow_rate",         range: "0.00 - 0.10",   min: 0, max: 0.1, step: 0.01, val: 0.00 },
+    { label: "Equipment Failure Rate",     name: "equip_failure_rate",range: "0.00 - 0.10",   min: 0, max: 0.1, step: 0.01, val: 0.00 },
     { label: "Max Delay Time (mins)",      name: "max_delay",         range: "0 - 60",   min: 0,  max: 60,  step: 1, val: 30},
     { label: "Simulation Seed", name: "seed", range: "0 - 10^8", min: 0, max: 99999999, step: 1, val: 0 }
 ];
@@ -118,6 +118,32 @@ function generateInputs() {
 
         container.appendChild(clone);
     });
+}
+
+function setupRateToggle() {
+    const rateFields = ['input-mech_failure_rate', 'input-health_issue_rate',
+        'input-inspection_rate', 'input-snow_rate', 'input-equip_failure_rate'];
+
+    const checkbox = document.getElementById('input-auto_gen');
+
+    function updateRates() {
+        rateFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (checkbox.checked) {
+                el.disabled = false;
+                el.style.opacity = '1';
+            } else {
+                el.disabled = false; // temporarily enable to set value
+                el.value = '0.00';
+                el.disabled = true;
+                el.style.opacity = '0.4';
+            }
+        });
+    }
+
+    checkbox.addEventListener('change', updateRates);
+    updateRates(); // run on page load
 }
 
 function openSaveModal() {
@@ -171,22 +197,22 @@ function startSimulation() {
         simulationID: Date.now().toString(),
 
         // Logic Configuration
-        automaticGenerationEnabled: document.getElementById("input-auto_gen")?.checked || false,
-        seed: parseInt(document.getElementById("input-seed")?.value) || 0,
+        automaticGenerationEnabled: document.getElementById("input-auto_gen")?.checked,
+        seed: parseInt(document.getElementById("input-seed")?.value),
         tickTime: 1000,
 
         // Parameters
-        inboundRate: parseInt(document.getElementById("input-inbound_rate").value) || 15,
-        outboundRate: parseInt(document.getElementById("input-outbound_rate").value) || 15,
-        maxWaitTime: parseInt(document.getElementById("input-max_delay").value) || 30,
-        duration: parseInt(document.getElementById("input-sim_duration").value) || 120,
+        inboundRate: parseInt(document.getElementById("input-inbound_rate").value),
+        outboundRate: parseInt(document.getElementById("input-outbound_rate").value),
+        maxWaitTime: parseInt(document.getElementById("input-max_delay").value), // maybe could allow forr indefintie wait time
+        duration: parseInt(document.getElementById("input-sim_duration").value),
 
         // Statistical Rates (@NotNull in Java)
-        mechanicalFailureRate: parseFloat(document.getElementById("input-mech_failure_rate")?.value) || 0.01,
-        passengerHealthIssueRate: parseFloat(document.getElementById("input-health_issue_rate")?.value) || 0.01,
-        runwayInspectionRate: parseFloat(document.getElementById("input-inspection_rate")?.value) || 0.01,
-        snowClearanceRate: parseFloat(document.getElementById("input-snow_rate")?.value) || 0.01,
-        equipmentFailureRate: parseFloat(document.getElementById("input-equip_failure_rate")?.value) || 0.01,
+        mechanicalFailureRate: parseFloat(document.getElementById("input-mech_failure_rate")?.value),
+        passengerHealthIssueRate: parseFloat(document.getElementById("input-health_issue_rate")?.value) ,
+        runwayInspectionRate: parseFloat(document.getElementById("input-inspection_rate")?.value),
+        snowClearanceRate: parseFloat(document.getElementById("input-snow_rate")?.value),
+        equipmentFailureRate: parseFloat(document.getElementById("input-equip_failure_rate")?.value),
 
         // Force to uppercase to match the Java Enum perfectly!
         simulationMode: document.getElementById("simulation-mode").value.toUpperCase()
@@ -257,7 +283,7 @@ function generateRandomSeed() {
 
 // initialisation
 generateInputs();
-
+setupRateToggle();
 
 
 // EVENTS STUFF - SPRINT 2
@@ -591,29 +617,6 @@ document.getElementById("new-event-mode").addEventListener("change", function ()
     }
 });
 
-const dummyConfigs = [
-    {
-        id: 1, name: "Config 1", date: "27-02-2026",
-        inboundRate: 5, outboundRate: 2, duration: 240, maxWaitTime: 45, seed: 123456, runways: 2, events: 5,
-        mechanicalFailureRate: 0.05, passengerHealthIssueRate: 0.01, runwayInspectionRate: 0.01, snowClearanceRate: 0.01, equipmentFailureRate: 0.01
-    },
-    {
-        id: 2, name: "Config 2", date: "26-02-2026",
-        inboundRate: 15, outboundRate: 15, duration: 120, maxWaitTime: 30, seed: 987654, runways: 8, events: 0,
-        mechanicalFailureRate: 0.02, passengerHealthIssueRate: 0.02, runwayInspectionRate: 0.05, snowClearanceRate: 0.00, equipmentFailureRate: 0.01
-    },
-    {
-        id: 3, name: "Config 3", date: "20-02-2026",
-        inboundRate: 15, outboundRate: 35, duration: 120, maxWaitTime: 34, seed: 231495, runways: 10, events: 0,
-        mechanicalFailureRate: 0.06, passengerHealthIssueRate: 0.01, runwayInspectionRate: 0.02, snowClearanceRate: 0.04, equipmentFailureRate: 0.03
-    },
-    {
-        id: 4, name: "Config 4", date: "20-02-2025",
-        inboundRate: 15, outboundRate: 35, duration: 120, maxWaitTime: 15, seed: 231435, runways: 10, events: 17,
-        mechanicalFailureRate: 0.08, passengerHealthIssueRate: 0.03, runwayInspectionRate: 0.01, snowClearanceRate: 0.08, equipmentFailureRate: 0.02
-    }
-];
-
 
 // 3. The actual LOAD function
 function applyConfigToPage(data) {
@@ -757,64 +760,102 @@ function resetConfig() {
     }
 }
 
-// load configuration modal/pop-up
-function openLoadConfigModal() {
+let configSortField = null;
+let configSortAsc = true;
+
+function renderConfigRows(summaries) {
     const list = document.getElementById("saved-configs-list");
-    const template = document.getElementById("saved-config-template");
     const emptyMsg = document.getElementById("empty-configs-msg");
 
-    list.querySelectorAll('.list-group-item').forEach(row => row.remove());
+    list.querySelectorAll('tr.config-row').forEach(row => row.remove());
+
+    if (!summaries || summaries.length === 0) {
+        emptyMsg.style.display = "";
+        return;
+    }
+    emptyMsg.style.display = "none";
+
+    summaries.forEach(summary => {
+        const row = document.createElement("tr");
+        row.className = "config-row";
+        row.innerHTML = `
+        <td style="vertical-align:middle;"><strong style="font-size:1.05rem;">${summary.templateName}</strong></td>
+        <td style="vertical-align:middle; color:#6c757d;">${new Date(summary.dateCreated).toLocaleString()}</td>
+        <td style="vertical-align:middle; color:#6c757d; font-size:0.8rem; line-height:1.8;">
+            Runways: ${summary.runwayCount}<br>
+            Inbound Rate: ${summary.inboundRate} /hr<br>
+            Outbound Rate: ${summary.outboundRate} /hr<br>
+            Scheduled Events: ${summary.scheduledEventsCount || 0}
+        </td>
+        <td style="vertical-align:middle; white-space:nowrap;">
+            <button class="btn btn-dark btn-sm rounded-pill load-btn px-3">Load</button>
+            <button class="btn btn-danger btn-sm rounded-pill delete-btn px-3">Delete</button>
+        </td>
+        `;
+        row.querySelector(".load-btn").onclick = function () {
+            loadFullConfig(summary.templateName);
+        };
+        row.querySelector(".delete-btn").onclick = function () {
+            if (confirm(`Delete "${summary.templateName}"?`)) {
+                fetch(`/api/configuration/templates/delete/${summary.templateName}`, { method: 'DELETE' })
+                    .then(() => openLoadConfigModal());
+            }
+        };
+        list.appendChild(row);
+    });
+}
+
+function sortConfigs(summaries, field, asc) {
+    return [...summaries].sort((a, b) => {
+        let valA = field === 'name' ? a.templateName.toLowerCase() : new Date(a.dateCreated);
+        let valB = field === 'name' ? b.templateName.toLowerCase() : new Date(b.dateCreated);
+        if (valA < valB) return asc ? -1 : 1;
+        if (valA > valB) return asc ? 1 : -1;
+        return 0;
+    });
+}
+
+function updateSortHeaders(field) {
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+        const btnField = btn.getAttribute('data-field');
+        if (btnField === field) {
+            btn.innerText = configSortAsc ? '↑' : '↓';
+        } else {
+            btn.innerText = '↑↓';
+        }
+    });
+}
+
+let currentSummaries = [];
+
+function openLoadConfigModal() {
+    configSortField = null;
+    configSortAsc = true;
 
     fetch('/api/configuration/templates/summaries')
         .then(response => response.json())
         .then(summaries => {
-            if (!summaries || summaries.length === 0) {
-                emptyMsg.style.display = "block";
-            } else {
-                emptyMsg.style.display = "none";
+            currentSummaries = summaries || [];
+            renderConfigRows(currentSummaries);
 
-                summaries.forEach(summary => {
-                    const clone = template.content.cloneNode(true);
-                    const rowElement = clone.querySelector(".list-group-item");
-
-                    // FIX: use templateName not name, dateCreated not date
-                    rowElement.querySelector(".config-name").innerText = summary.templateName;
-                    rowElement.querySelector(".config-date").innerText = "Saved: " + new Date(summary.dateCreated).toLocaleDateString();
-
-                    const detailsBox = rowElement.querySelector(".config-details-box");
-                    rowElement.querySelector(".details-btn").onclick = function () {
-                        rowElement.querySelector(".config-stats").innerHTML = `
-                            <div class="row g-2">
-                                <div class="col-6"><span class="fw-bold">Inbound:</span> ${summary.inboundRate}/hr</div>
-                                <div class="col-6"><span class="fw-bold">Outbound:</span> ${summary.outboundRate}/hr</div>
-                                <div class="col-6"><span class="fw-bold">Runways:</span> ${summary.runwayCount}</div>
-                                <div class="col-6"><span class="fw-bold">Events:</span> ${summary.scheduledEventsCount || 0}</div>
-                            </div>`;
-                        new bootstrap.Collapse(detailsBox).toggle();
-                    };
-
-                    // FIX: use templateName not name
-                    rowElement.querySelector(".load-btn").onclick = function () {
-                        loadFullConfig(summary.templateName);
-                    };
-
-                    const deleteBtn = rowElement.querySelector(".delete-btn");
-                    if (deleteBtn) {
-                        deleteBtn.onclick = function () {
-                            if (confirm(`Delete "${summary.templateName}"?`)) {
-                                fetch(`/api/configuration/templates/delete/${summary.templateName}`, { method: 'DELETE' })
-                                    .then(() => openLoadConfigModal());
-                            }
-                        };
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.innerText = '↑↓';
+                btn.onclick = function () {
+                    const field = btn.getAttribute('data-field');
+                    if (configSortField === field) {
+                        configSortAsc = !configSortAsc;
+                    } else {
+                        configSortField = field;
+                        configSortAsc = true;
                     }
-
-                    list.appendChild(clone);
-                });
-            }
+                    updateSortHeaders(field);
+                    renderConfigRows(sortConfigs(currentSummaries, field, configSortAsc));
+                };
+            });
         })
         .catch(err => {
             console.error("Failed to load summaries:", err);
-            emptyMsg.style.display = "block";
+            document.getElementById("empty-configs-msg").style.display = "";
         });
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById('loadConfigModal')).show();
