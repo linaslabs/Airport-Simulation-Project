@@ -12,10 +12,11 @@
 .progress-card {
     width: min(500px, 90%);
     background: white;
-    border-radius: 28px;
+    border-radius: 16px;
     box-shadow: 0 25px 60px rgba(15, 23, 42, 0.15);
     padding: 50px 40px;
     text-align: center;
+    margin: 0 auto;
 }
 
 .progress-title {
@@ -154,12 +155,6 @@
     background-color: #28a745;
     width: 0%;
     transition: width 0.3s ease;
-}
-
-.nav-stats {
-    color: white;
-    margin-right: 15px;
-    font-size: 0.9rem;
 }
 
 /* Column & Flex Layout Helpers */

@@ -1,0 +1,46 @@
+/* ===== NAVBAR ===== */
+.navbar{
+    min-height: 79px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    padding: 18px 60px;
+    background: rgba(15,23,42,.80);
+    backdrop-filter: blur(10px);
+    color:white;
+}
+
+.nav-left, .nav-right{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+}
+
+.nav-title{
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    font-weight: 900;
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+    white-space: nowrap;
+}
+
+.nav-link{
+    text-decoration:none;
+    color:white;
+    font-weight: 650;
+    padding: 10px 14px;
+    border-radius: 6px;
+    transition: .2s;
+    border: 1px solid rgba(255,255,255,.15);
+}
+.nav-link:hover{
+    opacity:1;
+    background: rgba(255,255,255,.10);
+    transform: translateY(-1px);
+}
+

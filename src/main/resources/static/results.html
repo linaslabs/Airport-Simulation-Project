@@ -6,6 +6,8 @@
     <title>Simulation Results</title>
 
     <link rel="stylesheet" href="/css/results.css">
+    <link rel="stylesheet" href="/css/progress.css">
+    <link rel="stylesheet" href="/css/navbar.css">
 </head>
 
 <body>
@@ -14,62 +16,58 @@
 <header class="navbar">
     <div class="nav-left">
         <a class="nav-link" href="/">Home</a>
-        <div class="nav-title">Airport Simulation</div>
+<!--        <div class="nav-title">Airport Simulation</div>-->
     </div>
 
-    <div class="nav-right">
-        <a class="nav-link" href="/configuration.html">Settings</a>
-        <a class="nav-link" href="/data.html">Advanced Data</a>
+    <div class="nav-title">
+        Simulation Results
     </div>
 </header>
 
-<main class="wrap">
-    <section class="page-title">
-        <h1>SIMULATION RESULTS</h1>
-        <p>Summary of performance metrics for this run.</p>
-    </section>
-
-    <section class="panel">
-        <div class="throughput">
-            Throughput: <span id="throughput">--</span> /hr
-            <small>(ops per hour)</small>
-        </div>
-
-        <div class="cols">
-            <div class="section">
-                <div class="section-title">DEPARTURES</div>
-
-                <div class="row"><div class="label">Average Wait Time</div><div class="value"><span id="depAvgWait">--</span> mins</div></div>
-                <div class="row"><div class="label">Most Planes in Departure Queue</div><div class="value"><span id="depMaxQueue">--</span></div></div>
-                <div class="row"><div class="label">Maximum Delay Time</div><div class="value"><span id="depMaxDelay">--</span> mins</div></div>
-                <div class="row"><div class="label">Average Delay Time</div><div class="value"><span id="depAvgDelay">--</span> mins</div></div>
-                <div class="row"><div class="label">Number of Cancellations</div><div class="value"><span id="depCancelled">--</span></div></div>
+<main class="wrap progress-wrap">
+    <div class="progress-centre">
+        <section class="panel">
+            <div class="throughput">
+                Throughput: <span id="throughput">--</span> /hr
+                <small>(ops per hour)</small>
             </div>
 
-            <div class="section">
-                <div class="section-title">ARRIVALS</div>
+            <div class="cols">
+                <div class="section">
+                    <div class="section-title">Departures</div>
 
-                <div class="row"><div class="label">Average Hold Time</div><div class="value"><span id="arrAvgHold">--</span> mins</div></div>
-                <div class="row"><div class="label">Most Planes in Holding Pattern</div><div class="value"><span id="arrMaxHolding">--</span></div></div>
-                <div class="row"><div class="label">Maximum Delay Time</div><div class="value"><span id="arrMaxDelay">--</span> mins</div></div>
-                <div class="row"><div class="label">Average Delay Time</div><div class="value"><span id="arrAvgDelay">--</span> mins</div></div>
-                <div class="row"><div class="label">Number of Diversions</div><div class="value"><span id="arrDiverted">--</span></div></div>
+                    <div class="row"><div class="label">Average Wait Time</div><div class="value"><span id="depAvgWait">--</span> mins</div></div>
+                    <div class="row"><div class="label">Most Planes in Departure Queue</div><div class="value"><span id="depMaxQueue">--</span></div></div>
+                    <div class="row"><div class="label">Maximum Delay Time</div><div class="value"><span id="depMaxDelay">--</span> mins</div></div>
+                    <div class="row"><div class="label">Average Delay Time</div><div class="value"><span id="depAvgDelay">--</span> mins</div></div>
+                    <div class="row"><div class="label">Number of Cancellations</div><div class="value"><span id="depCancelled">--</span></div></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Arrivals</div>
+
+                    <div class="row"><div class="label">Average Hold Time</div><div class="value"><span id="arrAvgHold">--</span> mins</div></div>
+                    <div class="row"><div class="label">Most Planes in Holding Pattern</div><div class="value"><span id="arrMaxHolding">--</span></div></div>
+                    <div class="row"><div class="label">Maximum Delay Time</div><div class="value"><span id="arrMaxDelay">--</span> mins</div></div>
+                    <div class="row"><div class="label">Average Delay Time</div><div class="value"><span id="arrAvgDelay">--</span> mins</div></div>
+                    <div class="row"><div class="label">Number of Diversions</div><div class="value"><span id="arrDiverted">--</span></div></div>
+                </div>
             </div>
-        </div>
 
-        <div class="actions">
-            <button class="btn" id="saveBtn">Save Configuration &amp; Data</button>
-            <!-- inline onclick handles navigation so no JS handler needed -->
-            <button class="btn secondary" onclick="window.location.href='/comparison.html'">Comparison Menu</button>
-        </div>
+            <div class="actions">
+                <button class="btn" id="saveBtn">Save Configuration &amp; Data</button>
+                <!-- inline onclick handles navigation so no JS handler needed -->
+                <button class="btn secondary" onclick="window.location.href='/comparison.html'">Comparison Menu</button>
+            </div>
 
-        <div class="event-log-section">
-            <div class="section-title">EVENT LOG</div>
-            <ul id="resultEventLog" class="event-log-list">
-                <li class="event-log-empty">No events logged.</li>
-            </ul>
-        </div>
-    </section>
+            <div class="event-log-section">
+                <div class="section-title">Event Log</div>
+                <ul id="resultEventLog" class="event-log-list">
+                    <li class="event-log-empty">No events logged.</li>
+                </ul>
+            </div>
+        </section>
+    </div>
 </main>
 
 <!-- Save Result Dialog Modal -->
