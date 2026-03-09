@@ -288,4 +288,47 @@ class HoldingPatternTest {
                 "Expected lower-fuel emergency aircraft to appear first.");
         assertEquals("E-HIGHFUEL", emergencies.get(1).getCallsign());
     }
+
+    /**
+     * Verifies the 1000ft vertical separation rule (SR-FR-5):
+     * updateAltitudes() assigns altitude = (priorityPosition + 1) * 1000 to each aircraft,
+     * so the highest-priority aircraft occupies 1000ft, second gets 2000ft, third gets 3000ft, etc.
+     * This guarantees the required 1000ft separation between every consecutive pair.
+     *
+     * NONE-status aircraft are ordered by entry tick (earliest = highest priority), so
+     * distinct entry ticks provide a deterministic priority ordering here.
+     */
+    @Test
+    void updateAltitudes_shouldAssign1000ftSeparation_toEachPriorityPosition() {
+        HoldingPattern hp = new HoldingPattern();
+
+        // All NONE status; NONE aircraft compare by entry tick (lower = higher priority).
+        Aircraft first  = newArrival("FIRST",  30.0, 0, 1);  // entryTick=1 → highest priority
+        Aircraft second = newArrival("SECOND", 30.0, 0, 2);  // entryTick=2 → second priority
+        Aircraft third  = newArrival("THIRD",  30.0, 0, 3);  // entryTick=3 → lowest priority
+
+        first.setStatus(EmergencyStatus.NONE);
+        second.setStatus(EmergencyStatus.NONE);
+        third.setStatus(EmergencyStatus.NONE);
+
+        // Add in scrambled order to ensure updateAltitudes relies on priority, not insertion order.
+        hp.addAircraft(third);
+        hp.addAircraft(first);
+        hp.addAircraft(second);
+
+        hp.updateAltitudes();
+
+        // Poll in priority order and verify each altitude slot maintains 1000ft separation.
+        Aircraft a = hp.getNextAircraft().orElseThrow();
+        Aircraft b = hp.getNextAircraft().orElseThrow();
+        Aircraft c = hp.getNextAircraft().orElseThrow();
+
+        assertEquals("FIRST", a.getCallsign(), "Earliest entry-tick aircraft should be served first.");
+        assertEquals(1000, a.getAltitude(),
+                "Highest priority aircraft should occupy the 1000ft slot.");
+        assertEquals(2000, b.getAltitude(),
+                "Second priority aircraft should occupy the 2000ft slot (1000ft above first).");
+        assertEquals(3000, c.getAltitude(),
+                "Third priority aircraft should occupy the 3000ft slot (1000ft above second).");
+    }
 }
