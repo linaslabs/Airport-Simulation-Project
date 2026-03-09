@@ -699,6 +699,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error initialising comparison page:', error);
         alert('No saved simulation results found. Save at least one result from the results page first.');
+        window.location.href = '/';
     }
 
     document.getElementById('switchBtnA').addEventListener('click', () => {

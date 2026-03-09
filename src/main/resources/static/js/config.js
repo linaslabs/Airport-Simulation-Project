@@ -264,7 +264,7 @@ function startSimulation() {
             } else if(simMode == "TABLE_VIEW"){
                 window.location.href = '/tabular-progress.html';
             } else {
-                // Redirect to graphical progress html file
+                window.location.href = '/graphical-progress.html';
             }
         })
         .catch(error => {
