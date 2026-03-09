@@ -727,6 +727,7 @@ function applyConfigToPage(data) {
     }
 
     rebuildEventListUI();
+    document.getElementById('input-auto_gen').dispatchEvent(new Event('change'));
 
     document.activeElement.blur();
     const modal = bootstrap.Modal.getInstance(document.getElementById('loadConfigModal'));
