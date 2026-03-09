@@ -12,157 +12,159 @@
 
 <body>
 
-<header class="navbar" style="position: relative;">
+<header class="navbar" style="position: relative; align-items: center;">
     <div class="nav-left">
         <a class="nav-link" href="/">Home</a>
+        <div class="nav-title">Airport Simulation</div>
     </div>
 
-    <div style="position: absolute; left: 50%; transform: translateX(-50%); font-weight: 900; font-size: 1.3rem; letter-spacing: 2px;">
+    <div style="position: absolute; left: 50%; transform: translateX(-50%) translateY(-4px); font-weight: 900; font-size: 3rem; letter-spacing: 2px;">
         REAL-TIME SIMULATION
-    </div>
-
-    <div class="nav-right">
-        <div class="nav-title" style="opacity: 0.7;">Airport Simulation</div>
     </div>
 </header>
 
-<main class="wrap progress-wrap" style="padding-top: 20px;">
+<main class="wrap progress-wrap">
+    <div class="progress-centre">
+        <section id="comparisonContent" class="comparison-content">
+            <div class="sim-card">
 
-    <section id="comparisonContent" class="comparison-content">
-        <div class="comparison-grid">
+                <div class="comparison-grid">
 
-            <div class="comparison-column d-flex flex-column">
+                    <div class="comparison-column d-flex flex-column">
 
-                <div class="comparison-section">
-                    <h3>GLOBAL METRICS</h3>
-                    <div class="throughput" style="margin-bottom: 15px;">
-                        Throughput: <span id="stat-throughput">0</span> /hr
-                    </div>
-                    <div class="metrics-cols">
-                        <div class="metrics-col">
-                            <h4 style="font-size: 0.85rem; color: #666; margin-bottom: 8px; font-weight: bold;">ARRIVALS</h4>
-                            <div class="metric-row"><span class="label">Total Landed</span><span class="value" id="stat-landed">0</span></div>
-                            <div class="metric-row"><span class="label">Average Hold Time</span><span class="value"><span id="stat-avg-hold">0.0</span> m</span></div>
-                            <div class="metric-row"><span class="label">Max Planes in Holding</span><span class="value" id="stat-max-hold">0</span></div>
-                            <div class="metric-row"><span class="label">Maximum Delay Time</span><span class="value"><span id="stat-arr-max-delay">0</span> m</span></div>
-                            <div class="metric-row"><span class="label">Average Delay Time</span><span class="value"><span id="stat-arr-avg-delay">0.0</span> m</span></div>
-                            <div class="metric-row"><span class="label">Number of Diversions</span><span class="value" id="stat-diversions" style="color: red; font-weight: bold;">0</span></div>
+                        <div class="comparison-section">
+                            <h3>GLOBAL METRICS</h3>
+                            <div class="throughput" style="margin-bottom: 15px;">
+                                Throughput: <span id="stat-throughput">0</span> /hr
+                            </div>
+                            <div class="metrics-cols">
+                                <div class="metrics-col">
+                                    <h4 style="font-size: 0.85rem; color: #666; margin-bottom: 8px; font-weight: bold;">ARRIVALS</h4>
+                                    <div class="metric-row"><span class="label">Total Landed</span><span class="value" id="stat-landed">0</span></div>
+                                    <div class="metric-row"><span class="label">Average Hold Time</span><span class="value"><span id="stat-avg-hold">0.0</span> m</span></div>
+                                    <div class="metric-row"><span class="label">Max Planes in Holding</span><span class="value" id="stat-max-hold">0</span></div>
+                                    <div class="metric-row"><span class="label">Maximum Delay Time</span><span class="value"><span id="stat-arr-max-delay">0</span> m</span></div>
+                                    <div class="metric-row"><span class="label">Average Delay Time</span><span class="value"><span id="stat-arr-avg-delay">0.0</span> m</span></div>
+                                    <div class="metric-row"><span class="label">Number of Diversions</span><span class="value" id="stat-diversions" style="color: red; font-weight: bold;">0</span></div>
+                                </div>
+
+                                <div class="metrics-col">
+                                    <h4 style="font-size: 0.85rem; color: #666; margin-bottom: 8px; font-weight: bold;">DEPARTURES</h4>
+                                    <div class="metric-row"><span class="label">Total Departed</span><span class="value" id="stat-departed">0</span></div>
+                                    <div class="metric-row"><span class="label">Average Wait Time</span><span class="value"><span id="stat-avg-wait">0.0</span> m</span></div>
+                                    <div class="metric-row"><span class="label">Max Planes in Queue</span><span class="value" id="stat-max-takeoff">0</span></div>
+                                    <div class="metric-row"><span class="label">Maximum Delay Time</span><span class="value"><span id="stat-dep-max-delay">0</span> m</span></div>
+                                    <div class="metric-row"><span class="label">Average Delay Time</span><span class="value"><span id="stat-dep-avg-delay">0.0</span> m</span></div>
+                                    <div class="metric-row"><span class="label">Number of Cancellations</span><span class="value" id="stat-cancellations" style="color: #d97706; font-weight: bold;">0</span></div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="metrics-col">
-                            <h4 style="font-size: 0.85rem; color: #666; margin-bottom: 8px; font-weight: bold;">DEPARTURES</h4>
-                            <div class="metric-row"><span class="label">Total Departed</span><span class="value" id="stat-departed">0</span></div>
-                            <div class="metric-row"><span class="label">Average Wait Time</span><span class="value"><span id="stat-avg-wait">0.0</span> m</span></div>
-                            <div class="metric-row"><span class="label">Max Planes in Queue</span><span class="value" id="stat-max-takeoff">0</span></div>
-                            <div class="metric-row"><span class="label">Maximum Delay Time</span><span class="value"><span id="stat-dep-max-delay">0</span> m</span></div>
-                            <div class="metric-row"><span class="label">Average Delay Time</span><span class="value"><span id="stat-dep-avg-delay">0.0</span> m</span></div>
-                            <div class="metric-row"><span class="label">Number of Cancellations</span><span class="value" id="stat-cancellations" style="color: #d97706; font-weight: bold;">0</span></div>
+                        <div class="comparison-section flex-grow-1 d-flex flex-column" style="margin-top: 1px;">
+                            <h3>ACTIVE RUNWAYS</h3>
+                            <div class="runways-container">
+                                <table class="events-table m-0 w-100">
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Mode</th>
+                                        <th>Status</th>
+                                        <th>Aircraft</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="runway-table-body">
+                                    <tr><td colspan="4" style="color: #888;">Waiting for data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="comparison-column d-flex flex-column progress-column">
+
+                        <div class="comparison-section d-flex flex-column half-section">
+                            <h3>HOLDING PATTERN <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="holding-count">0</span></span></h3>
+
+                            <div class="scrollable-table-box flex-grow-1 flex-table-container">
+                                <table class="events-table m-0 w-100">
+                                    <thead>
+                                    <tr>
+                                        <th>Callsign</th>
+                                        <th>Fuel (mins)</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="holding-table-body">
+                                    <tr><td colspan="3" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="comparison-section d-flex flex-column half-section">
+                            <h3>TAKE-OFF QUEUE <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="takeoff-count">0</span></span></h3>
+
+                            <div class="scrollable-table-box flex-grow-1 flex-table-container">
+                                <table class="events-table m-0 w-100">
+                                    <thead>
+                                    <tr>
+                                        <th>Callsign</th>
+                                        <th>Entry Time</th>
+                                        <th>State</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="takeoff-table-body">
+                                    <tr><td colspan="3" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="control-panel" style="flex-direction: column; padding: 15px 20px; gap: 15px;">
+
+                    <div style="width: 100%; display: flex; align-items: center; gap: 15px;">
+                        <span style="font-weight: 900; font-size: 1.1rem; color: #0f172a; width: 55px;"><span id="progressPercentage">0</span>%</span>
+
+                        <div class="custom-progress-bar" style="margin: 0; flex-grow: 1; height: 14px;">
+                            <div class="custom-progress-fill" id="progressBar"></div>
+                        </div>
+
+                        <div style="color: #64748b; font-size: 0.95rem; min-width: 160px; text-align: right;">
+                            Tick: <strong id="tickCount" style="color: #0f172a;">0</strong> | Elapsed: <strong id="elapsedTime" style="color: #0f172a;">0s</strong>
                         </div>
                     </div>
-                </div>
 
-                <div class="comparison-section flex-grow-1 d-flex flex-column" style="margin-top: 1px;">
-                    <h3>ACTIVE RUNWAYS</h3>
-                    <div class="runways-container">
-                        <table class="events-table m-0 w-100">
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Mode</th>
-                                <th>Status</th>
-                                <th>Aircraft</th>
-                            </tr>
-                            </thead>
-                            <tbody id="runway-table-body">
-                            <tr><td colspan="4" style="color: #888;">Waiting for data...</td></tr>
-                            </tbody>
-                        </table>
+                    <div style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px;">
+
+                        <button id="btn-play-pause" class="btn btn-control" onclick="togglePlayPause()">⏸ Pause</button>
+
+                        <div class="control-divider"></div>
+
+                        <span class="speed-label">SPEED:</span>
+                        <button id="btn-speed-1" class="btn btn-speed" onclick="setSpeed(1)">1x</button>
+                        <button id="btn-speed-5" class="btn secondary btn-speed" onclick="setSpeed(5)">5x</button>
+                        <button id="btn-speed-20" class="btn secondary btn-speed" onclick="setSpeed(20)">20x</button>
+
+                        <div class="control-divider"></div>
+
+                        <button id="btn-fast-forward" class="btn btn-control" style="background: #f59e0b; color: white; border: none;" onclick="triggerFastForward()">⏭ Fast Forward</button>
+
+                        <div class="control-divider"></div>
+
+                        <button id="btn-stop-sim" class="btn btn-control" style="background: #dc2626; color: white; border: none;" onclick="stopSimulation()">⏹ Stop</button>
+
                     </div>
+
                 </div>
-
-            </div>
-
-            <div class="comparison-column d-flex flex-column progress-column">
-
-                <div class="comparison-section d-flex flex-column half-section">
-                    <h3>HOLDING PATTERN <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="holding-count">0</span></span></h3>
-
-                    <div class="scrollable-table-box flex-grow-1 flex-table-container">
-                        <table class="events-table m-0 w-100">
-                            <thead>
-                            <tr>
-                                <th>Callsign</th>
-                                <th>Fuel (mins)</th>
-                                <th>Status</th>
-                            </tr>
-                            </thead>
-                            <tbody id="holding-table-body">
-                            <tr><td colspan="3" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="comparison-section d-flex flex-column half-section">
-                    <h3>TAKE-OFF QUEUE <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="takeoff-count">0</span></span></h3>
-
-                    <div class="scrollable-table-box flex-grow-1 flex-table-container">
-                        <table class="events-table m-0 w-100">
-                            <thead>
-                            <tr>
-                                <th>Callsign</th>
-                                <th>Entry Time</th>
-                                <th>State</th>
-                            </tr>
-                            </thead>
-                            <tbody id="takeoff-table-body">
-                            <tr><td colspan="3" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <section class="comparison-section control-panel" style="flex-direction: column; padding: 15px 20px; gap: 15px;">
-
-            <div style="width: 100%; display: flex; align-items: center; gap: 15px;">
-                <span style="font-weight: 900; font-size: 1.1rem; color: #0f172a; width: 55px;"><span id="progressPercentage">0</span>%</span>
-
-                <div class="custom-progress-bar" style="margin: 0; flex-grow: 1; height: 14px;">
-                    <div class="custom-progress-fill" id="progressBar"></div>
-                </div>
-
-                <div style="color: #64748b; font-size: 0.95rem; min-width: 160px; text-align: right;">
-                    Tick: <strong id="tickCount" style="color: #0f172a;">0</strong> | Elapsed: <strong id="elapsedTime" style="color: #0f172a;">0s</strong>
-                </div>
-            </div>
-
-            <div style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px;">
-
-                <button id="btn-play-pause" class="btn btn-control" onclick="togglePlayPause()">⏸ Pause</button>
-
-                <div class="control-divider"></div>
-
-                <span class="speed-label">SPEED:</span>
-                <button id="btn-speed-1" class="btn btn-speed" onclick="setSpeed(1)">1x</button>
-                <button id="btn-speed-5" class="btn secondary btn-speed" onclick="setSpeed(5)">5x</button>
-                <button id="btn-speed-20" class="btn secondary btn-speed" onclick="setSpeed(20)">20x</button>
-
-                <div class="control-divider"></div>
-
-                <button id="btn-fast-forward" class="btn btn-control" style="background: #f59e0b; color: white; border: none;" onclick="triggerFastForward()">⏭ Fast Forward</button>
-
-                <div class="control-divider"></div>
-
-                <button id="btn-stop-sim" class="btn btn-control" style="background: #dc2626; color: white; border: none;" onclick="stopSimulation()">⏹ Stop</button>
 
             </div>
         </section>
-
-    </section>
-
+    </div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>

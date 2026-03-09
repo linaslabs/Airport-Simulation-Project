@@ -203,25 +203,27 @@
 }
 
 body {
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow: auto;
     display: flex;
     flex-direction: column;
 }
 
 .progress-wrap {
-    flex-grow: 1;
-    min-height: 0;
-    padding-bottom: 20px !important;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    padding: 0 6vw !important;
+}
+
+.progress-centre {
+    padding: 30px 0;
 }
 
 .comparison-content {
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0;
 }
 
 .progress-wrap .page-title {
@@ -265,4 +267,59 @@ body {
     color: #64748b;
     font-size: 0.9rem;
     letter-spacing: 0.5px;
+}
+
+/* ===== SIMULATION CARD ===== */
+.sim-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.05) !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sim-card .comparison-grid {
+    border: none !important;
+    background: #ffffff !important;
+    gap: 0 !important;
+    margin: 16px !important;
+}
+
+.sim-card .comparison-column {
+    border: none !important;
+    background: #ffffff !important;
+    gap: 0 !important;
+    padding: 0 !important;
+}
+
+.sim-card .comparison-column:last-child {
+    border-left: 1px solid #e5e7eb !important;
+}
+
+.sim-card .comparison-section {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.sim-card .comparison-section + .comparison-section {
+    border-top: 1px solid #e5e7eb !important;
+}
+
+.sim-card .control-panel {
+    margin: 0 16px 16px 16px !important;
+    border-radius: 8px !important;
+}
+
+.sim-card .events-table {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+.control-panel {
+    border-top: none;
+    background: #f8fafc !important;
+    margin-top: 0 !important;
+    flex-shrink: 0;
 }
