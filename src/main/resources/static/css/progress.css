@@ -314,3 +314,10 @@ body {
     width: 100% !important;
     margin: 0 !important;
 }
+
+.control-panel {
+    border-top: none;
+    background: #f8fafc !important;
+    margin-top: 0 !important;
+    flex-shrink: 0;
+}
