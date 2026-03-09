@@ -18,14 +18,6 @@
 
 <main class="sim-layout">
     <section class="sim-left-panel">
-        <div class="progress-strip">
-            <div class="progress-label">Simulation Progress</div>
-            <div class="progress-bar-wrapper">
-                <div class="progress-bar-fill" id="progressBar"></div>
-            </div>
-            <div class="progress-percentage"><span id="progressPercentage">0</span>%</div>
-        </div>
-
         <div class="scene-wrapper">
             <svg id="simScene" class="sim-scene" viewBox="0 0 1100 680" preserveAspectRatio="xMidYMid meet">
                 <defs>
@@ -78,16 +70,35 @@
         </div>
 
         <div class="scene-footer">
-            <div class="scene-meta">
-                <div class="scene-tick">Tick: <span id="tickCount">0</span></div>
-                <div class="scene-elapsed">Elapsed: <span id="elapsedTime">0s</span></div>
+            <div class="scene-progress-row">
+                <span class="scene-progress-percentage"><span id="progressPercentage">0</span>%</span>
+
+                <div class="custom-progress-bar scene-progress-bar">
+                    <div class="custom-progress-fill" id="progressBar"></div>
+                </div>
+
+                <div class="scene-progress-meta">
+                    Tick: <strong id="tickCount">0</strong> | Elapsed: <strong id="elapsedTime">0s</strong>
+                </div>
             </div>
-            <div class="scene-controls" role="group" aria-label="Simulation playback controls">
-                <button id="ctrlStop" class="ctrl-btn ctrl-stop" title="Stop Simulation" type="button">■</button>
-                <button id="ctrlSlower" class="ctrl-btn" title="Slower" type="button">⏪</button>
-                <button id="ctrlPause" class="ctrl-btn" title="Pause" type="button">⏸</button>
-                <button id="ctrlFaster" class="ctrl-btn" title="Faster" type="button">⏩</button>
-                <div class="speed-pill">Speed: <span id="speedValue">1x</span></div>
+
+            <div class="scene-controls control-panel" role="group" aria-label="Simulation playback controls">
+                <button id="ctrlPause" class="btn btn-control" title="Pause" type="button">⏸ Pause</button>
+
+                <div class="control-divider"></div>
+
+                <span class="speed-label">SPEED:</span>
+                <button id="ctrlSpeed1" class="btn btn-speed" title="Set speed to 1x" type="button">1x</button>
+                <button id="ctrlSpeed5" class="btn secondary btn-speed" title="Set speed to 5x" type="button">5x</button>
+                <button id="ctrlSpeed20" class="btn secondary btn-speed" title="Set speed to 20x" type="button">20x</button>
+
+                <div class="control-divider"></div>
+
+                <button id="ctrlFastForward" class="btn btn-control" style="background: #f59e0b; color: white; border: none;" title="Fast Forward" type="button">⏭ Fast Forward</button>
+
+                <div class="control-divider"></div>
+
+                <button id="ctrlStop" class="btn btn-control" style="background: #dc2626; color: white; border: none;" title="Stop Simulation" type="button">■ Stop</button>
             </div>
         </div>
     </section>
