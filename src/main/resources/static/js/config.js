@@ -3,8 +3,10 @@ const add1Btn = document.getElementById("add-button");
 const minus1Btn = document.getElementById("minus-button");
 const runwayList = document.getElementById("runway-list");
 const template = document.getElementById("runway-template");
+let invalidEventIds = new Set();
 
-let number = 10
+let number = 1;
+
 function add1(){
     if (number < 10) {
         number++;
@@ -58,8 +60,8 @@ function removeRow(id) {
     }
 }
 
-// create first 10 rows, because default value of runway numbers is 10
-for (let i = 1; i <= 10; i++) {
+// create first row, because default name is 1 for noe
+for (let i = 1; i <= 1; i++) {
     addRunwayRow(i);
 }
 
@@ -71,28 +73,27 @@ minus1Btn.onclick = minus1
 // INPUT CONFIG
 // format for inputs with text boxes
 const inputConfig = [
-    { label: "Inbound Rate /hr",        name: "inbound_rate",      range: "0 - 100", min: 0,  max: 100, step: 1, val: 15 },
-    { label: "Outbound Rate /hr",       name: "outbound_rate",     range: "0 - 100", min: 0,  max: 100, step: 1, val: 15 },
-    { label: "Simulation Duration (mins)", name: "sim_duration",      range: "60 - 1440", min: 60, max: 1440, step: 1, val: 120 },
-    { label: "Mechanical Failure Rate",      name: "mech_failure_rate", range: "0.00 - 0.10", min: 0, max: 0.1, step: 0.01, val: 0.00 },
-    { label: "Health Issue Rate",       name: "health_issue_rate", range: "0.00 - 0.10",   min: 0, max: 0.1, step: 0.01, val: 0.00 },
-    { label: "Runway Inspection Rate",  name: "inspection_rate",   range: "0.00- 0.10",   min: 0, max: 0.1, step: 0.01, val: 0.00 },
-    { label: "Snow Clearance Rate",     name: "snow_rate",         range: "0.00 - 0.10",   min: 0, max: 0.1, step: 0.01, val: 0.00 },
-    { label: "Equipment Failure Rate",     name: "equip_failure_rate",range: "0.00 - 0.10",   min: 0, max: 0.1, step: 0.01, val: 0.00 },
-    { label: "Max Delay Time (mins)",      name: "max_delay",         range: "0 - 60",   min: 0,  max: 60,  step: 1, val: 30},
-    { label: "Simulation Seed", name: "seed", range: "0 - 10^8", min: 0, max: 99999999, step: 1, val: 0 }
+    { label: "Inbound Rate /hr",           name: "inbound_rate",      range: "0 - 100",     min: 0,  max: 100,     step: 1,    val: 15 },
+    { label: "Outbound Rate /hr",          name: "outbound_rate",     range: "0 - 100",     min: 0,  max: 100,     step: 1,    val: 15 },
+    { label: "Simulation Duration (mins)", name: "sim_duration",      range: "60 - 1440",   min: 60, max: 1440,    step: 1,    val: 120 },
+    { label: "Max Delay Time (mins)",      name: "max_delay",         range: "0 - 60",      min: 0,  max: 60,      step: 1,    val: 30 },
+    { label: "Simulation Seed",            name: "seed",              range: "0 - 10^8",    min: 0,  max: 100000000,step: 1,    val: 0 },
+    { label: "Mechanical Failure Rate",    name: "mech_failure_rate", range: "0.00 - 0.10", min: 0,  max: 0.1,     step: 0.01, val: 0.00 },
+    { label: "Health Issue Rate",          name: "health_issue_rate", range: "0.00 - 0.10", min: 0,  max: 0.1,     step: 0.01, val: 0.00 },
+    { label: "Runway Inspection Rate",     name: "inspection_rate",   range: "0.00 - 0.10", min: 0,  max: 0.1,     step: 0.01, val: 0.00 },
+    { label: "Snow Clearance Rate",        name: "snow_rate",         range: "0.00 - 0.10", min: 0,  max: 0.1,     step: 0.01, val: 0.00 },
+    { label: "Equipment Failure Rate",     name: "equip_failure_rate",range: "0.00 - 0.10", min: 0,  max: 0.1,     step: 0.01, val: 0.00 },
 ];
-
 // generate input params
 function generateInputs() {
-    const container = document.getElementById("input-parameters-list");
+    const mainContainer = document.getElementById("input-parameters-list");
+    const rateContainer = document.getElementById("rate-parameters-list");
     const template = document.getElementById("input-field-template");
 
     inputConfig.forEach(config => {
         const clone = template.content.cloneNode(true);
         const input = clone.querySelector(".field-input");
 
-        // Restore Range Text
         clone.querySelector(".field-label").innerText = config.label;
         clone.querySelector(".field-range").innerText = "Range: " + config.range;
 
@@ -104,19 +105,23 @@ function generateInputs() {
         if (config.max !== undefined) input.max = config.max;
         if (config.step !== undefined) input.step = config.step;
 
-        // 2. Block invalid characters: 'e', 'E', '+', '-' from ever being typed
         input.addEventListener('keydown', function(e) {
             if (['e', 'E', '+', '-'].includes(e.key)) {
                 e.preventDefault();
             }
         });
 
-        // Enable Dice only for Seed
         if (config.name === "seed") {
             clone.querySelector(".dice-btn").style.display = "block";
         }
 
-        container.appendChild(clone);
+        // Rate fields go to rate container, everything else to main
+        const rateFields = ['mech_failure_rate', 'health_issue_rate', 'inspection_rate', 'snow_rate', 'equip_failure_rate'];
+        if (rateFields.includes(config.name)) {
+            rateContainer.appendChild(clone);
+        } else {
+            mainContainer.appendChild(clone);
+        }
     });
 }
 
@@ -341,6 +346,12 @@ function addEvent() {
         // Prevent 0 or negative typed durations
         if (eventDuration !== -1 && eventDuration <= 0) {
             alert("Duration must be at least 1 minute, or left blank for Indefinite.");
+            durationInput.focus();
+            return;
+        }
+
+        if (eventDuration !== -1 && eventDuration > 1440) {
+            alert("Duration cannot exceed 1440 minutes.");
             durationInput.focus();
             return;
         }
@@ -880,9 +891,10 @@ function rebuildEventListUI() {
 
     scheduledEventsData.forEach(ev => {
         const isGhost = ev.type === 'Runway' && parseInt(ev.locationId) >= currentRunwayCount;
+        const isLate = !isGhost && invalidEventIds.has(ev.id);
 
         const row = document.createElement("div");
-        row.className = `d-flex align-items-center justify-content-between small mb-2 pb-2 border-bottom ${isGhost ? 'ghost-event' : ''}`;
+        row.className = `d-flex align-items-center justify-content-between small mb-2 pb-2 border-bottom ${isGhost ? 'ghost-event' : ''} ${isLate ? 'late-event' : ''}`;
         row.setAttribute("data-id", ev.id.toString());
 
         let parsedDuration = parseInt(ev.duration);
@@ -892,17 +904,18 @@ function rebuildEventListUI() {
         let modeBadge = ev.type === "Runway" ? `<span class="badge bg-info text-dark ms-1">${ev.modeLabel || 'No Change'}</span>` : "";
         let eventLocText = ev.type === 'Runway' ? 'Runway ' + (parseInt(ev.locationId) + 1) : ev.locationId;
         let warning = isGhost ? `<span class="ghost-badge ms-1">INVALID RUNWAY</span>` : "";
+        let lateWarning = isLate ? `<span class="late-badge ms-1">PAST DURATION</span>` : "";
         let shortName = ev.name.replace("Equipment Failure", "Equip. Failure").replace("Runway Inspection", "Inspection");
 
         row.innerHTML = `
             <div class="ps-1 pe-2" style="flex: 1; min-width: 0;">
                 <div class="d-flex flex-wrap align-items-center">
-                    <strong class="me-1 ${isGhost ? 'text-danger' : ''}">${shortName}</strong> ${modeBadge} ${warning}
+                    <strong class="me-1 ${isGhost ? 'text-danger' : isLate ? 'text-warning' : ''}">${shortName}</strong> ${modeBadge} ${warning} ${lateWarning}
                 </div>
                 <span class="text-muted d-block" style="font-size: 0.75rem;">on ${eventLocText}</span>
             </div>
             <div class="text-end flex-shrink-0 px-2 d-flex align-items-center justify-content-end" style="min-width: 95px;">
-                <div class="fw-bold ${isGhost ? 'text-danger' : 'text-dark'} text-nowrap" style="font-size: 0.85rem;">${start}m - ${durationDisplay}</div>
+                <div class="fw-bold ${isGhost ? 'text-danger' : isLate ? 'text-warning' : 'text-dark'} text-nowrap" style="font-size: 0.85rem;">${start}m - ${durationDisplay}</div>
             </div>
             <div class="flex-shrink-0" style="width: 25px; text-align: right;">
                 <button class="btn btn-link text-danger p-0 border-0 fs-5" onclick="deleteEvent(${ev.id})">&times;</button>
@@ -1047,7 +1060,7 @@ function saveConfiguration() {
 function validateInputs() {
     const inputs = document.querySelectorAll('.field-input');
     let isValid = true;
-    let errorMessages = []; // Collector for all errors
+    let errorMessages = [];
     let firstInvalidInput = null;
 
     // --- Part 1: Box Validation ---
@@ -1055,7 +1068,6 @@ function validateInputs() {
         const val = parseFloat(input.value);
         const min = parseFloat(input.min);
         const max = parseFloat(input.max);
-
         if (input.value === "" || isNaN(val) || val < min || val > max) {
             input.style.border = "2px solid red";
             isValid = false;
@@ -1064,26 +1076,42 @@ function validateInputs() {
             input.style.border = "";
         }
     }
-
     if (!isValid) {
         errorMessages.push("Please fix the highlighted fields. Ensure numbers are within specified ranges.");
     }
 
-    // --- Part 2: Runway Conflict Check ---
+    // --- Part 2 & 3: Flag bad events ---
+    invalidEventIds.clear();
     const currentRunwayCount = parseInt(document.getElementById("runway-counter").innerText);
-    const hasGhostEvents = scheduledEventsData.some(ev =>
-        ev.type === "Runway" && parseInt(ev.locationId) >= currentRunwayCount
-    );
+    const simDurationEl = document.getElementById("input-sim_duration");
+    const simLimit = simDurationEl && simDurationEl.value !== "" ? parseInt(simDurationEl.value) : null;
 
-    if (hasGhostEvents) {
+    let hasGhost = false;
+    let hasLate = false;
+
+    scheduledEventsData.forEach(ev => {
+        const isGhost = ev.type === 'Runway' && parseInt(ev.locationId) >= currentRunwayCount;
+        const isLate = simLimit !== null && parseInt(ev.time) >= simLimit;
+        if (isGhost || isLate) invalidEventIds.add(ev.id);
+        if (isGhost) hasGhost = true;
+        if (isLate) hasLate = true;
+    });
+
+    if (hasGhost) {
         errorMessages.push("You have events scheduled for runways that no longer exist. Please adjust the runway count or delete those events.");
         isValid = false;
     }
+    if (hasLate) {
+        errorMessages.push("You have events scheduled at or after the simulation ends. These will never occur. Please remove them or increase the simulation duration.");
+        isValid = false;
+    }
 
-    // --- Part 3: Single Alert ---
+    rebuildEventListUI();
+
+    // --- Part 4: Single Alert ---
     if (!isValid) {
         if (firstInvalidInput) firstInvalidInput.focus();
-        alert(errorMessages.join("\n\n")); // Shows both errors in one pop-up!
+        alert(errorMessages.join("\n\n"));
         return false;
     }
 
