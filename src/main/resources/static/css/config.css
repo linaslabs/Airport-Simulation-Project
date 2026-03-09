@@ -85,5 +85,32 @@ h6 {
     border-color: #86b7fe; /* Matches the blue focus glow */
 }
 
-/**/
+/*bad events*/
 
+.ghost-event {
+    border-left: 3px solid red !important;
+    background-color: #fff5f5;
+}
+
+.late-event {
+    border-left: 3px solid orange !important;
+    background-color: #fffbf0;
+}
+
+.ghost-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: red;
+    border: 1px solid red;
+    border-radius: 4px;
+    padding: 1px 4px;
+}
+
+.late-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: orange;
+    border: 1px solid orange;
+    border-radius: 4px;
+    padding: 1px 4px;
+}
