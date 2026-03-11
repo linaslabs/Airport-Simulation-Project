@@ -103,96 +103,157 @@ function updateGlobalStats(data) {
 function updateHoldingTable(aircraftList) {
     const tbody = document.getElementById('holding-table-body');
     const countBadge = document.getElementById('holding-count');
-    if (!tbody || !aircraftList) return; // Don't update if there is no table or list
+    if (!tbody || !aircraftList) return;
 
     countBadge.textContent = aircraftList.length;
     tbody.innerHTML = '';
 
     if (aircraftList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #888; padding: 20px;">No aircraft in holding</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #94a3b8; font-weight: 600; padding: 15px;">No aircraft in holding</td></tr>';
         return;
     }
 
-    aircraftList.forEach(aircraft => {
+    // Loop through each aircraft and apply the table row to match their details
+    aircraftList.forEach((aircraft, index) => {
         const isEmergency = aircraft.emergencyStatus && aircraft.emergencyStatus !== 'NONE';
         const row = document.createElement('tr');
 
-        // Styling for emergencies
+        let lockClass = '';
+        let disableAttribute = '';
+
         if (isEmergency) {
-            row.style.backgroundColor = '#ff9494';
-            row.style.color = '#dc3545';           // Dark red
-            row.style.fontWeight = 'bold';
+            row.classList.add('emergency-row');
+
+            if (aircraft.emergencySource === 'SCHEDULED') {
+                lockClass = 'lock-scheduled';
+                disableAttribute = 'disabled title="Scheduled emergency"';
+            } else if (aircraft.emergencySource === 'RANDOM') {
+                lockClass = 'lock-random';
+                disableAttribute = 'disabled title="Random natural emergency"';
+            } else {
+                disableAttribute = 'disabled title="Manually triggered emergency"';
+            }
         }
 
-        // Insert the row
+        const altitude = (index + 1) * 1000;
+
         row.innerHTML = `
-            <td>${aircraft.callsign}</td>
-            <td>${aircraft.fuelLevel.toFixed(1)}</td>
-            <td>${aircraft.emergencyStatus}</td>
+            <td class="text-bold-dark">${aircraft.callsign}</td>
+            <td><div class="table-val-box text-bold-slate">${altitude} ft</div></td>
+            <td><div class="table-val-box text-bold-slate">${aircraft.fuelLevel.toFixed(1)}</div></td>
+            <td>
+                <select class="${lockClass}" onchange="changeAircraftEmergency('${aircraft.callsign}', this.value)" ${disableAttribute}>
+                    <option value="NONE" ${aircraft.emergencyStatus === 'NONE' ? 'selected' : ''}>None</option>
+                    <option value="FUEL" ${aircraft.emergencyStatus === 'FUEL' ? 'selected' : ''}>Fuel</option>
+                    <option value="MECHANICAL" ${aircraft.emergencyStatus === 'MECHANICAL' ? 'selected' : ''}>Mechanical</option>
+                    <option value="PASSENGER" ${aircraft.emergencyStatus === 'PASSENGER' ? 'selected' : ''}>Health</option>
+                </select>
+            </td>
         `;
         tbody.appendChild(row);
     });
 }
 
-function updateTakeoffTable(aircraftList) {
+function updateTakeoffTable(aircraftList, currentTick, cancellationThreshold) {
     const tbody = document.getElementById('takeoff-table-body');
     const countBadge = document.getElementById('takeoff-count');
-    if (!tbody || !aircraftList) return; // Don't update if there is no table or list
+    if (!tbody || !aircraftList) return;
 
     countBadge.textContent = aircraftList.length;
     tbody.innerHTML = '';
 
     if (aircraftList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #888; padding: 20px;">No aircraft in queue</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #94a3b8; font-weight: 600; padding: 15px;">No aircraft in queue</td></tr>';
         return;
     }
 
-    aircraftList.forEach(aircraft => {
+    // Loop through each aircraft and apply the table row to match their details
+    aircraftList.forEach((aircraft, index) => {
         const row = document.createElement('tr');
+        const waitTime = currentTick - aircraft.entryTick;
+
+        let displayState = "Waiting";
+        let stateClass = "text-bold-slate";
+
+        if (index === 0) {
+            displayState = "Next Departure";
+            stateClass = "text-success";
+        }
+
+        if (cancellationThreshold > 0 && waitTime >= (cancellationThreshold - 5)) {
+            displayState = "Cancellation Risk";
+            stateClass = "text-danger";
+        }
+
         row.innerHTML = `
-            <td style="font-weight: bold;">${aircraft.callsign}</td>
-            <td>Minute ${aircraft.entryTick}</td>
-            <td>${aircraft.status}</td>
+            <td class="text-bold-dark">${aircraft.callsign}</td>
+            <td><div class="table-val-box text-bold-slate">Tick ${aircraft.entryTick}</div></td>
+            <td><div class="table-val-box text-bold-slate">${waitTime} mins</div></td>
+            <td><div class="table-val-box ${stateClass}">${displayState}</div></td>
         `;
         tbody.appendChild(row);
     });
 }
 
-function updateRunwayTable(runways) {
+function updateRunwayTable(runways, currentTick) {
     const tbody = document.getElementById('runway-table-body');
     if (!tbody || !runways) return;
 
     tbody.innerHTML = '';
 
-    // Loop 10 times, if the runway is not used, grey it out
+    // Loop through each runway and apply the table row to match its details
     for (let i = 0; i < 10; i++) {
         const row = document.createElement('tr');
 
         if (i < runways.length) {
-            // Render runway if active
             const runway = runways[i];
             const isOccupied = runway.aircraftCallsign && runway.aircraftCallsign.trim() !== '';
+
             const aircraftText = isOccupied ? runway.aircraftCallsign : '-';
-            const aircraftStyle = isOccupied ? 'font-weight: bold; color: #0056b3;' : 'color: #999;';
+            const aircraftClass = isOccupied ? 'text-bold-blue' : 'text-bold-muted';
+            const occupiedText = isOccupied && runway.occupiedUntil > currentTick ? `Tick ${runway.occupiedUntil}` : '-';
+
+            let lockClass = '';
+            let lockAttribute = '';
+
+            if (runway.lockSource === 'SCHEDULED') {
+                lockClass = 'lock-scheduled';
+                lockAttribute = 'disabled title="Locked by pre-scheduled event"';
+            } else if (runway.lockSource === 'RANDOM') {
+                lockClass = 'lock-random';
+                lockAttribute = 'disabled title="Locked by random natural event"';
+            }
 
             row.innerHTML = `
-                <td style="font-weight: bold;">Runway ${runway.runwayID + 1}</td>
-                <td>${runway.mode}</td>
-                <td>${runway.status}</td>
-                <td style="${aircraftStyle}">${aircraftText}</td>
+                <td class="text-bold-dark">Runway ${runway.runwayID + 1}</td>
+                <td>
+                    <select class="mode-select ${lockClass}" onchange="changeRunwayMode(${runway.runwayID}, this.value)" ${lockAttribute}>
+                        <option value="LANDING" ${runway.mode === 'LANDING' ? 'selected' : ''}>Landing</option>
+                        <option value="TAKEOFF" ${runway.mode === 'TAKEOFF' ? 'selected' : ''}>Take-Off</option>
+                        <option value="MIXED" ${runway.mode === 'MIXED' ? 'selected' : ''}>Mixed</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="status-select ${lockClass}" onchange="changeRunwayStatus(${runway.runwayID}, this.value)" ${lockAttribute}>
+                        <option value="AVAILABLE" ${runway.status === 'AVAILABLE' ? 'selected' : ''}>Available</option>
+                        <option value="INSPECTION" ${runway.status === 'INSPECTION' ? 'selected' : ''}>Inspection</option>
+                        <option value="SNOW_CLEARANCE" ${runway.status === 'SNOW_CLEARANCE' ? 'selected' : ''}>Snow Clearance</option>
+                        <option value="EQUIPMENT_FAILURE" ${runway.status === 'EQUIPMENT_FAILURE' ? 'selected' : ''}>Equipment Failure</option>
+                    </select>
+                </td>
+                <td class="${aircraftClass}">${aircraftText}</td>
+                <td><div class="table-val-box text-bold-slate">${occupiedText}</div></td>
             `;
         } else {
-            // Grey out runway
-            row.style.backgroundColor = '#efefef';
-            row.style.color = '#ccc';
+            row.style.backgroundColor = '#f8fafc';
             row.innerHTML = `
-                <td>Runway ${i + 1}</td>
-                <td>-</td>
-                <td>INACTIVE</td>
-                <td>-</td>
+                <td class="text-bold-muted">Runway ${i + 1}</td>
+                <td><div class="table-val-box text-muted">-</div></td>
+                <td><div class="table-val-box text-muted">INACTIVE</div></td>
+                <td class="text-bold-muted">-</td>
+                <td><div class="table-val-box text-muted">-</div></td>
             `;
         }
-
         tbody.appendChild(row);
     }
 }
@@ -254,10 +315,10 @@ function connectWebSocket() {
                 tickCountElement.textContent = snapshotData.currentTick.toString();
             }
 
-            updateGlobalStats(snapshotData)
-            updateRunwayTable(snapshotData.runways);
+            updateGlobalStats(snapshotData);
+            updateRunwayTable(snapshotData.runways, snapshotData.currentTick);
             updateHoldingTable(snapshotData.holdingAircraft);
-            updateTakeoffTable(snapshotData.takeoffAircraft);
+            updateTakeoffTable(snapshotData.takeoffAircraft, snapshotData.currentTick, snapshotData.cancellationThreshold);
 
             // snapshotData.holdingAircraft and snapshotData.runways can be used here to draw out the real-time simulation
             // ...
@@ -287,6 +348,27 @@ function connectWebSocket() {
         console.error('WebSocket Error: ', error);
         // Web socket failure handling can happen here if necessary (maybe fallback to polling?)
     });
+}
+
+function changeRunwayMode(runwayId, newMode) {
+    fetch(`/api/simulation/runway/${runwayId}/mode?mode=${newMode}`, { method: 'POST' })
+        .then(response => {
+            if(!response.ok) console.error('Failed to change runway mode');
+        });
+}
+
+function changeRunwayStatus(runwayId, newStatus) {
+    fetch(`/api/simulation/runway/${runwayId}/status?status=${newStatus}`, { method: 'POST' })
+        .then(response => {
+            if(!response.ok) console.error('Failed to change runway status');
+        });
+}
+
+function changeAircraftEmergency(callsign, newStatus) {
+    fetch(`/api/simulation/aircraft/${callsign}/emergency?status=${newStatus}`, { method: 'POST' })
+        .then(response => {
+            if(!response.ok) console.error('Failed to change aircraft emergency status');
+        });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

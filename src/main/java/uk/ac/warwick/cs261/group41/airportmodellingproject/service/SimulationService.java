@@ -6,6 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.SimulationMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.utility.JsonFileHandler;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -198,6 +201,41 @@ public class SimulationService {
                 log.info("Simulation ended via fast-forward.");
             }
         });
+    }
+
+
+    public void manualRunwayModeChange(int runwayId, String mode) {
+        if (this.engine != null && !isFinished && !isAborted) {
+            try {
+                // Try to match enum with the passed value as best as possible
+                RunwayMode parsedMode = RunwayMode.valueOf(mode.trim().toUpperCase());
+                this.engine.triggerRunwayEvent(runwayId, null, parsedMode);
+            } catch (IllegalArgumentException e) { // Unlikely to happen, but a log will be made if an incorrect enum is sent
+                log.error("Received invalid runway mode from UI: {}", mode);
+            }
+        }
+    }
+
+    public void manualRunwayStatusChange(int runwayId, String status) {
+        if (this.engine != null && !isFinished && !isAborted) {
+            try {
+                RunwayStatus parsedStatus = RunwayStatus.valueOf(status.trim().toUpperCase());
+                this.engine.triggerRunwayEvent(runwayId, parsedStatus, null);
+            } catch (IllegalArgumentException e) {
+                log.error("Received invalid runway status from UI: {}", status);
+            }
+        }
+    }
+
+    public void manualAircraftEmergencyChange(String callsign, String status) {
+        if (this.engine != null && !isFinished && !isAborted) {
+            try {
+                EmergencyStatus parsedStatus = EmergencyStatus.valueOf(status.trim().toUpperCase());
+                this.engine.triggerAircraftEmergency(callsign, parsedStatus);
+            } catch (IllegalArgumentException e) {
+                log.error("Received invalid emergency status from UI: {}", status);
+            }
+        }
     }
 
     // This function will HARD stop the simulation (when user presses the "stop simulation" button)

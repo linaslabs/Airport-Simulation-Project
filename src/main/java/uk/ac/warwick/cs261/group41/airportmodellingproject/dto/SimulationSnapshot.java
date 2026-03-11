@@ -11,6 +11,7 @@ public class SimulationSnapshot {
     private final int maxWaitTime;
     private final int maxTakeOffDelay;
     private final double avgTakeOffDelay;
+    private final int cancellationThreshold;
     private final int maxHoldingSize;
     private final int maxHoldingTime;
     private final int maxArrivalDelay;
@@ -27,8 +28,8 @@ public class SimulationSnapshot {
     private final List<TakeOffAircraftDTO> takeoffAircraft;
 
     public SimulationSnapshot(int currentTick, double progressPercent, double avgHoldingTime, double avgWaitTime, int maxWaitTime,
-                              int maxTakeOffDelay, double avgTakeOffDelay, int maxHoldingSize, int maxHoldingTime, int maxArrivalDelay, double avgArrivalDelay,
-                              int maxTakeOffQueueSize, int holdingPatternSize, int takeoffQueueSize,
+                              int maxTakeOffDelay, double avgTakeOffDelay, int cancellationThreshold, int maxHoldingSize, int maxHoldingTime, int maxArrivalDelay,
+                              double avgArrivalDelay, int maxTakeOffQueueSize, int holdingPatternSize, int takeoffQueueSize,
                               int totalLanded, int totalDeparted, int diversionCount, int cancellationCount,
                               List<RunwayDTO> runways, List<HoldingAircraftDTO> holdingAircraft, List<TakeOffAircraftDTO> takeoffAircraft) {
         this.currentTick = currentTick;
@@ -38,6 +39,7 @@ public class SimulationSnapshot {
         this.maxWaitTime = maxWaitTime;
         this.maxTakeOffDelay = maxTakeOffDelay;
         this.avgTakeOffDelay = avgTakeOffDelay;
+        this.cancellationThreshold = cancellationThreshold;
         this.maxHoldingSize = maxHoldingSize;
         this.maxHoldingTime = maxHoldingTime;
         this.maxArrivalDelay = maxArrivalDelay;
@@ -67,6 +69,8 @@ public class SimulationSnapshot {
     public int getMaxTakeOffDelay() { return maxTakeOffDelay; }
 
     public double getAvgTakeOffDelay() { return avgTakeOffDelay; }
+
+    public int getCancellationThreshold() { return cancellationThreshold; }
 
     public int getMaxHoldingSize() { return maxHoldingSize; }
 

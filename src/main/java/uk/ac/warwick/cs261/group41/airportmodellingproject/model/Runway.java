@@ -1,5 +1,6 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EventSource;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
@@ -14,6 +15,7 @@ public class Runway {
     private Aircraft currentAircraft;
     private FlightType lastAircraftType;
     private int occupiedUntil;
+    private EventSource lockSource = EventSource.NONE; // Runways will be "locked" when non-manual events occur on them, so user cannot disrupt
 
     public Runway(int runwayID, RunwayMode mode, RunwayStatus status) {
         this.runwayID = runwayID;
@@ -106,4 +108,8 @@ public class Runway {
     public void setOccupiedUntil(int occupiedUntil) {
         this.occupiedUntil = occupiedUntil;
     }
+
+    public EventSource getLockSource() { return this.lockSource; }
+
+    public void setLockSource(EventSource lockSource) { this.lockSource = lockSource; }
 }

@@ -4,6 +4,9 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.*;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.*;
 
 
@@ -97,6 +100,20 @@ public class SimulationEngine {
 
     }
 
+    // Triggers manual runway event from the UI
+    public void triggerRunwayEvent(int runwayID, RunwayStatus status, RunwayMode mode) {
+        if (this.eventManager != null) {
+            this.eventManager.triggerRunwayEvent(runwayID, status, mode, this.currentTick, -1, false, true);
+        }
+    }
+
+    // Triggers a manual aircraft emergency from the UI
+    public void triggerAircraftEmergency(String callsign, EmergencyStatus status) {
+        if (this.eventManager != null) {
+            this.eventManager.triggerAircraftEmergency(callsign, status, this.currentTick, false);
+        }
+    }
+
     public SimulationProgress getSimulationProgress() {
         return new SimulationProgress(this.currentTick, (double) this.currentTick / this.durationTicks);
     }
@@ -105,7 +122,7 @@ public class SimulationEngine {
         // Get all holding aircraft
         List<HoldingAircraftDTO> holdingDTOs = new ArrayList<>();
         for (Aircraft aircraft : airport.getHoldingPattern().getAircraftInQueue()) {
-            holdingDTOs.add(new HoldingAircraftDTO(aircraft.getCallsign(), aircraft.getFuel(), aircraft.getStatus()));
+            holdingDTOs.add(new HoldingAircraftDTO(aircraft.getCallsign(), aircraft.getFuel(), aircraft.getStatus(), aircraft.getEmergencySource()));
         }
 
         // Get all take off aircraft
@@ -118,7 +135,7 @@ public class SimulationEngine {
         List<RunwayDTO> runwayDTOs = new ArrayList<>();
         for (Runway runway : airport.getRunways()) {
             String callsign = (runway.getCurrentAircraft() != null) ? runway.getCurrentAircraft().getCallsign() : null;
-            runwayDTOs.add(new RunwayDTO(runway.getRunwayID(), runway.getStatus(), runway.getMode(), callsign, runway.getOccupiedUntil()));
+            runwayDTOs.add(new RunwayDTO(runway.getRunwayID(), runway.getStatus(), runway.getMode(), callsign, runway.getOccupiedUntil(), runway.getLockSource()));
         }
 
         // Calculate progress as a double
@@ -133,6 +150,7 @@ public class SimulationEngine {
                 stats.getMaxWaitTime(),
                 stats.getMaxTakeOffDelay(),
                 stats.getRollingAvgTakeOffDelay(),
+                config.getMaxWaitTime(),
                 stats.getMaxHoldingSize(),
                 stats.getMaxHoldingTime(),
                 stats.getMaxArrivalDelay(),

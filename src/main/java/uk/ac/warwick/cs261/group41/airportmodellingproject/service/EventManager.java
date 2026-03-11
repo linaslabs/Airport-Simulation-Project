@@ -6,6 +6,7 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.AircraftEvent;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayEvent;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.*;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Aircraft;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Airport;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Runway;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
@@ -77,22 +78,18 @@ public class EventManager {
         }
     }
 
-
-    // Triggers the runway event from either the user or the schedule, if it's the user, duration is infinite (-1), if duration is 0, it is a reversion, otherwise it's a scheduled event
+    // Triggers and logs a runway event, events can be scheduled, random or manual
     // If a duration is set, then the reverse of that change is scheduled for the future at the end of the duration
-    // Updates the runway and logs the event as a runway event
-
-    public void triggerRunwayEvent(int runwayID, RunwayStatus status,  RunwayMode mode, int currentTick, int duration, boolean isNaturalEvent) {
-        // If duration is > 0, this is a scheduled event, set another scheduled event in the future to reverse the changes
-        // NOTE: this will currently override any user set runway events for that runway when a reversion happens
+    public void triggerRunwayEvent(int runwayID, RunwayStatus status,  RunwayMode mode, int currentTick, int duration, boolean isRandomEvent, boolean isManual) {
 
         // Because the "No Change" option in the menu sets status or mode to null in the event, when we log this event we must replace this null with the current status/mode.
         RunwayConfig runway = airport.getRunwaySnapshot(runwayID);
         RunwayStatus nonNullStatus = (status != null) ? status : runway.getStatus();
         RunwayMode nonNullMode = (mode != null) ? mode : runway.getMode();
 
-        log.info("[TICK {}] [RUNWAY] ID: {} | Status: {} | Mode: {} | Duration: {} | Natural: {}", currentTick, runwayID, nonNullStatus, nonNullMode, duration, isNaturalEvent);
+        log.info("[TICK {}] [RUNWAY] ID: {} | Status: {} | Mode: {} | Duration: {} | Random: {}", currentTick, runwayID, nonNullStatus, nonNullMode, duration, isRandomEvent);
 
+        // Create a reversion if duration is set
         if (duration > 0){
             RunwayConfig runwayPrevSnapshot = this.airport.getRunwaySnapshot(runwayID);
 
@@ -105,36 +102,57 @@ public class EventManager {
             addScheduledRunwayEvent(reversionEvent);
         }
 
-        this.airport.updateRunway(runwayID, status, mode);
+        // The event is a reversion if it isn't a random event, isn't manual and the duration is 0
+        boolean isReversion = (!isRandomEvent && !isManual && duration == 0);
 
-        // If the event is a natural event, its event type being logged is as a natural (random) closure, else, we determine the event type by the duration
-        // If the duration is less than 0, then we know it's a manual change by the user, if it's a scheduled change (since it wasn't a natural event to begin with)
-        // If the duration is therefore equal to 0, we know it's a reversion
-        this.logger.addEvent(new RunwayEvent(currentTick, runwayID, nonNullStatus, nonNullMode,
-                isNaturalEvent ? RunwayEventType.RANDOMLY_GENERATED_CLOSURE : (duration < 0) ? RunwayEventType.MANUAL_CHANGE :
-                        (duration > 0) ? RunwayEventType.SCHEDULED_CHANGE : RunwayEventType.REVERSION, duration));
+        // Both the source (for the lock) and the type (for the log) are declared initially
+        EventSource source;
+        RunwayEventType eventType;
+
+        if (isRandomEvent) {
+            source = EventSource.RANDOM;
+            eventType = RunwayEventType.RANDOMLY_GENERATED_CLOSURE;
+        } else if (isManual) {
+            source = EventSource.MANUAL;
+            eventType = RunwayEventType.MANUAL_CHANGE;
+        } else if (isReversion) {
+            source = EventSource.NONE;
+            eventType = RunwayEventType.REVERSION;
+        } else {
+            source = EventSource.SCHEDULED;
+            eventType = RunwayEventType.SCHEDULED_CHANGE;
+        }
+
+        this.airport.updateRunway(runwayID, status, mode, source);
+
+        this.logger.addEvent(new RunwayEvent(currentTick, runwayID, nonNullStatus, nonNullMode, eventType, duration));
     }
 
 
     // Generates the random aircraft emergencies and the random runway status changes for statistical modelling based on the configured rates (only called if the user permits them during the simulation)
     public void generateRandomEventsForTick(int currentTick, double inspectionRate, double snowRate, double failureRate, double mechanicalRate, double healthRate) {
 
-        // --- Generating AIRCRAFT EMERGENCIES ---
-        // Assuming that the rates are per hour, so need to convert to per tick equivalents
-        double tickMechanicalRate = mechanicalRate / 60;
-        double tickHealthRate = healthRate / 60;
+        // --- Generating AIRCRAFT EMERGENCIES
+        List<Aircraft> holdingAircraft = this.airport.getHoldingPattern().getAircraftInQueue();
 
-        double emergencyRoll = this.random.nextDouble();
+        // Roll the rate per aircraft in the holding pattern
+        for (Aircraft aircraft : holdingAircraft) {
+            if (aircraft.getStatus() == EmergencyStatus.NONE){
+                double emergencyRoll = this.random.nextDouble();
 
-        if (emergencyRoll < tickMechanicalRate) {
-            log.info("[TICK {}] [RANDOM] Rolled Aircraft Emergency: MECHANICAL", currentTick);
-            triggerAircraftEmergency(null, EmergencyStatus.MECHANICAL, currentTick, true);
-        } else if (emergencyRoll < (tickMechanicalRate + tickHealthRate)) {
-            log.info("[TICK {}] [RANDOM] Rolled Aircraft Emergency: PASSENGER", currentTick);
-            triggerAircraftEmergency(null, EmergencyStatus.PASSENGER, currentTick, true);
+                if (emergencyRoll < mechanicalRate) {
+                    log.info("[TICK {}] [RANDOM] Rolled Aircraft Emergency: MECHANICAL", currentTick);
+                    triggerAircraftEmergency(aircraft.getCallsign(), EmergencyStatus.MECHANICAL, currentTick, true);
+                } else if (emergencyRoll < (mechanicalRate + healthRate)) {
+                    System.out.println("EMERGENCY RANDOM");
+                    log.info("[TICK {}] [RANDOM] Rolled Aircraft Emergency: PASSENGER", currentTick);
+                    triggerAircraftEmergency(aircraft.getCallsign(), EmergencyStatus.PASSENGER, currentTick, true);
+                }
+            }
         }
 
-        // --- Generating RUNWAY CLOSURES ---
+
+        // --- Generating RUNWAY CLOSURES
         double tickInspectionRate =  inspectionRate / 60;
         double tickSnowRate =  snowRate / 60;
         double tickFailureRate = failureRate / 60;
@@ -172,7 +190,7 @@ public class EventManager {
                     }
 
                     // Trigger the event
-                    triggerRunwayEvent(runway.getRunwayID(),  newRunwayStatus, runway.getMode(), currentTick, duration, true);
+                    triggerRunwayEvent(runway.getRunwayID(),  newRunwayStatus, runway.getMode(), currentTick, duration, true, false);
                 }
             }
         }
@@ -212,34 +230,41 @@ public class EventManager {
         }
     }
 
-    // Triggers an aircraft emergency from either the user or the schedule, if it's the user, callsign is present, otherwise callsign is null and a random is chosen
-    // Updates the aircraft status and logs the event respective to whether it was a scheduled emergency or a manual one
+    // Triggers and logs an aircraft emergency event, events can be scheduled, random or manual
+    public void triggerAircraftEmergency(String callsign, EmergencyStatus status, int currentTick, boolean isRandomEvent){
 
-    public void triggerAircraftEmergency(String callsign, EmergencyStatus status, int currentTick, boolean isNaturalEvent){
-
-        log.info("[TICK {}] [AIRCRAFT] Triggering {} Emergency: {}", currentTick, (isNaturalEvent ? "NATURAL" : "SCHEDULED/MANUAL"), status);
+        log.info("[TICK {}] [AIRCRAFT] Triggering {} Emergency: {}", currentTick, (isRandomEvent ? "RANDOM" : "SCHEDULED/MANUAL"), status);
 
         if (callsign == null){
+            // If callsign is null, then the ONLY option is that this was a scheduled emergency (so we need to randomly pick an aircraft)
             String randomCallsign = this.airport.getRandomHoldingAircraft(this.random);
-            // If there is no current aircraft in the holding queue, there are no aircraft to set emergencies to
+
             if (randomCallsign != null) {
                 log.info("            -> Random callsign selected: {}", randomCallsign);
-                this.airport.updateAircraftStatus(randomCallsign, status);
-                this.logger.addEvent(new AircraftEvent(currentTick, randomCallsign, isNaturalEvent ? AircraftEventType.RANDOMLY_GENERATED_EMERGENCY : AircraftEventType.SCHEDULED_EMERGENCY, status));
+                this.airport.updateAircraftStatus(randomCallsign, status, EventSource.SCHEDULED);
+                this.logger.addEvent(new AircraftEvent(currentTick, randomCallsign, AircraftEventType.SCHEDULED_EMERGENCY, status));
             } else {
-                String emergencyType = isNaturalEvent ? "Natural" : "Scheduled";
-                log.info("            -> WARNING: {} emergency skipped (holding pattern is empty).", emergencyType);
+                log.info("            -> WARNING: scheduled emergency skipped (holding pattern is empty).");
             }
         } else {
+            // Callsign is not null, so could be an emergency on a chosen aircraft (each aircraft has a chance of an emergency per tick), or a manual emergency
             log.info("            -> Applying to specific callsign: {}", callsign);
-            this.airport.updateAircraftStatus(callsign, status);
-            this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.MANUAL_EMERGENCY, status));
+            if (isRandomEvent) {
+                // Random emergency on a chosen aircraft in holding pattern
+                this.airport.updateAircraftStatus(callsign, status, EventSource.RANDOM);
+                this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.RANDOMLY_GENERATED_EMERGENCY, status));
+            } else {
+                // Manual emergency from UI
+                this.airport.updateAircraftStatus(callsign, status, EventSource.MANUAL);
+                this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.MANUAL_EMERGENCY, status));
+            }
         }
     }
 
+    // Used only when holding pattern triggers an emergency because of fuel
     public void reportAircraftEmergency(String callsign, EmergencyStatus status, int currentTick){
         log.info("[TICK {}] [REPORT] Escalating Natural Emergency for {} (Status: {})", currentTick, callsign, status);
-        this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.RANDOMLY_GENERATED_EMERGENCY, status));
+        this.logger.addEvent(new AircraftEvent(currentTick, callsign, AircraftEventType.NATURAL_FUEL_EMERGENCY, status)); // Added new enum for better differentiation
     }
 
     public void reportDiversion(String callsign, int currentTick){
@@ -260,7 +285,8 @@ public class EventManager {
         if (runwayEvents != null && !runwayEvents.isEmpty()) {
             log.info("[TICK {}] [SCHEDULE] Processing {} scheduled Runway Event(s).", currentTick, runwayEvents.size());
             for (RunwayEvent runwayEvent : runwayEvents) {
-                triggerRunwayEvent(runwayEvent.getRunwayID(), runwayEvent.getRunwayStatus(), runwayEvent.getRunwayMode(), currentTick, runwayEvent.getDuration(), false);
+                log.info("            -> Processing {} event", runwayEvent.getType() == RunwayEventType.REVERSION ? "REVERSION" : "SCHEDULED");
+                triggerRunwayEvent(runwayEvent.getRunwayID(), runwayEvent.getRunwayStatus(), runwayEvent.getRunwayMode(), currentTick, runwayEvent.getDuration(), false, false);
             }
         }
 
