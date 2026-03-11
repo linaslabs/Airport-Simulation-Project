@@ -1,10 +1,7 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.*;
@@ -213,7 +210,7 @@ public class Airport {
     // Changes the given runway's status or mode.
     // Throws exception if runwayID doesn't exist in runways Map.
     // Only changes status or mode if these parameters are not null in the function call.
-    public void updateRunway(int runwayID, RunwayStatus status, RunwayMode mode) {
+    public void updateRunway(int runwayID, RunwayStatus status, RunwayMode mode, EventSource lockSource) {
         Runway runway = runways.get(runwayID);
         if (runway != null) {
             if (status != null) {
@@ -222,14 +219,17 @@ public class Airport {
             if (mode != null) {
                 runway.setMode(mode);
             }
+
+            // Set the locked state of the runway (if it is having an event performed on it, lock it so the user can't change it)
+            runway.setLockSource(lockSource);
         }
         else {
             throw new IllegalArgumentException("Unknown runwayID: " + runwayID);
         }
     }
 
-    public void updateAircraftStatus(String callsign, EmergencyStatus status) {
-        holdingPattern.updateAircraftStatus(callsign, status);
+    public void updateAircraftStatus(String callsign, EmergencyStatus status, EventSource emergencySource) {
+        holdingPattern.updateAircraftStatus(callsign, status, emergencySource);
     }
 
     public String getRandomHoldingAircraft(Random random) {

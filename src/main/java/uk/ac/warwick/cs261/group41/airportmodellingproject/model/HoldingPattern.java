@@ -2,6 +2,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EventSource;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.*;
@@ -66,16 +67,16 @@ public class HoldingPattern implements AircraftQueue{
                 iterator.remove();
                 // Report diversion to the event manager
                 eventManager.reportDiversion(aircraft.getCallsign(), currentTick);
-            } else if (aircraft.getFuel() <= emergencyFuelLevel && aircraft.getStatus() != EmergencyStatus.FUEL) {
-                // Add this aircraft to the list of fuel emergencies to reprioritise later
+            } else if (aircraft.getFuel() <= emergencyFuelLevel && aircraft.getStatus() == EmergencyStatus.NONE) {
+                // Add this aircraft to the list of fuel emergencies to reprioritise later (only if it doesn't already have an emergency)
                 newFuelEmergencies.add(aircraft.getCallsign());
             }
 
         }
 
-        // Remove and reinsert the planes after the first iterator has finished (updateAircraftStatus also uses an iterator on the same queue)
+        // Remove and reinsert the planes after the first iterator has finished
         for (String callsign : newFuelEmergencies) {
-            updateAircraftStatus(callsign, EmergencyStatus.FUEL);
+            updateAircraftStatus(callsign, EmergencyStatus.FUEL, EventSource.NONE);
             this.eventManager.reportAircraftEmergency(callsign, EmergencyStatus.FUEL, currentTick);
         }
 
@@ -102,7 +103,7 @@ public class HoldingPattern implements AircraftQueue{
 
     // Note to maintain the order in the priority queue, when we want to change the status of an aircraft,
     // we must remove it, make changes, then reinsert it, so it is ordered into the correct place.
-    public void updateAircraftStatus(String callsign, EmergencyStatus newStatus) {
+    public void updateAircraftStatus(String callsign, EmergencyStatus newStatus, EventSource emergencySource) {
         Aircraft foundAircraft = null;
 
         // Perform a linear search to find the aircraft.
@@ -119,6 +120,7 @@ public class HoldingPattern implements AircraftQueue{
         // Change status of aircraft and reinsert.
         if (foundAircraft != null) {
             foundAircraft.setStatus(newStatus);
+            foundAircraft.setEmergencySource(emergencySource); // Set event source of this status change
             queue.add(foundAircraft);
 
             // Queue order likely changed so update altitudes again.
@@ -164,5 +166,15 @@ public class HoldingPattern implements AircraftQueue{
         this.eventManager = eventManager;
     }
 
-    public List<Aircraft> getAircraftInQueue() { return new ArrayList<>(this.queue); }
+    public List<Aircraft> getAircraftInQueue() {
+        // extract elements using poll() to guarantee priority order (basically pops from the top)
+        List<Aircraft> sortedAircraft = new ArrayList<>();
+        PriorityQueue<Aircraft> queueCopy = new PriorityQueue<>(this.queue);
+
+        while (!queueCopy.isEmpty()) {
+            sortedAircraft.add(queueCopy.poll());
+        }
+
+        return sortedAircraft;
+    }
 }

@@ -62,7 +62,17 @@
                         </div>
 
                         <div class="comparison-section flex-grow-1 d-flex flex-column" style="margin-top: 1px;">
-                            <h3>ACTIVE RUNWAYS</h3>
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                                ACTIVE RUNWAYS
+                                <div class="event-legend">
+                                    <div class="legend-item">
+                                        <div class="legend-box scheduled"></div> Scheduled Event
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-box random"></div> Random Event
+                                    </div>
+                                </div>
+                            </h3>
                             <div class="runways-container">
                                 <table class="events-table m-0 w-100">
                                     <thead>
@@ -71,10 +81,11 @@
                                         <th>Mode</th>
                                         <th>Status</th>
                                         <th>Aircraft</th>
+                                        <th>Occupied Until (mins)</th>
                                     </tr>
                                     </thead>
                                     <tbody id="runway-table-body">
-                                    <tr><td colspan="4" style="color: #888;">Waiting for data...</td></tr>
+                                    <tr><td colspan="5" style="color: #888;">Waiting for data...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -85,19 +96,35 @@
                     <div class="comparison-column d-flex flex-column progress-column">
 
                         <div class="comparison-section d-flex flex-column half-section">
-                            <h3>HOLDING PATTERN <span style="float: right; font-size: 0.9rem; font-weight: normal;">Waiting: <span id="holding-count">0</span></span></h3>
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                                HOLDING PATTERN
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div class="event-legend">
+                                        <div class="legend-item">
+                                            <div class="legend-box scheduled"></div> Scheduled Event
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-box random"></div> Random Event
+                                        </div>
+                                    </div>
+                                    <span style="font-size: 0.9rem; font-weight: normal; color: #0f172a;">
+                                        Waiting: <span id="holding-count" style="font-weight: bold;">0</span>
+                                    </span>
+                                </div>
+                            </h3>
 
                             <div class="scrollable-table-box flex-grow-1 flex-table-container">
                                 <table class="events-table m-0 w-100">
                                     <thead>
                                     <tr>
                                         <th>Callsign</th>
+                                        <th>Altitude</th>
                                         <th>Fuel (mins)</th>
                                         <th>Status</th>
                                     </tr>
                                     </thead>
                                     <tbody id="holding-table-body">
-                                    <tr><td colspan="3" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
+                                    <tr><td colspan="4" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -111,12 +138,13 @@
                                     <thead>
                                     <tr>
                                         <th>Callsign</th>
-                                        <th>Entry Time</th>
+                                        <th>Entry Time (mins)</th>
+                                        <th>Wait Time (mins)</th>
                                         <th>State</th>
                                     </tr>
                                     </thead>
                                     <tbody id="takeoff-table-body">
-                                    <tr><td colspan="3" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
+                                    <tr><td colspan="4" style="color: #888; padding: 20px;">Waiting for data...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -136,7 +164,7 @@
                         </div>
 
                         <div style="color: #64748b; font-size: 0.95rem; min-width: 160px; text-align: right;">
-                            Tick: <strong id="tickCount" style="color: #0f172a;">0</strong> | Elapsed: <strong id="elapsedTime" style="color: #0f172a;">0s</strong>
+                            Time: <strong id="tickCount" style="color: #0f172a;">0</strong> | Elapsed: <strong id="elapsedTime" style="color: #0f172a;">0s</strong>
                         </div>
                     </div>
 

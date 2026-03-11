@@ -2,6 +2,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EventSource;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 
 public class Aircraft implements Comparable<Aircraft> {
@@ -13,6 +14,7 @@ public class Aircraft implements Comparable<Aircraft> {
     private final int scheduledTick;
     private final int entryTick;
     private final FlightType flightType;
+    private EventSource emergencySource = EventSource.NONE;
 
     private EmergencyStatus status; // Currently, this is set to None by default, it will be changed and added to constructor in future when we add Events.
 
@@ -116,6 +118,10 @@ public class Aircraft implements Comparable<Aircraft> {
     public void setState(AircraftState state) {
         this.state = state;
     }
+
+    public EventSource getEmergencySource() { return this.emergencySource; }
+
+    public void setEmergencySource(EventSource emergencySource) { this.emergencySource = emergencySource; }
 
     // This is what the HoldingPattern uses to decide who lands first.
     // Returns -1 if the current aircraft should come before the other aircraft.
