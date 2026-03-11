@@ -96,12 +96,6 @@ public class SimulationService {
             fastForwardToEnd();
             return;
         }
-        else if (engine.getConfig().getSimulationMode() == SimulationMode.TABLE_VIEW) {
-            System.out.println("Add function to tell the frontend to show the table view.");
-        }
-        else if (engine.getConfig().getSimulationMode() == SimulationMode.GRAPHICAL_VIEW) {
-            System.out.println("Add function to tell the frontend to show the graphical view.");
-        }
 
         // Schedule the runTick method (which will call performTick) to execute at the currentTickDelay rate
         simulationTask = executor.scheduleWithFixedDelay(
