@@ -80,7 +80,7 @@ public class EventManager {
 
     // Triggers and logs a runway event, events can be scheduled, random or manual
     // If a duration is set, then the reverse of that change is scheduled for the future at the end of the duration
-    public void triggerRunwayEvent(int runwayID, RunwayStatus status,  RunwayMode mode, int currentTick, int duration, boolean isRandomEvent, boolean isManual) {
+    public synchronized void triggerRunwayEvent(int runwayID, RunwayStatus status,  RunwayMode mode, int currentTick, int duration, boolean isRandomEvent, boolean isManual) {
 
         // Because the "No Change" option in the menu sets status or mode to null in the event, when we log this event we must replace this null with the current status/mode.
         RunwayConfig runway = airport.getRunwaySnapshot(runwayID);
@@ -144,7 +144,6 @@ public class EventManager {
                     log.info("[TICK {}] [RANDOM] Rolled Aircraft Emergency: MECHANICAL", currentTick);
                     triggerAircraftEmergency(aircraft.getCallsign(), EmergencyStatus.MECHANICAL, currentTick, true);
                 } else if (emergencyRoll < (mechanicalRate + healthRate)) {
-                    System.out.println("EMERGENCY RANDOM");
                     log.info("[TICK {}] [RANDOM] Rolled Aircraft Emergency: PASSENGER", currentTick);
                     triggerAircraftEmergency(aircraft.getCallsign(), EmergencyStatus.PASSENGER, currentTick, true);
                 }
@@ -153,10 +152,6 @@ public class EventManager {
 
 
         // --- Generating RUNWAY CLOSURES
-        double tickInspectionRate =  inspectionRate / 60;
-        double tickSnowRate =  snowRate / 60;
-        double tickFailureRate = failureRate / 60;
-
         Collection<Runway> runways = this.airport.getRunways();
 
         for (Runway runway : runways) {
@@ -165,11 +160,11 @@ public class EventManager {
                 double runwayRoll = this.random.nextDouble();
                 RunwayStatus newRunwayStatus = null;
 
-                if (runwayRoll < tickInspectionRate) {
+                if (runwayRoll < inspectionRate) {
                     newRunwayStatus = RunwayStatus.INSPECTION;
-                } else if (runwayRoll < (tickInspectionRate + tickSnowRate)) {
+                } else if (runwayRoll < (inspectionRate + snowRate)) {
                     newRunwayStatus = RunwayStatus.SNOW_CLEARANCE;
-                } else if (runwayRoll < (tickInspectionRate + tickSnowRate + tickFailureRate)) {
+                } else if (runwayRoll < (inspectionRate + snowRate + failureRate)) {
                     newRunwayStatus = RunwayStatus.EQUIPMENT_FAILURE;
                 }
 
@@ -231,7 +226,7 @@ public class EventManager {
     }
 
     // Triggers and logs an aircraft emergency event, events can be scheduled, random or manual
-    public void triggerAircraftEmergency(String callsign, EmergencyStatus status, int currentTick, boolean isRandomEvent){
+    public synchronized void triggerAircraftEmergency(String callsign, EmergencyStatus status, int currentTick, boolean isRandomEvent){
 
         log.info("[TICK {}] [AIRCRAFT] Triggering {} Emergency: {}", currentTick, (isRandomEvent ? "RANDOM" : "SCHEDULED/MANUAL"), status);
 

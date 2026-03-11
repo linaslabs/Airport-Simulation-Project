@@ -130,8 +130,10 @@ function updateHoldingTable(aircraftList) {
             } else if (aircraft.emergencySource === 'RANDOM') {
                 lockClass = 'lock-random';
                 disableAttribute = 'disabled title="Random natural emergency"';
-            } else {
+            } else if (aircraft.emergencySource === 'MANUAL') {
                 disableAttribute = 'disabled title="Manually triggered emergency"';
+            } else {
+                disableAttribute = 'disabled title="Natural triggered emergency"';
             }
         }
 
