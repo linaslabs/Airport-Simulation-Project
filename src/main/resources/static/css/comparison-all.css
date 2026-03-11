@@ -25,6 +25,10 @@ body {
     padding: 0 6vw;
 }
 
+.compare-all-centre-padding {
+    padding: 30px 0;
+}
+
 .compare-all-centre {
     width: min(1840px, 100%);
     margin: 0 auto;
