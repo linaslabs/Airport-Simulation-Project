@@ -187,8 +187,8 @@ function updateTakeoffTable(aircraftList, currentTick, cancellationThreshold) {
 
         row.innerHTML = `
             <td class="text-bold-dark">${aircraft.callsign}</td>
-            <td><div class="table-val-box text-bold-slate">Tick ${aircraft.entryTick}</div></td>
-            <td><div class="table-val-box text-bold-slate">${waitTime} mins</div></td>
+            <td><div class="table-val-box text-bold-slate">${aircraft.entryTick}</div></td>
+            <td><div class="table-val-box text-bold-slate">${waitTime}</div></td>
             <td><div class="table-val-box ${stateClass}">${displayState}</div></td>
         `;
         tbody.appendChild(row);
@@ -211,7 +211,7 @@ function updateRunwayTable(runways, currentTick) {
 
             const aircraftText = isOccupied ? runway.aircraftCallsign : '-';
             const aircraftClass = isOccupied ? 'text-bold-blue' : 'text-bold-muted';
-            const occupiedText = isOccupied && runway.occupiedUntil > currentTick ? `Tick ${runway.occupiedUntil}` : '-';
+            const occupiedText = isOccupied && runway.occupiedUntil > currentTick ? `${runway.occupiedUntil}` : '-';
 
             let lockClass = '';
             let lockAttribute = '';

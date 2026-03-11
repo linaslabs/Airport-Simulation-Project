@@ -21,15 +21,17 @@ body {
     display: flex;
     flex-direction: column;
     margin: 0;
+    background-color: #f4f7fb
 }
 
 .progress-wrap {
     height: calc(100vh - 79px);
+    min-height: 750px;
     display: flex;
     flex-direction: column;
-    padding: 15px 6vw !important;
+    padding: 20px 2vw !important;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .progress-centre,
@@ -39,6 +41,7 @@ body {
     min-height: 0;
     display: flex;
     flex-direction: column;
+    justify-content: center;
 }
 
 .sim-card {
@@ -46,6 +49,9 @@ body {
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.05) !important;
     overflow: hidden;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* Column Split */
