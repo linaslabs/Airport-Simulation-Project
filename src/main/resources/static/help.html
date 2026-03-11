@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Help - Airport Simulation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/help.css">
+</head>
+<body>
+
+<div class="container-fluid d-flex align-items-center justify-content-between shadow-sm sticky-top"
+     style="min-height: 79px; padding: 0 60px; background: rgba(15,23,42,.80); backdrop-filter: blur(10px); z-index: 50;">
+
+    <a href="index.html" class="btn text-white fw-bold rounded-2"
+       style="padding: 8px 16px; border: 1px solid rgba(255, 255, 255, 0.25); background-color: transparent;">
+        Home
+    </a>
+
+    <div class="position-absolute start-50 translate-middle-x">
+        <span class="text-white fw-bold" style="font-size: 2.5rem; letter-spacing: 2px; white-space: nowrap;">
+            User Guide
+        </span>
+    </div>
+</div>
+
+<div class="wrap">
+    <div class="panel">
+        <div class="panel-title">Getting Started</div>
+        <div class="prose">
+            <p>The Airport Simulation lets you model how an airport handles aircraft traffic under different conditions. The basic workflow is:</p>
+        </div>
+        <div style="margin-top: 20px;">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Configure your simulation</h3>
+                    <p>Set your input parameters, configure your runways, and optionally schedule specific events. You can also load a previously saved configuration using <strong>Load Config</strong>.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Choose a simulation mode</h3>
+                    <p>Select how you want to view the simulation — Quick Sim for instant results, Table View for a live data feed, or Graphical View for an animated display.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Start the simulation</h3>
+                    <p>Click <strong>Start Simulation</strong>. Your configuration will be validated first — any issues will be highlighted before the simulation runs.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-content">
+                    <h3>Review the results</h3>
+                    <p>Once complete, view throughput, delay times, cancellations and more. Save your results to compare with future runs using the Comparison Menu.</p>
+                </div>
+            </div>
+        </div>
+        <div class="info-box">
+            💡 Use <strong>Save Config</strong> to store a configuration you want to reuse. Saved configurations can be loaded at any time from the Load Config menu.
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">Configuration Page</div>
+        <div class="prose">
+            <p>The configuration page is divided into three sections: Input Parameters, Runways, and Scheduled Events.</p>
+        </div>
+
+        <h3 style="font-size:1rem; font-weight:800; margin: 20px 0 12px;">Input Parameters</h3>
+        <table class="param-table">
+            <thead>
+            <tr>
+                <th style="width: 220px;">Parameter</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><div class="param-name">Number of Runways</div><div class="param-range">Range: 1 – 10</div></td>
+                <td>How many runways are active. Use the – and + buttons to adjust. Start with fewer runways and add more to see how throughput scales.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Inbound Rate /hr</div><div class="param-range">Range: 0 – 100</div></td>
+                <td>Average number of aircraft arriving per hour. Aircraft arrive around their scheduled time with some random variation.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Outbound Rate /hr</div><div class="param-range">Range: 0 – 100</div></td>
+                <td>Average number of aircraft departing per hour.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Simulation Duration (mins)</div><div class="param-range">Range: 60 – 1440</div></td>
+                <td>How long the simulation runs in simulated minutes. 1440 minutes = one full day.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Max Wait Time (mins)</div><div class="param-range">Range: 0 – 60</div></td>
+                <td>The maximum time a departure can wait in the take-off queue before being cancelled. Only applies to departures — arrivals are only diverted due to fuel or health emergencies.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Simulation Seed</div><div class="param-range">Range: 0 – 10^8</div></td>
+                <td>Controls the random number generator. Using the same seed with the same configuration produces identical results. Click <strong>Generate</strong> for a random seed.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Enable Random Events</div></td>
+                <td>When ticked, the simulation randomly generates unplanned runway issues. <strong>Note:</strong> Clicking the <strong>Reset</strong> button at the bottom of the page will revert all parameters to their default values and disable random events.</td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="param-name">Random Event Rates</div>
+                    <div class="param-range">Range: 0.00 – 0.10</div>
+                </td>
+                <td>
+                    Controls the probability of unplanned emergencies and closures occurring each simulated minute (tick).
+                    <br><br>
+                    <strong>Aircraft rates</strong> (Mechanical, Health) are rolled individually for <em>each aircraft</em> currently in the holding pattern.
+                    <strong>Runway rates</strong> (Inspection, Snow, Equipment) are rolled individually for <em>each active runway</em>.
+                    <br><br>
+                    <em>Example: A rate of 0.10 means each individual aircraft/runway has a 10% chance of experiencing that event every single minute.</em>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size:1rem; font-weight:800; margin: 24px 0 12px;">Runways</h3>
+        <div class="prose">
+            <p>Each runway can be individually configured with a starting status and operational mode before the simulation begins.</p>
+        </div>
+        <table class="param-table" style="margin-top: 12px;">
+            <thead>
+            <tr>
+                <th style="width: 140px;">Setting</th>
+                <th>Options</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><div class="param-name">Status</div></td>
+                <td>
+                    <strong>Available:</strong> Open and operational.<br><br>
+                    <strong>Runway Inspection:</strong> Temporarily closed for inspection.<br><br>
+                    <strong>Snow Clearance:</strong> Closed for snow removal.<br><br>
+                    <strong>Equipment Failure:</strong> Closed due to equipment failure.<br><br>
+                    <strong>No Change:</strong> Leaves the status as-is. <em>Tip: Schedule a "No Change" event to lock a runway and prevent random events from occurring on it during that time.</em>
+                </td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Mode</div></td>
+                <td>
+                    <span class="badge-custom" style="background: #0dcaf0; color: #000;">Mixed</span> Handles both arrivals and departures.<br><br>
+                    <span class="badge-custom" style="background: #0dcaf0; color: #000;">Landing</span> Arrivals only.<br><br>
+                    <span class="badge-custom" style="background: #0dcaf0; color: #000;">Take-Off</span> Departures only.<br><br>
+                    <strong>No Change:</strong> Leaves the operational mode as-is.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size:1rem; font-weight:800; margin: 24px 0 12px;">Scheduled Events</h3>
+        <div class="prose">
+            <p>Scheduled events let you plan specific incidents at precise times during the simulation. Add an event by filling in the New Event form and clicking <strong>+ Schedule Event</strong>.</p>
+        </div>
+        <table class="param-table" style="margin-top: 12px;">
+            <thead>
+            <tr>
+                <th style="width: 150px;">Field</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><div class="param-name">Type</div></td>
+                <td><strong>Runway</strong> — affects a specific runway's status or mode. <strong>Aircraft</strong> — triggers an emergency for an aircraft in the holding pattern.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Status</div></td>
+                <td>For Runway: Available, Runway Inspection, Snow Clearance, Equipment Failure, or No Change. For Aircraft: Fuel, Mechanical Failure, Passenger Health, or None (operating normally).</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Mode</div></td>
+                <td>Only for Runway events. Sets the runway's operational mode at the event time. Automatically locked to No Change if a closure status is selected.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Location</div></td>
+                <td>Which runway the event applies to (Runway events), or Holding Pattern (Aircraft events).</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Start Time (mins)</div></td>
+                <td>When the event begins, in simulated minutes. Must be before the simulation duration ends.</td>
+            </tr>
+            <tr>
+                <td><div class="param-name">Duration (mins)</div></td>
+                <td>How long the event lasts. Leave blank for indefinite. Aircraft events have are automatically indefinite.</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="info-box">💡 Events on the same runway cannot overlap in time — the system will block conflicting events when you try to add them.</div>
+        <div class="warn-box">⚠️ If you reduce the number of runways after scheduling events, any events on removed runways are flagged in red. Events scheduled at or after the simulation end time are flagged in orange. Both must be resolved before starting or saving.</div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">Simulation Modes</div>
+        <div class="prose">
+            <p>Choose your mode from the dropdown on the configuration page before clicking Start Simulation. Each mode shows the same underlying simulation — the difference is how you observe it.</p>
+        </div>
+        <div class="modes-grid">
+            <div class="mode-card">
+                <div class="mode-card-title">Quick Sim</div>
+                <p>Runs the simulation as fast as possible and jumps straight to the results page when complete. No live view.</p>
+                <div class="mode-card-when">Best for: Quickly comparing different configurations.</div>
+            </div>
+            <div class="mode-card">
+                <div class="mode-card-title">Table View</div>
+                <p>Shows a live real-time table of runway statuses, holding pattern aircraft, and take-off queue as the simulation runs. You can pause, adjust speed, or stop at any time.</p>
+                <div class="mode-card-when">Best for: Monitoring detailed operational data in real time.</div>
+            </div>
+            <div class="mode-card">
+                <div class="mode-card-title">Graphical View</div>
+                <p>Shows an animated visual of aircraft moving through the holding pattern and runways. You can pause, adjust speed, or stop at any time.</p>
+                <div class="mode-card-when">Best for: Presentations and getting an intuitive feel for airport flow.</div>
+            </div>
+        </div>
+        <div class="info-box" style="margin-top: 16px;">
+            💡 If you stop a simulation early in Table View or Graphical View, you will be returned to the configuration page with your previous settings restored.
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">Reading the Results</div>
+        <div class="prose">
+            <p>After a simulation completes, the results page shows a breakdown of how the airport performed. The headline metric is <strong>Throughput</strong> — the total number of aircraft operations (landings + departures) per hour. Higher throughput with lower delays generally indicates a well-configured airport.</p>
+
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-top: 16px; margin-bottom: 8px;">Saving & Comparing Results</h4>
+            <p>If you want to keep a record of a simulation, click <strong>Save Configuration & Data</strong>. Once saved, you can use the comparison tools to analyze different scenarios:</p>
+            <ul style="margin-left: 20px; margin-bottom: 16px; color: #475569; font-size: 0.92rem; line-height: 1.6;">
+                <li><strong>Side-by-Side Comparison:</strong> Accessed via the <strong>Comparison Menu</strong>. This view places two saved runs next to each other so you can directly compare configurations, delay metrics, and event logs. Use the <strong>Switch</strong> button at the top of either column to swap which saved result you are looking at.</li>
+                <li><strong>Compare All:</strong> Provides a broad overview of all your saved simulation results at once, making it easy to spot trends across multiple different configurations.</li>
+            </ul>
+        </div>
+        <div class="metrics-cols">
+            <div>
+                <div class="metrics-group-title">Arrivals</div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Average Hold Time</div>
+                    <div class="metric-item-desc">Average time aircraft spent waiting in the holding pattern before a runway became available.</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Most Planes in Holding Pattern</div>
+                    <div class="metric-item-desc">Peak number of aircraft simultaneously waiting to land. High values suggest runway capacity is a bottleneck.</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Maximum Delay Time</div>
+                    <div class="metric-item-desc">The longest any arrival was delayed past its scheduled landing time.</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Average Delay Time</div>
+                    <div class="metric-item-desc">Mean delay across all arrivals. Aircraft that land early count as 0 delay.</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Number of Diversions</div>
+                    <div class="metric-item-desc">Arrivals diverted to another airport due to a fuel or health emergency while waiting.</div>
+                </div>
+            </div>
+            <div>
+                <div class="metrics-group-title">Departures</div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Average Wait Time</div>
+                    <div class="metric-item-desc">Average time aircraft spent waiting in the take-off queue before being cleared for departure.</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Most Planes in Departure Queue</div>
+                    <div class="metric-item-desc">Peak number of aircraft simultaneously queued for take-off.</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Maximum Delay Time</div>
+                    <div class="metric-item-desc">The longest any departure waited before departing or being cancelled.</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Average Delay Time</div>
+                    <div class="metric-item-desc">Mean delay across all departures.</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-item-name">Number of Cancellations</div>
+                    <div class="metric-item-desc">Departures cancelled because their wait exceeded the Max Wait Time setting.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-item" style="margin-top: 16px; border-bottom: none;">
+            <div class="metrics-group-title" style="border-bottom: none; padding-bottom: 0;">Event Log</div>
+            <div class="metric-item-desc">A chronological record of all randomly generated emergencies, cancellations, and scheduled events that occurred during the simulation run.</div>
+        </div>
+        <div class="info-box" style="margin-top: 20px;">
+            💡 <strong>Wait time vs Delay time:</strong> Wait time is how long an aircraft sat in a queue or holding pattern — always 0 or greater. Delay time measures how late the aircraft was compared to its schedule. A plane can have high wait time but zero delay if it arrived early enough to absorb the wait.
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
