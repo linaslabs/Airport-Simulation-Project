@@ -8,8 +8,6 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
 public class Runway {
 
     private int runwayID;
-    private int length;
-    private int bearing;
     private RunwayMode mode;
     private RunwayStatus status;
     private Aircraft currentAircraft;
@@ -21,8 +19,6 @@ public class Runway {
         this.runwayID = runwayID;
         this.mode = mode;
         this.status = status;
-        this.length = 3000;
-        this.bearing = 90;
         this.occupiedUntil = 0;
         this.currentAircraft = null;
         this.lastAircraftType = FlightType.DEPARTURE; // Make sure to prioritise arrivals if anything at the start
@@ -51,22 +47,6 @@ public class Runway {
 
     public void setRunwayID(int runwayID) {
         this.runwayID = runwayID;
-    }
-
-    public int getLength() {
-        return length;
-    }
-
-    public void setLength(int length) {
-        this.length = length;
-    }
-
-    public int getBearing() {
-        return bearing;
-    }
-
-    public void setBearing(int bearing) {
-        this.bearing = bearing;
     }
 
     public RunwayMode getMode() {

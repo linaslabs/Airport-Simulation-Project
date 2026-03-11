@@ -114,3 +114,9 @@ h6 {
     border-radius: 4px;
     padding: 1px 4px;
 }
+
+.modal-backdrop,
+.modal-backdrop.show,
+.modal-backdrop.fade {
+    opacity: 0 !important;
+}

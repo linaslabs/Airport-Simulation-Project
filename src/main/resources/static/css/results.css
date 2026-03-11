@@ -181,8 +181,8 @@ body{
     transform: translate(-50%, -50%);
     background: #d8d8d8;
     padding: 40px;
-    border: 3px solid #4a90e2;
-    border-radius: 8px;
+    border: none;
+    border-radius: 16px;
     width: 90%;
     max-width: 570px;
     box-shadow: 0 8px 20px rgba(0,0,0,.4);
@@ -218,7 +218,7 @@ body{
 
 .modal-input:focus{
     outline: none;
-    border-color: #4a90e2;
+    border-color: #888;
     background: #efefef;
 }
 
