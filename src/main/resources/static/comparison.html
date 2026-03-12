@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Simulation Comparison</title>
 
-  <link rel="stylesheet" href="/css/results.css">
-  <link rel="stylesheet" href="/css/comparison.css">
-  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/navbar.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <link rel="stylesheet" href="/css/comparison.css" />
 </head>
 
 <body>
@@ -30,7 +32,7 @@
 
 <main class="wrap">
   <!-- Selection Modal -->
-  <div id="selectModal" class="modal hidden">
+  <div id="selectModal" class="modal flex-modal hidden">
     <div class="modal-content">
       <div class="modal-header">
         <h2 id="selectModalTitle">Select a simulation to compare</h2>
@@ -55,7 +57,7 @@
   </div>
 
   <!-- View Simulation Details Modal -->
-  <div id="viewModal" class="modal hidden">
+  <div id="viewModal" class="modal flex-modal hidden">
     <div class="modal-content view-modal-content">
       <span class="close-btn" id="closeViewModal">&times;</span>
       <h2 id="viewModalTitle">Simulation Details</h2>
@@ -109,24 +111,24 @@
           </div>
 
           <div class="cols">
-            <div class="section">
+            <div class="stat-section">
               <div class="section-title">DEPARTURES</div>
 
-              <div class="row"><div class="label">Average Wait Time</div><div class="value"><span id="viewDepAvgWait">--</span> mins</div></div>
-              <div class="row"><div class="label">Most Planes in Departure Queue</div><div class="value"><span id="viewDepMaxQueue">--</span></div></div>
-              <div class="row"><div class="label">Maximum Delay Time</div><div class="value"><span id="viewDepMaxDelay">--</span> mins</div></div>
-              <div class="row"><div class="label">Average Delay Time</div><div class="value"><span id="viewDepAvgDelay">--</span> mins</div></div>
-              <div class="row"><div class="label">Number of Cancellations</div><div class="value"><span id="viewDepCancelled">--</span></div></div>
+              <div class="stat-row"><div class="label">Average Wait Time</div><div class="value"><span id="viewDepAvgWait">--</span> mins</div></div>
+              <div class="stat-row"><div class="label">Most Planes in Departure Queue</div><div class="value"><span id="viewDepMaxQueue">--</span></div></div>
+              <div class="stat-row"><div class="label">Maximum Delay Time</div><div class="value"><span id="viewDepMaxDelay">--</span> mins</div></div>
+              <div class="stat-row"><div class="label">Average Delay Time</div><div class="value"><span id="viewDepAvgDelay">--</span> mins</div></div>
+              <div class="stat-row"><div class="label">Number of Cancellations</div><div class="value"><span id="viewDepCancelled">--</span></div></div>
             </div>
 
-            <div class="section">
+            <div class="stat-section">
               <div class="section-title">ARRIVALS</div>
 
-              <div class="row"><div class="label">Average Hold Time</div><div class="value"><span id="viewArrAvgHold">--</span> mins</div></div>
-              <div class="row"><div class="label">Most Planes in Holding Pattern</div><div class="value"><span id="viewArrMaxHolding">--</span></div></div>
-              <div class="row"><div class="label">Maximum Delay Time</div><div class="value"><span id="viewArrMaxDelay">--</span> mins</div></div>
-              <div class="row"><div class="label">Average Delay Time</div><div class="value"><span id="viewArrAvgDelay">--</span> mins</div></div>
-              <div class="row"><div class="label">Number of Diversions</div><div class="value"><span id="viewArrDiverted">--</span></div></div>
+              <div class="stat-row"><div class="label">Average Hold Time</div><div class="value"><span id="viewArrAvgHold">--</span> mins</div></div>
+              <div class="stat-row"><div class="label">Most Planes in Holding Pattern</div><div class="value"><span id="viewArrMaxHolding">--</span></div></div>
+              <div class="stat-row"><div class="label">Maximum Delay Time</div><div class="value"><span id="viewArrMaxDelay">--</span> mins</div></div>
+              <div class="stat-row"><div class="label">Average Delay Time</div><div class="value"><span id="viewArrAvgDelay">--</span> mins</div></div>
+              <div class="stat-row"><div class="label">Number of Diversions</div><div class="value"><span id="viewArrDiverted">--</span></div></div>
             </div>
           </div>
         </div>

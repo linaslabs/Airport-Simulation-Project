@@ -63,14 +63,6 @@ function formatDate(dateValue) {
     return date.toLocaleString();
 }
 
-function getDisplaySimulationName(rawName) {
-    if (!rawName || rawName === 'A' || rawName === 'B') {
-        return 'Latest Result';
-    }
-
-    return rawName;
-}
-
 function toReadableText(rawValue) {
     if (rawValue === null || rawValue === undefined || rawValue === '') {
         return 'unknown';
@@ -323,17 +315,16 @@ function buildEventRows(config) {
     };
 }
 
-function mapSimulationResult(rawResult, preferredName = '') {
-    const config = rawResult?.config || {};
-    const stats = rawResult?.stats || {};
+function mapSavedResult(savedResult) {
+    const config = savedResult?.config || {};
+    const stats = savedResult?.stats || {};
 
     const runwayCount = Array.isArray(config.runwaySettings) ? config.runwaySettings.length : 0;
-    const simulationName = rawResult?.simulationName || getDisplaySimulationName(preferredName);
 
     return {
-        id: rawResult?.simulationName || preferredName || 'latest-result',
-        name: simulationName,
-        timestamp: formatDate(rawResult?.dateExecuted),
+        id: savedResult?.simulationName || '',
+        name: savedResult?.simulationName || 'Unnamed Simulation',
+        timestamp: formatDate(savedResult?.dateExecuted),
         config: {
             'Number of Runways': runwayCount,
             'Inbound Rate': `${config.inboundRate ?? '--'} /hr`,
@@ -346,7 +337,7 @@ function mapSimulationResult(rawResult, preferredName = '') {
             'Equipment Failure Rate': config.equipmentFailureRate ?? '--'
         },
         events: buildEventRows(config),
-        eventLog: getEventLogLines(rawResult, config),
+        eventLog: getEventLogLines(savedResult, config),
         statistics: {
             throughput: toNumber(stats.hourlyThroughput),
             depAvgWait: toNumber(stats.avgWaitTime),
@@ -364,13 +355,7 @@ function mapSimulationResult(rawResult, preferredName = '') {
 }
 
 async function fetchSummaries() {
-    try {
-        simulationSummaries = await fetchJson(API.summaries);
-    } catch (error) {
-        console.warn('Unable to fetch saved simulation summaries:', error);
-        simulationSummaries = [];
-    }
-
+    simulationSummaries = await fetchJson(API.summaries);
     return simulationSummaries;
 }
 
@@ -379,9 +364,19 @@ async function fetchSimulationByName(name) {
         return simulationDetailsCache.get(name);
     }
 
-    const isLatestResult = !name || name === 'A' || name === 'B';
-    const raw = await fetchJson(isLatestResult ? API.lastResult : API.viewOrCompare(name));
-    const mapped = mapSimulationResult(raw, name);
+    const raw = await fetchJson(API.viewOrCompare(name));
+    const mapped = mapSavedResult(raw);
+
+    if (!Array.isArray(mapped.eventLog) || mapped.eventLog.length === 0) {
+        try {
+            const lastResult = await fetchJson(API.lastResult);
+            if (lastResult && lastResult.simulationName === name) {
+                mapped.eventLog = getEventLogLines(lastResult, lastResult && lastResult.config);
+            }
+        } catch (error) {
+            console.warn('Unable to fetch last simulation result for event log fallback:', error);
+        }
+    }
 
     simulationDetailsCache.set(name, mapped);
     return mapped;
@@ -396,8 +391,8 @@ async function loadComparison(simAName, simBName) {
     currentSimNames.A = simAName;
     currentSimNames.B = simBName;
 
-    setText('simNameA', getDisplaySimulationName(simAName || simA.name).toUpperCase());
-    setText('simNameB', getDisplaySimulationName(simBName || simB.name).toUpperCase());
+    setText('simNameA', simA.name.toUpperCase());
+    setText('simNameB', simB.name.toUpperCase());
 
     hideSelectModal();
     populateSimulationData(simA, 'A');
@@ -603,8 +598,7 @@ async function ensureCurrentSelectionAndLoad() {
     const names = simulationSummaries.map(s => s.simulationName);
 
     if (!names.length) {
-        await loadComparison('A', 'B');
-        return;
+        throw new Error('No saved simulations available for comparison');
     }
 
     if (!currentSimNames.A || !names.includes(currentSimNames.A)) {
@@ -768,7 +762,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await ensureCurrentSelectionAndLoad();
     } catch (error) {
         console.error('Error initialising comparison page:', error);
-        alert('Failed to load the latest simulation result. Please ensure a simulation has completed.');
+        alert('No saved simulation results found. Save at least one result from the results page first.');
         window.location.href = '/';
     }
 

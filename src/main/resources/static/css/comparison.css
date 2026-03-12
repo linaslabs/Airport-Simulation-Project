@@ -36,6 +36,22 @@
   font-size: 12px;
 }
 
+/* Comparison page modal skin override */
+#selectModal .modal-content,
+#viewModal .modal-content {
+  position: relative;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  padding: 30px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
 /* Select-modal sizing */
 #selectModal .modal-content {
   max-width: 1400px;
