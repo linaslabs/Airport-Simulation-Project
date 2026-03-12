@@ -300,7 +300,6 @@ function buildEventRows(config) {
             aircraftRows.push({
                 event: callsign ? `${enumToLabel(event?.type)} (${callsign})` : enumToLabel(event?.type),
                 time: `${tick} mins`,
-                duration: '--',
                 emergencyType: formatEmergencyType(event?.status),
                 tickSort: Number.isFinite(event?.tick) ? event.tick : Number.MAX_SAFE_INTEGER
             });
@@ -698,7 +697,7 @@ function populateAircraftEventsTable(events, targetId) {
 
     if (!Array.isArray(events) || events.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="4" style="text-align: center; color: #999;">No scheduled aircraft events</td>';
+        row.innerHTML = '<td colspan="3" style="text-align: center; color: #999;">No scheduled aircraft events</td>';
         tbody.appendChild(row);
         return;
     }
@@ -708,7 +707,6 @@ function populateAircraftEventsTable(events, targetId) {
         row.innerHTML = `
             <td>${event.event}</td>
             <td>${event.time}</td>
-            <td>${event.duration}</td>
             <td>${event.emergencyType}</td>
         `;
         tbody.appendChild(row);
