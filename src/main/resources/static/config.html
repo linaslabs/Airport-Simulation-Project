@@ -1,332 +1,614 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Configuration Page</title>
-    <link rel="stylesheet" href="css/config.css">
-    <link rel="stylesheet" href="/css/progress.css">
-    <link rel="stylesheet" href="/css/comparison.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link rel="stylesheet" href="/css/navbar.css">
-</head>
-<body style="background-color: #f4f7fb;">
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/layout.css" />
+    <link rel="stylesheet" href="css/config.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="/css/navbar.css" />
+  </head>
+  <body class="layout-centred" style="background-color: #f4f7fb">
+    <!--<div class="container-fluid py-3 mb-4 shadow-sm" style="background-color: #374151; color: white;">-->
+    <!--    <div class="row align-items-center px-4">-->
 
-<!--<div class="container-fluid py-3 mb-4 shadow-sm" style="background-color: #374151; color: white;">-->
-<!--    <div class="row align-items-center px-4">-->
+    <!--        <div class="col-4 d-flex align-items-center gap-3">-->
+    <!--            <a href="index.html" class="btn btn-outline-light btn-sm fw-bold px-3 rounded-2">-->
+    <!--                Home-->
+    <!--            </a>-->
+    <!--&lt;!&ndash;            <span class="fs-5 fw-bold text-nowrap" style="letter-spacing: 0.5px;">Airport Simulation</span>&ndash;&gt;-->
+    <!--        </div>-->
 
-<!--        <div class="col-4 d-flex align-items-center gap-3">-->
-<!--            <a href="index.html" class="btn btn-outline-light btn-sm fw-bold px-3 rounded-2">-->
-<!--                Home-->
-<!--            </a>-->
-<!--&lt;!&ndash;            <span class="fs-5 fw-bold text-nowrap" style="letter-spacing: 0.5px;">Airport Simulation</span>&ndash;&gt;-->
-<!--        </div>-->
+    <!--        <div class="col-4 d-flex justify-content-center">-->
+    <!--            <span class="fw-bold text-white" style="font-size: 2.5rem; letter-spacing: 2px; white-space: nowrap;">Configuration</span>-->
+    <!--        </div>-->
 
-<!--        <div class="col-4 d-flex justify-content-center">-->
-<!--            <span class="fw-bold text-white" style="font-size: 2.5rem; letter-spacing: 2px; white-space: nowrap;">Configuration</span>-->
-<!--        </div>-->
+    <!--        <div class="col-4"></div>-->
 
-<!--        <div class="col-4"></div>-->
+    <!--&lt;!&ndash;        <div class="col-4 d-flex justify-content-center gap-2">&ndash;&gt;-->
+    <!--&lt;!&ndash;            <button class="btn btn-light btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="openLoadConfigModal()">&ndash;&gt;-->
+    <!--&lt;!&ndash;                Load Config&ndash;&gt;-->
+    <!--&lt;!&ndash;            </button>&ndash;&gt;-->
+    <!--&lt;!&ndash;            <button class="btn btn-primary btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="openSaveModal()">&ndash;&gt;-->
+    <!--&lt;!&ndash;                Save Config&ndash;&gt;-->
+    <!--&lt;!&ndash;            </button>&ndash;&gt;-->
+    <!--&lt;!&ndash;            <button class="btn btn-danger btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="resetConfig()">&ndash;&gt;-->
+    <!--&lt;!&ndash;                Reset&ndash;&gt;-->
+    <!--&lt;!&ndash;            </button>&ndash;&gt;-->
+    <!--&lt;!&ndash;        </div>&ndash;&gt;-->
 
-<!--&lt;!&ndash;        <div class="col-4 d-flex justify-content-center gap-2">&ndash;&gt;-->
-<!--&lt;!&ndash;            <button class="btn btn-light btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="openLoadConfigModal()">&ndash;&gt;-->
-<!--&lt;!&ndash;                Load Config&ndash;&gt;-->
-<!--&lt;!&ndash;            </button>&ndash;&gt;-->
-<!--&lt;!&ndash;            <button class="btn btn-primary btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="openSaveModal()">&ndash;&gt;-->
-<!--&lt;!&ndash;                Save Config&ndash;&gt;-->
-<!--&lt;!&ndash;            </button>&ndash;&gt;-->
-<!--&lt;!&ndash;            <button class="btn btn-danger btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="resetConfig()">&ndash;&gt;-->
-<!--&lt;!&ndash;                Reset&ndash;&gt;-->
-<!--&lt;!&ndash;            </button>&ndash;&gt;-->
-<!--&lt;!&ndash;        </div>&ndash;&gt;-->
+    <!--&lt;!&ndash;        <div class="col-4 d-flex justify-content-end align-items-center gap-3">&ndash;&gt;-->
+    <!--&lt;!&ndash;            <div class="d-flex align-items-center bg-white rounded ps-2 pe-1 py-1 shadow-sm rounded-pill">&ndash;&gt;-->
+    <!--&lt;!&ndash;                <span class="fw-bold me-2 small text-muted text-nowrap">Mode:</span>&ndash;&gt;-->
+    <!--&lt;!&ndash;                <select id="simulation-mode" class="form-select form-select-sm border-0 shadow-none fw-bold text-dark py-0" style="width: auto; background-color: transparent;">&ndash;&gt;-->
+    <!--&lt;!&ndash;                    <option value="QUICK_SIM">Quick Sim</option>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    <option value="TABLE_VIEW">Table View</option>&ndash;&gt;-->
+    <!--&lt;!&ndash;                    <option value="GRAPHICAL_VIEW">Graphical View</option>&ndash;&gt;-->
+    <!--&lt;!&ndash;                </select>&ndash;&gt;-->
+    <!--&lt;!&ndash;            </div>&ndash;&gt;-->
+    <!--&lt;!&ndash;            <button class="btn btn-success btn-sm fw-bold px-4 shadow-sm rounded-pill" onclick="startSimulation()">&ndash;&gt;-->
+    <!--&lt;!&ndash;                Start Simulation&ndash;&gt;-->
+    <!--&lt;!&ndash;            </button>&ndash;&gt;-->
+    <!--&lt;!&ndash;        </div>&ndash;&gt;-->
 
-<!--&lt;!&ndash;        <div class="col-4 d-flex justify-content-end align-items-center gap-3">&ndash;&gt;-->
-<!--&lt;!&ndash;            <div class="d-flex align-items-center bg-white rounded ps-2 pe-1 py-1 shadow-sm rounded-pill">&ndash;&gt;-->
-<!--&lt;!&ndash;                <span class="fw-bold me-2 small text-muted text-nowrap">Mode:</span>&ndash;&gt;-->
-<!--&lt;!&ndash;                <select id="simulation-mode" class="form-select form-select-sm border-0 shadow-none fw-bold text-dark py-0" style="width: auto; background-color: transparent;">&ndash;&gt;-->
-<!--&lt;!&ndash;                    <option value="QUICK_SIM">Quick Sim</option>&ndash;&gt;-->
-<!--&lt;!&ndash;                    <option value="TABLE_VIEW">Table View</option>&ndash;&gt;-->
-<!--&lt;!&ndash;                    <option value="GRAPHICAL_VIEW">Graphical View</option>&ndash;&gt;-->
-<!--&lt;!&ndash;                </select>&ndash;&gt;-->
-<!--&lt;!&ndash;            </div>&ndash;&gt;-->
-<!--&lt;!&ndash;            <button class="btn btn-success btn-sm fw-bold px-4 shadow-sm rounded-pill" onclick="startSimulation()">&ndash;&gt;-->
-<!--&lt;!&ndash;                Start Simulation&ndash;&gt;-->
-<!--&lt;!&ndash;            </button>&ndash;&gt;-->
-<!--&lt;!&ndash;        </div>&ndash;&gt;-->
+    <!--    </div>-->
+    <!--</div>-->
 
-<!--    </div>-->
-<!--</div>-->
-
-<header class="navbar">
-    <div class="nav-left">
+    <header class="navbar">
+      <div class="nav-left">
         <a class="nav-link" href="/">Home</a>
         <!--        <div class="nav-title">Airport Simulation</div>-->
-    </div>
+      </div>
 
-    <div class="nav-title">
-        Configuration
-    </div>
-</header>
+      <div class="nav-title">Configuration</div>
+    </header>
 
-<!--CONFIGURATION TITLE-->
-<!--<div class="container text-center mb-5 mt-4">-->
-<!--    <h1 class="display-3 fw-bold text-uppercase" style="color: #0f172a; letter-spacing: 2px;">-->
-<!--        Configuration-->
-<!--    </h1>-->
-<!--    <p class="lead text-muted fw-bold">Set parameters, manage runways, and schedule airport events.</p>-->
-<!--</div>-->
-<main class="wrap progress-wrap">
-    <div class="progress-centre">
-        <div class="shadow-lg" style="background:white; border-radius:16px; padding:24px; max-width:1200px; margin: 0 auto;">
-            <div class="container">
-                <div class="row mt-1">
-                    <div class="col">
-                        <h5>Input Parameters</h5>
-                        <div class="wrapper d-flex align-items-center mb-2">
-                            <div class="me-2">
-                                <label class="form-label mb-0 small fw-bold field-label text-dark">Number of Runways</label>
-                                <div class="text-muted field-range" style="font-size: 0.7rem; line-height: 1;">Range: 1 - 10</div>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <button id="minus-button">-</button>
-                                <div id="runway-counter">1</div>
-                                <button id="add-button">+</button>
-                            </div>
-                        </div>
-
-                        <div id="input-parameters-list"></div>
-
-                        <div class="mb-2 d-flex justify-content-between align-items-center">
-                            <div class="me-2">
-                                <label class="form-label mb-0 small fw-bold text-dark" for="input-auto_gen">Enable Random Events</label>
-                                <div class="text-muted" style="font-size: 0.7rem; line-height: 1;">Uses failure rates to generate unplanned issues.</div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <input class="form-check-input border-secondary" type="checkbox" id="input-auto_gen"
-                                       style="width: 20px; height: 20px; cursor: pointer; margin-top: 0;">
-                            </div>
-                        </div>
-
-                        <div id="rate-parameters-list"></div>
+    <!--CONFIGURATION TITLE-->
+    <!--<div class="container text-center mb-5 mt-4">-->
+    <!--    <h1 class="display-3 fw-bold text-uppercase" style="color: #0f172a; letter-spacing: 2px;">-->
+    <!--        Configuration-->
+    <!--    </h1>-->
+    <!--    <p class="lead text-muted fw-bold">Set parameters, manage runways, and schedule airport events.</p>-->
+    <!--</div>-->
+    <main class="wrap progress-wrap">
+      <div class="progress-centre">
+        <div
+          class="shadow-lg"
+          style="
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+          "
+        >
+          <div class="container">
+            <div class="row mt-1">
+              <div class="col">
+                <h5>Input Parameters</h5>
+                <div class="wrapper d-flex align-items-center mb-2">
+                  <div class="me-2">
+                    <label
+                      class="form-label mb-0 small fw-bold field-label text-dark"
+                      >Number of Runways</label
+                    >
+                    <div
+                      class="text-muted field-range"
+                      style="font-size: 0.7rem; line-height: 1"
+                    >
+                      Range: 0 - 10
                     </div>
-                    <div class="col">
-                        <div class="mb-2" ><h5>Runways</h5></div>
-                        <div class="d-flex gap-2 mb-1">
-                            <span style="min-width: 80px;"></span>
-
-                            <label class="fw-bold text-muted small" style="width: 160px;">Status</label>
-
-                            <label class="fw-bold text-muted small" style="width: 120px;">Mode</label>
-                        </div>
-                        <div id="runway-list"></div>
-                    </div>
-                    <div class="col-lg-4">
-                        <h5>Scheduled Events</h5>
-
-                        <div class="d-flex small text-muted mb-2 px-2 fw-bold pe-1">
-                            <div style="flex: 1;" class="ps-1">Event</div>
-
-                            <div class="text-end flex-shrink-0 px-2 text-center" style="min-width: 95px;">
-                                Time
-                            </div>
-
-                            <div style="width: 25px;"></div>
-                        </div>
-
-                        <div id="scheduled-events-list" class="rounded p-2 mb-3 border bg-light overflow-x-hidden"
-                             style="height: 250px; overflow-y: auto;">
-                            <div class="text-center text-muted small mt-5" id="empty-list-msg">No events scheduled</div>
-                        </div>
-
-                        <div class="rounded p-3 bg-light border shadow-sm">
-                            <div class="fw-bold mb-2 small text-uppercase text-muted" style="letter-spacing: 0.5px;">New Event</div>
-
-                            <div class="row g-2 mb-2">
-                                <div class="col-4">
-                                    <label class="form-label small text-muted mb-0 fw-bold">Type</label>
-                                    <select id="new-event-type" class="form-select form-select-sm rounded-1" onchange="updateEventForm()">
-                                        <option value="Runway">Runway</option>
-                                        <option value="Aircraft">Aircraft</option>
-                                    </select>
-                                </div>
-                                <div class="col-8">
-                                    <label class="form-label small text-muted mb-0 fw-bold">Status</label>
-                                    <select id="new-event-name" class="form-select form-select-sm rounded-1"></select>
-                                </div>
-                            </div>
-
-                            <div class="row g-2 mb-2">
-                                <div class="col-6" id="mode-container">
-                                    <label class="form-label small text-muted mb-0 fw-bold">Mode</label>
-                                    <select id="new-event-mode" class="form-select form-select-sm rounded-1">
-                                        <option value="null">No Change</option>
-                                        <option value="MIXED">Mixed</option>
-                                        <option value="LANDING">Landing</option>
-                                        <option value="TAKEOFF">Takeoff</option>
-                                    </select>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-muted mb-0 fw-bold">Location</label>
-                                    <select id="new-event-loc" class="form-select form-select-sm rounded-1"></select>
-                                </div>
-                            </div>
-
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label small text-muted mb-0 fw-bold">Start Time</label>
-                                    <div class="input-group input-group-sm">
-                                        <input id="new-event-time" type="number" min="0" class="form-control rounded-start-1 border-end-0 px-2">
-                                        <span class="input-group-text bg-white border-start-0 rounded-end-1 text-muted small px-1">mins</span>
-                                    </div>
-                                </div>
-                                <div class="col-6" id="duration-container">
-                                    <label class="form-label small text-muted mb-0 fw-bold" title="-1 for infinite">Duration</label>
-                                    <div class="input-group input-group-sm">
-                                        <input id="new-event-duration" type="number" min="-1" class="form-control rounded-start-1 border-end-0 px-2">
-                                        <span class="input-group-text bg-white border-start-0 rounded-end-1 text-muted small px-1">mins</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button onclick="addEvent()" class="btn btn-dark w-100 fw-bold rounded-1 shadow-sm mt-1">
-                                <span class="fs-6 me-1">+</span> Schedule Event
-                            </button>
-                        </div>
-                    </div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <button id="minus-button">-</button>
+                    <div id="runway-counter">1</div>
+                    <button id="add-button">+</button>
+                  </div>
                 </div>
+
+                <div id="input-parameters-list"></div>
+
+                <div
+                  class="mb-2 d-flex justify-content-between align-items-center"
+                >
+                  <div class="me-2">
+                    <label
+                      class="form-label mb-0 small fw-bold text-dark"
+                      for="input-auto_gen"
+                      >Enable Random Events</label
+                    >
+                    <div
+                      class="text-muted"
+                      style="font-size: 0.7rem; line-height: 1"
+                    >
+                      Uses failure rates to generate unplanned issues.
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <input
+                      class="form-check-input border-secondary"
+                      type="checkbox"
+                      id="input-auto_gen"
+                      style="
+                        width: 20px;
+                        height: 20px;
+                        cursor: pointer;
+                        margin-top: 0;
+                      "
+                    />
+                  </div>
+                </div>
+
+                <div id="rate-parameters-list"></div>
+              </div>
+              <div class="col">
+                <div class="mb-2"><h5>Runways</h5></div>
+                <div class="d-flex gap-2 mb-1">
+                  <span style="min-width: 80px"></span>
+
+                  <label class="fw-bold text-muted small" style="width: 160px"
+                    >Status</label
+                  >
+
+                  <label class="fw-bold text-muted small" style="width: 120px"
+                    >Mode</label
+                  >
+                </div>
+                <div id="runway-list"></div>
+              </div>
+              <div class="col-lg-4">
+                <h5>Scheduled Events</h5>
+
+                <div class="d-flex small text-muted mb-2 px-2 fw-bold pe-1">
+                  <div style="flex: 1" class="ps-1">Event</div>
+
+                  <div
+                    class="text-end flex-shrink-0 px-2 text-center"
+                    style="min-width: 95px"
+                  >
+                    Time
+                  </div>
+
+                  <div style="width: 25px"></div>
+                </div>
+
+                <div
+                  id="scheduled-events-list"
+                  class="rounded p-2 mb-3 border bg-light overflow-x-hidden"
+                  style="height: 250px; overflow-y: auto"
+                >
+                  <div
+                    class="text-center text-muted small mt-5"
+                    id="empty-list-msg"
+                  >
+                    No events scheduled
+                  </div>
+                </div>
+
+                <div class="rounded p-3 bg-light border shadow-sm">
+                  <div
+                    class="fw-bold mb-2 small text-uppercase text-muted"
+                    style="letter-spacing: 0.5px"
+                  >
+                    New Event
+                  </div>
+
+                  <div class="row g-2 mb-2">
+                    <div class="col-4">
+                      <label class="form-label small text-muted mb-0 fw-bold"
+                        >Type</label
+                      >
+                      <select
+                        id="new-event-type"
+                        class="form-select form-select-sm rounded-1"
+                        onchange="updateEventForm()"
+                      >
+                        <option value="Runway">Runway</option>
+                        <option value="Aircraft">Aircraft</option>
+                      </select>
+                    </div>
+                    <div class="col-8">
+                      <label class="form-label small text-muted mb-0 fw-bold"
+                        >Status</label
+                      >
+                      <select
+                        id="new-event-name"
+                        class="form-select form-select-sm rounded-1"
+                      ></select>
+                    </div>
+                  </div>
+
+                  <div class="row g-2 mb-2">
+                    <div class="col-6" id="mode-container">
+                      <label class="form-label small text-muted mb-0 fw-bold"
+                        >Mode</label
+                      >
+                      <select
+                        id="new-event-mode"
+                        class="form-select form-select-sm rounded-1"
+                      >
+                        <option value="null">No Change</option>
+                        <option value="MIXED">Mixed</option>
+                        <option value="LANDING">Landing</option>
+                        <option value="TAKEOFF">Takeoff</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small text-muted mb-0 fw-bold"
+                        >Location</label
+                      >
+                      <select
+                        id="new-event-loc"
+                        class="form-select form-select-sm rounded-1"
+                      ></select>
+                    </div>
+                  </div>
+
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <label class="form-label small text-muted mb-0 fw-bold"
+                        >Start Time</label
+                      >
+                      <div class="input-group input-group-sm">
+                        <input
+                          id="new-event-time"
+                          type="number"
+                          min="0"
+                          class="form-control rounded-start-1 border-end-0 px-2"
+                        />
+                        <span
+                          class="input-group-text bg-white border-start-0 rounded-end-1 text-muted small px-1"
+                          >mins</span
+                        >
+                      </div>
+                    </div>
+                    <div class="col-6" id="duration-container">
+                      <label
+                        class="form-label small text-muted mb-0 fw-bold"
+                        title="-1 for infinite"
+                        >Duration</label
+                      >
+                      <div class="input-group input-group-sm">
+                        <input
+                          id="new-event-duration"
+                          type="number"
+                          min="-1"
+                          class="form-control rounded-start-1 border-end-0 px-2"
+                        />
+                        <span
+                          class="input-group-text bg-white border-start-0 rounded-end-1 text-muted small px-1"
+                          >mins</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onclick="addEvent()"
+                    class="btn btn-dark w-100 fw-bold rounded-1 shadow-sm mt-1"
+                  >
+                    <span class="fs-6 me-1">+</span> Schedule Event
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                <div class="d-flex gap-2">
-                    <button onclick="openLoadConfigModal()" class="btn btn-secondary rounded-2 fw-bold px-4">Load Config</button>
-                    <button onclick="openSaveModal()" class="btn btn-primary rounded-2 fw-bold px-4">Save Config</button>
-                    <button onclick="resetConfig()" class="btn btn-danger rounded-2 fw-bold px-4">Reset</button>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="fw-bold">Mode:</span>
-                        <select id="simulation-mode" class="form-select" style="width:auto;">
-                            <option value="QUICK_SIM">Quick Sim</option>
-                            <option value="TABLE_VIEW">Table View</option>
-                        </select>
-                    </div>
-                    <button onclick="startSimulation()" class="btn btn-success rounded-2 fw-bold px-4">Start Simulation</button>
-                </div>
+          <div
+            class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top"
+          >
+            <div class="d-flex gap-2">
+              <button
+                onclick="openLoadConfigModal()"
+                class="btn btn-secondary rounded-2 fw-bold px-4"
+              >
+                Load Config
+              </button>
+              <button
+                onclick="openSaveModal()"
+                class="btn btn-primary rounded-2 fw-bold px-4"
+              >
+                Save Config
+              </button>
+              <button
+                onclick="resetConfig()"
+                class="btn btn-danger rounded-2 fw-bold px-4"
+              >
+                Reset
+              </button>
             </div>
+            <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold">Mode:</span>
+                <select
+                  id="simulation-mode"
+                  class="form-select"
+                  style="width: auto"
+                >
+                  <option value="QUICK_SIM">Quick Sim</option>
+                  <option value="TABLE_VIEW">Table View</option>
+                </select>
+              </div>
+              <button
+                onclick="startSimulation()"
+                class="btn btn-success rounded-2 fw-bold px-4"
+              >
+                Start Simulation
+              </button>
+            </div>
+          </div>
         </div>
-    </div>
-</main>
+      </div>
+    </main>
 
+    <!--TEMPLATE FOR RUNWAY DROPDOWN ROWS-->
+    <template id="runway-template">
+      <div class="d-flex align-items-center gap-2 mb-2 runway-row">
+        <span class="fw-bold text-nowrap runway-label" style="min-width: 80px"
+          >Runway X</span
+        >
 
-<!--TEMPLATE FOR RUNWAY DROPDOWN ROWS-->
-<template id="runway-template">
-    <div class="d-flex align-items-center gap-2 mb-2 runway-row">
-
-        <span class="fw-bold text-nowrap runway-label" style="min-width: 80px;">Runway X</span>
-
-        <select class="form-select form-select-sm w-auto rounded-pill runway-status" aria-label="Runway Status">
-            <option value="available">Available</option>
-            <option value="snowclearance">Snow Clearance</option>
-            <option value="inspection">Runway Inspection</option>
-            <option value="failure">Equipment Failure</option>
+        <select
+          class="form-select form-select-sm w-auto rounded-pill runway-status"
+          aria-label="Runway Status"
+        >
+          <option value="available">Available</option>
+          <option value="snowclearance">Snow Clearance</option>
+          <option value="inspection">Runway Inspection</option>
+          <option value="failure">Equipment Failure</option>
         </select>
 
-        <select class="form-select form-select-sm w-auto rounded-pill runway-mode" aria-label="Runway Mode">
-            <option value="mixed">Mixed</option>
-            <option value="landing">Landing</option>
-            <option value="takeoff">Take-Off</option>
+        <select
+          class="form-select form-select-sm w-auto rounded-pill runway-mode"
+          aria-label="Runway Mode"
+        >
+          <option value="mixed">Mixed</option>
+          <option value="landing">Landing</option>
+          <option value="takeoff">Take-Off</option>
         </select>
-    </div>
-</template>
+      </div>
+    </template>
 
-<!--------------------------->
+    <!--------------------------->
 
-<!--RUNWAY CONFIG TEMPLATES-->
-<template id="input-field-template">
-    <div class="mb-2 d-flex justify-content-between align-items-center">
+    <!--RUNWAY CONFIG TEMPLATES-->
+    <template id="input-field-template">
+      <div class="mb-2 d-flex justify-content-between align-items-center">
         <div class="me-2">
-            <label class="form-label mb-0 small fw-bold field-label text-dark"></label>
-            <div class="text-muted field-range" style="font-size: 0.7rem; line-height: 1;"></div>
+          <label
+            class="form-label mb-0 small fw-bold field-label text-dark"
+          ></label>
+          <div
+            class="text-muted field-range"
+            style="font-size: 0.7rem; line-height: 1"
+          ></div>
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-secondary fw-bold px-2 dice-btn"
-                    type="button" style="display: none; font-size: 0.75rem;"
-                    onclick="generateRandomSeed()">Generate</button>
+          <button
+            class="btn btn-sm btn-outline-secondary fw-bold px-2 dice-btn"
+            type="button"
+            style="display: none; font-size: 0.75rem"
+            onclick="generateRandomSeed()"
+          >
+            Generate
+          </button>
 
-            <input type="number"
-                   class="form-control form-control-sm rounded-pill ps-3 field-input"
-                   style="width: 100px; height: 31px;"
-                   required>
+          <input
+            type="number"
+            class="form-control form-control-sm rounded-pill ps-3 field-input"
+            style="width: 100px; height: 31px"
+            required
+          />
         </div>
-    </div>
-</template>
+      </div>
+    </template>
 
-<!-- LOADING CONFIGS -->
-<div class="modal" id="loadConfigModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(4px);  background: rgba(0,0,0,0.5);">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 1000px;">
-        <div class="modal-content shadow-lg" style="border:none; border-radius:16px; max-width:none; width:100%;">
-            <div class="modal-header border-0 pb-0">
-                <h4 class="fw-bold" style="font-size:1.4rem;">Load Configuration</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-3">
-                <table class="table table-bordered" style="width: auto; min-width: 100%">
-                    <thead class="table-light">
-                    <tr>
-                        <th>Configuration Name <button class="sort-btn btn btn-link btn-sm p-0" data-field="name" style="color:#6c757d; text-decoration:none;">↑↓</button></th>
-                        <th>Date Saved <button class="sort-btn btn btn-link btn-sm p-0" data-field="date" style="color:#6c757d;text-decoration:none;">↑↓</button></th>
-                        <th>Configuration Information</th>
-                        <th>Options</th>
-                    </tr>
-                    </thead>
-                    <tbody id="saved-configs-list">
-                    <tr id="empty-configs-msg">
-                        <td colspan="3" class="text-center text-muted py-4">No saved configurations found.</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+    <!-- LOADING CONFIGS -->
+    <div
+      class="modal"
+      id="loadConfigModal"
+      tabindex="-1"
+      aria-hidden="true"
+      style="backdrop-filter: blur(4px); background: rgba(0, 0, 0, 0.5)"
+    >
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 1000px">
+        <div
+          class="modal-content shadow-lg"
+          style="
+            border: none;
+            border-radius: 16px;
+            max-width: none;
+            width: 100%;
+          "
+        >
+          <div class="modal-header border-0 pb-0">
+            <h4 class="fw-bold" style="font-size: 1.4rem">
+              Load Configuration
+            </h4>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body p-3">
+            <table
+              class="table table-bordered"
+              style="width: auto; min-width: 100%"
+            >
+              <thead class="table-light">
+                <tr>
+                  <th>
+                    Configuration Name
+                    <button
+                      class="sort-btn btn btn-link btn-sm p-0"
+                      data-field="name"
+                      style="color: #6c757d; text-decoration: none"
+                    >
+                      ↑↓
+                    </button>
+                  </th>
+                  <th>
+                    Date Saved
+                    <button
+                      class="sort-btn btn btn-link btn-sm p-0"
+                      data-field="date"
+                      style="color: #6c757d; text-decoration: none"
+                    >
+                      ↑↓
+                    </button>
+                  </th>
+                  <th>Configuration Information</th>
+                  <th>Options</th>
+                </tr>
+              </thead>
+              <tbody id="saved-configs-list">
+                <tr id="empty-configs-msg">
+                  <td colspan="3" class="text-center text-muted py-4">
+                    No saved configurations found.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-
-<div class="modal" id="saveConfigModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(4px);  background: rgba(0,0,0,0.5);">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:620px;">
-        <div class="modal-content" style="background:#d8d8d8; border:none; border-radius:16px; padding:40px; box-shadow:0 8px 20px rgba(0,0,0,.4);">
-            <h2 style="font-size:32px; font-weight:700; margin-bottom:20px; color:#000;">Save Configuration</h2>
-            <p style="color:#000; font-weight:600; margin-bottom:12px; font-size:18px;">Enter configuration name:</p>
-            <input type="text" id="new-config-name" style="width:100%; padding:10px 16px; margin-bottom:28px; border:2px solid #888; border-radius:4px; font-size:18px; background:#e8e8e8; color:#000;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-                <button type="button" data-bs-dismiss="modal" style="padding:16px 20px; font-size:24px; font-weight:900; border-radius:6px; width:100%; background:#334155; color:white; border:none; cursor:pointer;">Cancel</button>
-                <button type="button" id="confirm-save-btn" style="padding:16px 20px; font-size:24px; font-weight:900; border-radius:6px; width:100%; background:#0d6efd; color:white; border:none; cursor:pointer;">Save</button>
-            </div>
+    <div
+      class="modal"
+      id="saveConfigModal"
+      tabindex="-1"
+      aria-hidden="true"
+      style="backdrop-filter: blur(4px); background: rgba(0, 0, 0, 0.5)"
+    >
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 620px">
+        <div
+          class="modal-content"
+          style="
+            background: #d8d8d8;
+            border: none;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+          "
+        >
+          <h2
+            style="
+              font-size: 32px;
+              font-weight: 700;
+              margin-bottom: 20px;
+              color: #000;
+            "
+          >
+            Save Configuration
+          </h2>
+          <p
+            style="
+              color: #000;
+              font-weight: 600;
+              margin-bottom: 12px;
+              font-size: 18px;
+            "
+          >
+            Enter configuration name:
+          </p>
+          <input
+            type="text"
+            id="new-config-name"
+            style="
+              width: 100%;
+              padding: 10px 16px;
+              margin-bottom: 28px;
+              border: 2px solid #888;
+              border-radius: 4px;
+              font-size: 18px;
+              background: #e8e8e8;
+              color: #000;
+            "
+          />
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+            <button
+              type="button"
+              data-bs-dismiss="modal"
+              style="
+                padding: 16px 20px;
+                font-size: 24px;
+                font-weight: 900;
+                border-radius: 6px;
+                width: 100%;
+                background: #334155;
+                color: white;
+                border: none;
+                cursor: pointer;
+              "
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              id="confirm-save-btn"
+              style="
+                padding: 16px 20px;
+                font-size: 24px;
+                font-weight: 900;
+                border-radius: 6px;
+                width: 100%;
+                background: #0d6efd;
+                color: white;
+                border: none;
+                cursor: pointer;
+              "
+            >
+              Save
+            </button>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<template id="saved-config-template">
-    <div class="list-group-item p-3">
+    <template id="saved-config-template">
+      <div class="list-group-item p-3">
         <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <div class="config-name fw-bold mb-1"></div>
-                <div class="config-date small text-muted"></div>
-            </div>
-            <div class="d-flex gap-2">
-
-                <button class="btn btn-sm btn-outline-secondary details-btn rounded-pill">Details</button>
-                <button class="btn btn-sm btn-dark fw-bold px-3 load-btn rounded-pill">Load</button>
-                <button class="btn btn-sm btn-outline-danger delete-btn rounded-pill">Delete</button>
-            </div>
+          <div>
+            <div class="config-name fw-bold mb-1"></div>
+            <div class="config-date small text-muted"></div>
+          </div>
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-sm btn-outline-secondary details-btn rounded-pill"
+            >
+              Details
+            </button>
+            <button
+              class="btn btn-sm btn-dark fw-bold px-3 load-btn rounded-pill"
+            >
+              Load
+            </button>
+            <button
+              class="btn btn-sm btn-outline-danger delete-btn rounded-pill"
+            >
+              Delete
+            </button>
+          </div>
         </div>
 
         <div class="collapse mt-3 config-details-box">
-            <div class="card card-body bg-light border-0 small text-muted p-2 config-stats">
-            </div>
+          <div
+            class="card card-body bg-light border-0 small text-muted p-2 config-stats"
+          ></div>
         </div>
-    </div>
-</template>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/config.js"></script>
-</body>
+      </div>
+    </template>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+  </body>
 </html>

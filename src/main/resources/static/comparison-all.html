@@ -1,106 +1,158 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Compare All Simulations</title>
 
-    <link rel="stylesheet" href="/css/navbar.css">
-    <link rel="stylesheet" href="/css/comparison-all.css">
-</head>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/navbar.css" />
+    <link rel="stylesheet" href="/css/layout.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/comparison-all.css" />
+  </head>
 
-<body>
-
-<!-- NAVBAR -->
-<header class="navbar">
-    <div class="nav-left">
+  <body class="layout-centred">
+    <!-- NAVBAR -->
+    <header class="navbar">
+      <div class="nav-left">
         <a class="nav-link" href="/">Home</a>
-    </div>
+      </div>
 
-    <div class="nav-title">
-        Compare All Simulations
-    </div>
+      <div class="nav-title">Compare All Simulations</div>
 
-    <div class="nav-right">
+      <div class="nav-right">
         <a class="nav-link" href="/comparison.html">Back to Comparison</a>
-    </div>
-</header>
+      </div>
+    </header>
 
-<main class="wrap">
-    <div class="compare-all-centre">
-        <div class="table-container">
+    <main class="wrap progress-wrap">
+      <div class="progress-centre">
+        <div class="compare-all-card">
+          <div class="table-container">
             <table id="comparisonTable" class="comparison-table">
-                <thead>
-                <tr>
-                    <th class="sortable" data-column="name" data-type="string" data-best="asc">
-                        Simulation Name
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="throughput" data-type="number" data-best="desc">
-                        Throughput<br><small>(ops/hr)</small>
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="avgWaitTime" data-type="number" data-best="asc">
-                        Average<br>Wait Time<br><small>(mins)</small>
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="maxTakeOffQueue" data-type="number" data-best="asc">
-                        Most Planes in<br>Departure Queue
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="maxTakeOffDelay" data-type="number" data-best="asc">
-                        Maximum<br>Delay Time<br><small>(mins)</small>
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="avgTakeOffDelay" data-type="number" data-best="asc">
-                        Average<br>Delay Time<br><small>(mins)</small>
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="cancellationCount" data-type="number" data-best="asc">
-                        Number of<br>Cancellations
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="avgHoldingTime" data-type="number" data-best="asc">
-                        Average<br>Hold Time<br><small>(mins)</small>
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="maxHoldingSize" data-type="number" data-best="asc">
-                        Most Planes in<br>Holding Pattern
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="maxArrivalDelay" data-type="number" data-best="asc">
-                        Maximum<br>Delay Time<br><small>(arrivals, mins)</small>
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="avgArrivalDelay" data-type="number" data-best="asc">
-                        Average<br>Delay Time<br><small>(arrivals, mins)</small>
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th class="sortable" data-column="diversionCount" data-type="number" data-best="asc">
-                        Number of<br>Diversions
-                        <span class="sort-indicator"></span>
-                    </th>
-                    <th>
-                        Options
-                    </th>
-                </tr>
-                </thead>
-                <tbody id="tableBody">
-                <!-- Rows will be populated by JavaScript -->
-                </tbody>
+              <thead>
+              <tr>
+                <th>Simulation Name</th>
+                <th
+                        class="sortable"
+                        data-column="throughput"
+                        data-type="number"
+                        data-best="desc"
+                >
+                  Throughput<br /><small>(ops/hr)</small>
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="avgWaitTime"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Average<br />Wait Time<br /><small>(mins)</small>
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="maxTakeOffQueue"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Most Planes in<br />Departure Queue
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="maxTakeOffDelay"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Maximum<br />Delay Time<br /><small>(mins)</small>
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="avgTakeOffDelay"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Average<br />Delay Time<br /><small>(mins)</small>
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="cancellationCount"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Number of<br />Cancellations
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="avgHoldingTime"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Average<br />Hold Time<br /><small>(mins)</small>
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="maxHoldingSize"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Most Planes in<br />Holding Pattern
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="maxArrivalDelay"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Maximum<br />Delay Time<br /><small>(arrivals, mins)</small>
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="avgArrivalDelay"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Average<br />Delay Time<br /><small>(arrivals, mins)</small>
+                  <span class="sort-indicator"></span>
+                </th>
+                <th
+                        class="sortable"
+                        data-column="diversionCount"
+                        data-type="number"
+                        data-best="asc"
+                >
+                  Number of<br />Diversions
+                  <span class="sort-indicator"></span>
+                </th>
+                <th>Options</th>
+              </tr>
+              </thead>
+              <tbody id="tableBody">
+              <!-- Rows will be populated by JavaScript -->
+              </tbody>
             </table>
-        </div>
+          </div>
 
-        <div id="loadingMessage" class="loading-message">
+          <div id="loadingMessage" class="loading-message">
             Loading simulation results...
-        </div>
+          </div>
 
-        <div id="noResults" class="no-results hidden">
+          <div id="noResults" class="no-results hidden">
             No simulation results found.
+          </div>
         </div>
-    </div>
-</main>
+      </div>
+    </main>
 
-<script src="/js/comparison-all.js"></script>
-</body>
+    <script src="/js/comparison-all.js"></script>
+  </body>
 </html>

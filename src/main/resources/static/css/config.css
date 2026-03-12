@@ -1,122 +1,159 @@
-/*remove some*/
+/* config.css specific styling */
 .top-right {
-            position: fixed;
-            top: 0;
-            right: 0;
-            padding: 10px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 10px;
 }
 
 .top-left {
-    position: fixed;
-    top: 0;
-    left: 0;
-    padding: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 10px;
 }
 
-
 .simulation-button {
-    position: fixed;
-    top: 0;
-    right: 200px;
-    padding: 10px;
+  position: fixed;
+  top: 0;
+  right: 200px;
+  padding: 10px;
 }
 
 h4 {
-    text-align:center;
+  text-align: center;
 }
 
 h5 {
-    text-align:center;
+  text-align: center;
 }
 
 h6 {
-    text-align:center;
+  text-align: center;
 }
 
 #counter-div {
   font-size: 50px;
 }
 
-/*- 10 + look, update*/
 .wrapper {
-    display: flex;       /* forces items into a horizontal line */
-    align-items: center; /* Centers them vertically */
-    /*font-size: 30px;*/
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  /*font-size: 30px;*/
+  gap: 10px;
 }
 
-
-
-/* for "Runway X" part */
+/* For runways */
 .field-label {
-    display: block;
-    font-weight: 700; /* Matches fw-bold */
-    font-size: 0.9rem; /* Matches the 'small' class */
-    color: #212529;   /* Standard dark text color */
-    margin-bottom: 0;
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #212529;
+  margin-bottom: 0;
 }
 
-/*. small grey range helper text */
 .field-range {
-    font-size: 0.7rem;
-    color: #6c757d;
-    line-height: 1;
+  font-size: 0.7rem;
+  color: #6c757d;
+  line-height: 1;
 }
 
-/* input field tweaks */
 .field-input {
-    /* Ensures the text inside isn't touching the curved edge of input box*/
-    padding-left: 1rem !important;
-    height: 31px;
+  padding-left: 1rem !important;
+  height: 31px;
 }
 
-/* makes the label and the range text sit closer together */
 .me-3 {
-    line-height: 1.2;
+  line-height: 1.2;
 }
 
-/* Fixes the "Split Box" look for Time and Duration */
 .input-group-text.bg-white {
-    border-color: #dee2e6; /* Matches Bootstrap default border */
-    color: #adb5bd !important; /* Soft grey text */
+  border-color: #dee2e6;
+  color: #adb5bd !important;
 }
 
 .input-group > .form-control:focus + .input-group-text {
-    border-color: #86b7fe; /* Matches the blue focus glow */
+  border-color: #86b7fe;
 }
 
-/*bad events*/
-
+/* Bad events */
 .ghost-event {
-    border-left: 3px solid red !important;
-    background-color: #fff5f5;
+  border-left: 3px solid red !important;
+  background-color: #fff5f5;
 }
 
 .late-event {
-    border-left: 3px solid orange !important;
-    background-color: #fffbf0;
+  border-left: 3px solid orange !important;
+  background-color: #fffbf0;
 }
 
 .ghost-badge {
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: red;
-    border: 1px solid red;
-    border-radius: 4px;
-    padding: 1px 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: red;
+  border: 1px solid red;
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 
 .late-badge {
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: orange;
-    border: 1px solid orange;
-    border-radius: 4px;
-    padding: 1px 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: orange;
+  border: 1px solid orange;
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 
 .modal-backdrop,
 .modal-backdrop.show,
 .modal-backdrop.fade {
-    opacity: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Keep the floating panel full-width so it doesn't shrink
+   when event-form fields are hidden (Aircraft mode). */
+.progress-centre > div {
+  width: 100%;
+}
+
+/* Runway counter +/- buttons */
+#minus-button,
+#add-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border: 2px solid var(--border-dark, #cbd5e1);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text, #0f172a);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  line-height: 1;
+  padding: 0;
+}
+#minus-button:hover,
+#add-button:hover {
+  background: var(--primary, #0f172a);
+  border-color: var(--primary, #0f172a);
+  color: #ffffff;
+}
+#minus-button:active,
+#add-button:active {
+  transform: scale(0.93);
+}
+
+/* Runway counter display */
+#runway-counter {
+  min-width: 36px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text, #0f172a);
 }

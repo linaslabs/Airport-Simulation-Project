@@ -180,7 +180,6 @@ async function deleteSimulation(simName) {
 // Sort data based on column and direction
 function sortData(data, column, direction) {
     const columnMap = {
-        'name': 'simulationName',
         'throughput': 'stats.hourlyThroughput',
         'avgWaitTime': 'stats.avgWaitTime',
         'maxTakeOffQueue': 'stats.maxTakeOffQueueSize',
@@ -230,9 +229,9 @@ function setupSortingListeners() {
     headers.forEach(header => {
         header.addEventListener('click', () => {
             const column = header.dataset.column;
-            // if (column === 'name') {
-            //     return;
-            // }
+            if (column === 'name') {
+                return;
+            }
             const bestDirection = header.dataset.best || 'desc';
 
             // Determine sort direction
