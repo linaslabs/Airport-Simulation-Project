@@ -138,10 +138,10 @@ body {
 }
 
 .comparison-table td:first-child {
-  text-align: center;
-  font-weight: 700;
-  color: #0f172a;
-  background-color: #f8fafc;
+    text-align: center;
+    font-weight: 700;
+    color: #0f172a;
+    /*background-color: #f8fafc;*/
 }
 
 .comparison-table td:last-child {
