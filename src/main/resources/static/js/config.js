@@ -799,9 +799,11 @@ function renderConfigRows(summaries) {
             Outbound Rate: ${summary.outboundRate} /hr<br>
             Scheduled Events: ${summary.scheduledEventsCount || 0}
         </td>
-        <td style="vertical-align:middle; white-space:nowrap; text-align: center;">
-            <button class="btn-option btn-compare load-btn" title="Load this configuration">Load</button>
-            <button class="btn-option btn-delete delete-btn" title="Delete this configuration">Delete</button>
+        <td class="config-options-cell" style="vertical-align:middle; white-space:nowrap; text-align: center;">
+            <div class="config-options-actions">
+                <button class="btn-option btn-compare load-btn" title="Load this configuration">Load</button>
+                <button class="btn-option btn-delete delete-btn" title="Delete this configuration">Delete</button>
+            </div>
         </td>
         `;
         row.querySelector(".load-btn").onclick = function () {
