@@ -1,0 +1,651 @@
+/* ===================================================
+   components.css – Shared UI widgets
+   Everything that is used on more than one page lives
+   here.  Page-specific files add on TOP of these.
+   =================================================== */
+
+/* ╔══════════════════════════════════════════════════╗
+   ║  BUTTONS                                        ║
+   ╚══════════════════════════════════════════════════╝ */
+.btn {
+  border: none;
+  cursor: pointer;
+  padding: 16px 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 900;
+  color: white;
+  background: var(--primary);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+  transition: 0.2s;
+  min-width: 200px;
+  text-align: center;
+}
+.btn:hover {
+  background: var(--primary2);
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.secondary {
+  background: #334155;
+}
+.btn.secondary:hover {
+  background: #475569;
+}
+
+.btn.small {
+  padding: 8px 16px;
+  font-size: 14px;
+  min-width: auto;
+}
+
+.actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 26px;
+  flex-wrap: wrap;
+}
+
+/* Option buttons (comparison modals & compare-all) */
+.btn-option {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  min-width: 85px;
+}
+
+.btn-view {
+  background: #10b981;
+  border-color: #059669;
+}
+.btn-view:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.btn-compare {
+  background: #1f2937;
+  border-color: #111827;
+}
+.btn-compare:hover {
+  background: #111827;
+  transform: translateY(-1px);
+}
+
+.btn-delete {
+  border: none;
+  cursor: pointer;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  background: #ef4444;
+  transition: all 0.2s ease;
+  border: 1px solid #dc2626;
+  min-width: 85px;
+}
+.btn-delete:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+.btn-delete:active {
+  transform: translateY(0);
+}
+
+/* ╔══════════════════════════════════════════════════╗
+   ║  MODALS                                         ║
+   ╚══════════════════════════════════════════════════╝ */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal.flex-modal {
+  /* comparison.html JS toggles via .hidden instead of display */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal.flex-modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #d8d8d8;
+  padding: 40px;
+  border: none;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 570px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.modal-content h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #000;
+}
+.modal-content p {
+  color: #000;
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 18px 16px;
+  margin-bottom: 28px;
+  border: 2px solid #888;
+  border-radius: 4px;
+  font-size: 18px;
+  font-family: inherit;
+  transition: 0.2s;
+  background: #e8e8e8;
+  color: #000;
+}
+.modal-input:focus {
+  outline: none;
+  border-color: #888;
+  background: #efefef;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.modal-actions .btn {
+  min-width: 0;
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 20px;
+  border-radius: 6px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.modal-header h2 {
+  margin: 0;
+  flex: 1;
+}
+
+.close-btn {
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #64748b;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  padding: 0;
+  line-height: 1;
+}
+.close-btn:hover {
+  color: #0f172a;
+}
+
+.modal-table-container {
+  overflow-x: auto;
+}
+
+/* ╔══════════════════════════════════════════════════╗
+   ║  DATA DISPLAY: throughput, stat grids, metrics  ║
+   ╚══════════════════════════════════════════════════╝ */
+.throughput {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: #f0f9ff;
+  border-left: 3px solid #3b82f6;
+  border-radius: 2px;
+}
+
+/* Large throughput used on the results page panel */
+.throughput-lg {
+  font-size: 30px;
+  font-weight: 900;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 0;
+  background: none;
+  border-left: none;
+}
+.throughput-lg small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* Two-column stat grid (Departures / Arrivals on results page) */
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-top: 10px;
+}
+
+.stat-section {
+  background: #f8fafc;
+  border: 2px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 950;
+  letter-spacing: 0.6px;
+  margin-bottom: 14px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px dashed #d0d0d0;
+  font-size: 16px;
+}
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 700;
+}
+.value {
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+/* Metrics (comparison / tabular-progress) */
+.metrics-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.metrics-col {
+  display: flex;
+  flex-direction: column;
+}
+.metrics-col h4 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 12px;
+  border-bottom: 1px dashed var(--border);
+}
+.metric-row:last-child {
+  border-bottom: none;
+}
+
+.metric-row .label {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 11px;
+}
+.metric-row .value {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Highlight classes (comparison) */
+.better {
+  color: #16a34a !important;
+  font-weight: 900 !important;
+}
+.worse {
+  color: #dc2626 !important;
+  font-weight: 900 !important;
+}
+.row-better {
+  background: #f0fdf4;
+}
+.row-worse {
+  background: #fef2f2;
+}
+
+/* ╔══════════════════════════════════════════════════╗
+   ║  EVENT LOG                                      ║
+   ╚══════════════════════════════════════════════════╝ */
+.event-log-section {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.event-log-list {
+  margin-top: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  list-style: disc;
+  padding-left: 22px;
+  color: #334155;
+}
+.event-log-list li {
+  font-size: 14px;
+  line-height: 1.45;
+  margin-bottom: 6px;
+}
+.event-log-empty {
+  list-style: none;
+  margin-left: -22px;
+  color: var(--muted);
+}
+
+/* ╔══════════════════════════════════════════════════╗
+   ║  CONFIG / EVENTS TABLES (comparison & tabular)  ║
+   ╚══════════════════════════════════════════════════╝ */
+.config-content-container {
+  max-height: 350px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 8px;
+  background: #fafafa;
+}
+
+.config-table {
+  width: calc(100% - 16px);
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 0 8px 16px 8px;
+}
+.config-table tr {
+  border-bottom: 1px solid var(--border);
+}
+.config-table tr:last-child {
+  border-bottom: none;
+}
+.config-table td {
+  padding: 6px 8px;
+}
+.config-table td:first-child {
+  font-weight: 600;
+  color: var(--text-secondary);
+  width: 50%;
+}
+.config-table td:last-child {
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+
+.events-box {
+  margin: 0;
+  padding: 0;
+  border-top: 1px dashed var(--border-dark);
+}
+.events-box h4 {
+  margin: 12px 0 8px;
+  padding: 8px 8px 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.events-table {
+  width: calc(100% - 16px);
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: 0 8px;
+}
+.events-table thead {
+  background: #f0f1f3;
+  border-bottom: 1px solid var(--border-dark);
+}
+.events-table th {
+  padding: 6px;
+  font-weight: 700;
+  text-align: left;
+  color: var(--text-secondary);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.events-table td {
+  padding: 6px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+}
+.events-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ╔══════════════════════════════════════════════════╗
+   ║  COMPARISON GRID (side-by-side)                 ║
+   ╚══════════════════════════════════════════════════╝ */
+.comparison-content {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin: 0 auto;
+  /* for centred layouts */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  padding: 0;
+  background: var(--border);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin: 0;
+}
+
+.comparison-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #ffffff;
+  padding: 0;
+}
+.comparison-column:last-child {
+  border-left: none;
+}
+
+.column-title {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary2) 100%);
+  color: white;
+  padding: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.column-title span {
+  flex: 1;
+  text-align: center;
+}
+
+.btn-switch {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 12px;
+  border-radius: 0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.btn-switch:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+.btn-switch:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.comparison-section {
+  background: #ffffff;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 16px;
+  margin: 0;
+}
+.comparison-section:last-of-type {
+  border-bottom: none;
+}
+
+.comparison-section h3 {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.comparison-section h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary2);
+  margin: 12px 0 8px;
+  text-transform: uppercase;
+}
+
+/* ╔══════════════════════════════════════════════════╗
+   ║  RESPONSIVE: shared                             ║
+   ╚══════════════════════════════════════════════════╝ */
+@media (max-width: 900px) {
+  .btn {
+    min-width: 0;
+    width: 100%;
+  }
+  .actions {
+    width: 100%;
+  }
+  .cols {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 30px 20px;
+  }
+  .modal-content h2 {
+    font-size: 24px;
+  }
+  .modal-actions {
+    flex-direction: column;
+  }
+  .modal-actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1200px) {
+  .comparison-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .comparison-column:last-child {
+    border-left: none;
+    border-top: 2px solid var(--muted);
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .comparison-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    border-width: 1px;
+    margin: 10px 0;
+  }
+  .comparison-column:last-child {
+    border-left: none;
+    border-top: 2px solid var(--muted);
+    margin-top: 10px;
+  }
+  .column-title {
+    font-size: 12px;
+    padding: 12px;
+  }
+  .comparison-section {
+    padding: 12px;
+  }
+  .comparison-section h3 {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  .config-table {
+    font-size: 11px;
+  }
+  .config-table td {
+    padding: 4px 6px;
+  }
+  .metrics-cols {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .metric-row {
+    font-size: 11px;
+    padding: 5px 0;
+  }
+}

@@ -1,0 +1,80 @@
+/* ===================================================
+   layout.css – Shared page layout & centered panel
+   Provides the "floating card" pattern used across
+   every page (except index / hero).
+   =================================================== */
+
+/* ===== PAGE WRAPPER ===== */
+.wrap {
+  width: 100%;
+  padding: 38px 6vw 80px;
+}
+
+/* ===== PROGRESS / CENTRED LAYOUT ===== */
+/*
+   Used by config, results, tabular-progress – any page
+   where the panel should sit in the vertical centre of
+   the remaining viewport below the 79 px navbar.
+*/
+body.layout-centred {
+  display: flex;
+  flex-direction: column;
+}
+
+.progress-wrap {
+  height: calc(100vh - 79px);
+  min-height: 750px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 2vw !important;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.progress-centre {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ===== FLOATING WHITE PANEL ===== */
+.panel {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  background: var(--card, #ffffff);
+  border: none;
+  border-radius: var(--radius, 16px);
+  box-shadow: var(--shadow, 0 8px 20px rgba(0, 0, 0, 0.15));
+  padding: 30px;
+}
+
+/* ===== PAGE TITLE ===== */
+.page-title {
+  text-align: center;
+  margin: 8px 0 28px;
+}
+.page-title h1 {
+  font-size: 52px;
+  letter-spacing: 2px;
+  font-weight: 900;
+}
+.page-title p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-weight: 650;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .wrap {
+    padding: 26px 18px 60px;
+  }
+  .panel {
+    padding: 20px;
+  }
+  .page-title h1 {
+    font-size: 34px;
+  }
+}

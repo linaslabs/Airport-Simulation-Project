@@ -1,693 +1,177 @@
-/* ===== COMPARISON PAGE STYLES ===== */
-/* Scrollbar styles are in base.css */
+/* ===================================================
+   comparison.css – Comparison page only.
+   Shared components (comparison-grid, metrics, config
+   tables, events tables, buttons, modals) are in
+   components.css.  Layout helpers are in layout.css.
+   =================================================== */
 
-/* Comparison Content – floating white panel */
-.comparison-content {
-    width: 100%;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    padding: 20px;
-    margin: 0 auto;
-}
-
-/* Main Grid: 2 columns for SIM A and SIM B */
-.comparison-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    padding: 0;
-    background: #e5e7eb;
-    border: 1px solid #e5e7eb;
-    border-radius: 0;
-    overflow: hidden;
-    margin: 0;
-}
-
-.comparison-column {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background: #ffffff;
-    padding: 0;
-}
-
-.comparison-column:last-child {
-    border-left: none;
-}
-
-.column-title {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: white;
-    padding: 16px;
-    font-weight: 700;
-    font-size: 14px;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.column-title span {
-    flex: 1;
-    text-align: center;
-}
-
-.btn-switch {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 8px 12px;
-    border-radius: 0;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    text-transform: none;
-    letter-spacing: normal;
-}
-
-.btn-switch:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateY(-1px);
-}
-
-.btn-switch:active {
-    transform: translateY(0px);
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* Comparison Sections */
-.comparison-section {
-    background: #ffffff;
-    border: none;
-    border-bottom: 1px solid #e5e7eb;
-    border-radius: 0;
-    padding: 16px;
-    margin: 0;
-}
-
-.comparison-section:last-of-type {
-    border-bottom: none;
-}
-
-.comparison-section h3 {
-    margin: 0 0 12px 0;
-    color: #0f172a;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.comparison-section h4 {
-    font-size: 12px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 12px 0 8px 0;
-    text-transform: uppercase;
-}
-
-/* Configuration Content Container - Unified scrolling for config + events */
-.config-content-container {
-    max-height: 350px;
-    overflow-y: auto;
-    border: 1px solid #e5e7eb;
-    border-radius: 0;
-    padding: 8px;
-    background: #fafafa;
-}
-
-/* Configuration Table */
-.config-table-container {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-bottom: 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 0;
-    padding: 8px;
-    background: #fafafa;
-}
-
-.config-table {
-    width: calc(100% - 16px);
-    border-collapse: collapse;
-    font-size: 12px;
-    margin: 0 8px 16px 8px;
-}
-
-.config-table tr {
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.config-table tr:last-child {
-    border-bottom: none;
-}
-
-.config-table td {
-    padding: 6px 8px;
-}
-
-.config-table td:first-child {
-    font-weight: 600;
-    color: #475569;
-    width: 50%;
-}
-
-.config-table td:last-child {
-    font-weight: 700;
-    color: #0f172a;
-    text-align: right;
-}
-
-/* Parameters Box */
+/* ---- Parameters box (comparison-page specific) ---- */
 .config-box {
-    margin: 0;
-    padding: 12px 8px;
-    border-top: 1px dashed #cbd5e1;
+  margin: 0;
+  padding: 12px 8px;
+  border-top: 1px dashed #cbd5e1;
 }
-
 .config-box h4 {
-    margin: 0 0 8px 0;
-    font-size: 11px;
-    font-weight: 700;
-    color: #0f172a;
-    text-transform: uppercase;
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  text-transform: uppercase;
 }
-
-/* Events Box */
-.events-box {
-    margin: 0;
-    padding: 0;
-    border-top: 1px dashed #cbd5e1;
-}
-
-.events-box h4 {
-    margin: 12px 0 8px 0;
-    padding: 8px 8px 0 8px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #0f172a;
-    text-transform: uppercase;
-}
-
-/* Events Table */
-.events-table {
-    width: calc(100% - 16px);
-    border-collapse: collapse;
-    font-size: 11px;
-    margin: 0 8px 0 8px;
-}
-
-.events-table-container {
-    margin: 0;
-}
-
-.events-table thead {
-    background: #f0f1f3;
-    border-bottom: 1px solid #cbd5e1;
-}
-
-.events-table th {
-    padding: 6px 6px;
-    font-weight: 700;
-    text-align: left;
-    color: #475569;
-    font-size: 10px;
-    text-transform: uppercase;
-}
-
-.events-table td {
-    padding: 6px;
-    border-bottom: 1px solid #e5e7eb;
-    color: #0f172a;
-    font-size: 11px;
-}
-
-.events-table tr:last-child td {
-    border-bottom: none;
-}
-
 .params-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    font-size: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 12px;
 }
-
 .param-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-
 .param-label {
-    font-weight: 500;
-    color: #64748b;
-    font-size: 11px;
-    text-transform: uppercase;
+  font-weight: 500;
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
 }
-
 .param-value {
-    font-weight: 700;
-    color: #0f172a;
-    font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 12px;
 }
 
-/* Throughput */
-.throughput {
-    font-size: 13px;
-    font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 12px;
-    padding: 8px;
-    background: #f0f9ff;
-    border-left: 3px solid #3b82f6;
-    border-radius: 2px;
-}
-
-/* Metrics Layout */
-.metrics-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.metrics-col {
-    display: flex;
-    flex-direction: column;
-}
-
-.metrics-col h4 {
-    font-size: 11px;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 8px 0;
-    text-transform: uppercase;
-    border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 6px;
-}
-
-.metric-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    font-size: 12px;
-    border-bottom: 1px dashed #e5e7eb;
-}
-
-.metric-row:last-child {
-    border-bottom: none;
-}
-
-.metric-row .label {
-    font-weight: 500;
-    color: #64748b;
-    font-size: 11px;
-}
-
-.metric-row .value {
-    font-weight: 600;
-    color: #0f172a;
-}
-
-/* Highlight Classes */
-.better {
-    color: #16a34a !important;
-    font-weight: 900 !important;
-}
-
-.worse {
-    color: #dc2626 !important;
-    font-weight: 900 !important;
-}
-
-.row-better {
-    background: #f0fdf4;
-}
-
-.row-worse {
-    background: #fef2f2;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-    .comparison-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
-    .comparison-column:last-child {
-        border-left: none;
-        border-top: 2px solid #64748b;
-        margin-top: 10px;
-    }
-}
-
-@media (max-width: 768px) {
-    .comparison-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-        border-width: 1px;
-        margin: 10px 0;
-    }
-
-    .comparison-column:last-child {
-        border-left: none;
-        border-top: 2px solid #64748b;
-        margin-top: 10px;
-    }
-
-    .column-title {
-        font-size: 12px;
-        padding: 12px;
-    }
-
-    .comparison-section {
-        padding: 12px;
-    }
-
-    .comparison-section h3 {
-        font-size: 12px;
-        margin-bottom: 10px;
-    }
-
-    .config-table {
-        font-size: 11px;
-    }
-
-    .config-table td {
-        padding: 4px 6px;
-    }
-
-    .metrics-cols {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-
-    .metric-row {
-        font-size: 11px;
-        padding: 5px 0;
-    }
-
-    .param-label {
-        font-size: 10px;
-    }
-
-    .param-value {
-        font-size: 11px;
-    }
-}
-
-/* Modal styles */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    max-width: 800px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-    position: relative;
-    margin: 0 auto;
-    /* 覆盖 results.css 的绝对定位 */
-    top: auto !important;
-    left: auto !important;
-    transform: none !important;
-}
-
-/* Select Modal (Switch button) - 更大的弹窗 */
+/* ---- Select-modal sizing ---- */
 #selectModal .modal-content {
-    max-width: 1400px;
-    width: 95%;
-    max-height: 85vh;
+  max-width: 1400px;
+  width: 95%;
+  max-height: 85vh;
 }
 
-/* View Modal - 保持原样 */
+/* ---- View-modal specifics ---- */
 .view-modal-content {
-    max-width: 1100px;
+  max-width: 1100px;
 }
-
 .view-modal-content .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
-
 .view-modal-content h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #0f172a;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #0f172a;
 }
 
 .view-modal-body {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
-
 .view-modal-section h3 {
-    margin: 0 0 12px 0;
-    color: #0f172a;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-
 .view-config-table {
-    width: 100%;
-    margin: 0 0 16px 0;
+  width: 100%;
+  margin: 0 0 16px 0;
 }
-
 .view-events-box {
-    border-top: none;
+  border-top: none;
 }
-
 .view-events-box h4 {
-    padding: 0;
-    margin-top: 16px;
+  padding: 0;
+  margin-top: 16px;
 }
-
 .view-events-box h4:first-child {
-    margin-top: 0;
+  margin-top: 0;
 }
-
 .view-events-box .events-table {
-    width: 100%;
-    margin: 0;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.modal-header h2 {
-    margin: 0;
-    flex: 1;
-}
-
-.close-btn {
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #64748b;
-    transition: color 0.2s;
-    background: none;
-    border: none;
-    padding: 0;
-    line-height: 1;
-}
-
-.close-btn:hover {
-    color: #0f172a;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #0f172a;
+  width: 100%;
+  margin: 0;
 }
 
 .modal-table-container {
-    overflow-x: auto;
+  overflow-x: auto;
 }
 
+/* ---- #selectList table ---- */
 #selectList {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
 }
-
-#selectList th,
-#selectList td {
-    padding: 12px;
-    border: 1px solid #e5e7eb;
-    text-align: left;
-}
-
-#selectList th {
-    background: #f8fafc;
-    font-weight: 700;
-}
-
-#selectList tr:hover {
-    background: #f1f5f9;
-}
-
-.btn.small {
-    padding: 8px 16px;
-    font-size: 14px;
-    min-width: auto;
-}
-
-/* Modal table styling */
-#selectList {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
 #selectList thead {
-    background: #f0f4f8;
+  background: #f0f4f8;
 }
-
 #selectList th {
-    padding: 14px 12px;
-    border: 1px solid #cbd5e1;
-    text-align: left;
-    font-weight: 700;
-    color: #0f172a;
-    user-select: none;
+  padding: 14px 12px;
+  border: 1px solid #cbd5e1;
+  text-align: left;
+  font-weight: 700;
+  color: #0f172a;
+  user-select: none;
 }
-
 #selectList th.sortable {
-    cursor: pointer;
+  cursor: pointer;
 }
-
 #selectList th.sortable:hover {
-    background: #e2e8f0;
+  background: #e2e8f0;
 }
-
 .sort-arrow {
-    margin-left: 6px;
-    opacity: 0.6;
-    font-size: 12px;
+  margin-left: 6px;
+  opacity: 0.6;
+  font-size: 12px;
 }
 
 #selectList td {
-    padding: 16px 12px;
-    border: 1px solid #cbd5e1;
-    vertical-align: middle;
-    height: 130px;
+  padding: 16px 12px;
+  border: 1px solid #cbd5e1;
+  vertical-align: middle;
+  height: 130px;
 }
-
 #selectList td.sim-name {
-    font-weight: 700;
-    color: #0f172a;
-    min-width: 120px;
+  font-weight: 700;
+  color: #0f172a;
+  min-width: 120px;
 }
-
 #selectList td.sim-date {
-    white-space: nowrap;
-    min-width: 140px;
+  white-space: nowrap;
+  min-width: 140px;
 }
-
 #selectList td.sim-info {
-    font-size: 13px;
-    line-height: 1.5;
-    color: #475569;
-    min-width: 280px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569;
+  min-width: 280px;
 }
-
 #selectList tr:hover {
-    background: #f8fafc;
+  background: #f8fafc;
 }
-
 #selectList tr:nth-child(even) {
-    background: #f8fafc;
+  background: #f8fafc;
 }
 
-/* Options buttons styling */
 #selectList td.sim-options {
-    display: flex;
-    flex-direction: row;
-    gap: 6px;
-    justify-content: center;
-    align-items: center;
-    min-width: 200px;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  min-width: 200px;
 }
 
-.btn-option {
-    border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    color: white;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-    min-width: 85px;
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .param-label {
+    font-size: 10px;
+  }
+  .param-value {
+    font-size: 11px;
+  }
 }
-
-.btn-view {
-    background: #10b981;
-    border-color: #059669;
-}
-
-.btn-view:hover {
-    background: #059669;
-    transform: translateY(-1px);
-}
-
-.btn-compare {
-    background: #1f2937;
-    border-color: #111827;
-}
-
-.btn-compare:hover {
-    background: #111827;
-    transform: translateY(-1px);
-}
-
-.btn-delete {
-    background: #ef4444;
-    border-color: #dc2626;
-}
-
-.btn-delete:hover {
-    background: #dc2626;
-    transform: translateY(-1px);
-}
-
