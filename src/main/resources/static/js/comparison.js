@@ -1,7 +1,6 @@
 const API = {
     summaries: '/api/results/summaries',
     lastResult: '/api/results/lastresult',
-    viewOrCompare: (name) => `/api/results/vieworcompare/${encodeURIComponent(name)}`,
     deleteResult: (name) => `/api/results/delete/${encodeURIComponent(name)}`
 };
 
@@ -61,6 +60,14 @@ function formatDate(dateValue) {
     const date = new Date(dateValue);
     if (Number.isNaN(date.getTime())) return '--';
     return date.toLocaleString();
+}
+
+function getDisplaySimulationName(rawName) {
+    if (!rawName || rawName === 'A' || rawName === 'B') {
+        return 'Latest Result';
+    }
+
+    return rawName;
 }
 
 function toReadableText(rawValue) {
@@ -315,16 +322,17 @@ function buildEventRows(config) {
     };
 }
 
-function mapSavedResult(savedResult) {
-    const config = savedResult?.config || {};
-    const stats = savedResult?.stats || {};
+function mapSimulationResult(rawResult, preferredName = '') {
+    const config = rawResult?.config || {};
+    const stats = rawResult?.stats || {};
 
     const runwayCount = Array.isArray(config.runwaySettings) ? config.runwaySettings.length : 0;
+    const simulationName = rawResult?.simulationName || getDisplaySimulationName(preferredName);
 
     return {
-        id: savedResult?.simulationName || '',
-        name: savedResult?.simulationName || 'Unnamed Simulation',
-        timestamp: formatDate(savedResult?.dateExecuted),
+        id: rawResult?.simulationName || preferredName || 'latest-result',
+        name: simulationName,
+        timestamp: formatDate(rawResult?.dateExecuted),
         config: {
             'Number of Runways': runwayCount,
             'Inbound Rate': `${config.inboundRate ?? '--'} /hr`,
@@ -337,7 +345,7 @@ function mapSavedResult(savedResult) {
             'Equipment Failure Rate': config.equipmentFailureRate ?? '--'
         },
         events: buildEventRows(config),
-        eventLog: getEventLogLines(savedResult, config),
+        eventLog: getEventLogLines(rawResult, config),
         statistics: {
             throughput: toNumber(stats.hourlyThroughput),
             depAvgWait: toNumber(stats.avgWaitTime),
@@ -355,7 +363,13 @@ function mapSavedResult(savedResult) {
 }
 
 async function fetchSummaries() {
-    simulationSummaries = await fetchJson(API.summaries);
+    try {
+        simulationSummaries = await fetchJson(API.summaries);
+    } catch (error) {
+        console.warn('Unable to fetch saved simulation summaries:', error);
+        simulationSummaries = [];
+    }
+
     return simulationSummaries;
 }
 
@@ -364,19 +378,8 @@ async function fetchSimulationByName(name) {
         return simulationDetailsCache.get(name);
     }
 
-    const raw = await fetchJson(API.viewOrCompare(name));
-    const mapped = mapSavedResult(raw);
-
-    if (!Array.isArray(mapped.eventLog) || mapped.eventLog.length === 0) {
-        try {
-            const lastResult = await fetchJson(API.lastResult);
-            if (lastResult && lastResult.simulationName === name) {
-                mapped.eventLog = getEventLogLines(lastResult, lastResult && lastResult.config);
-            }
-        } catch (error) {
-            console.warn('Unable to fetch last simulation result for event log fallback:', error);
-        }
-    }
+    const raw = await fetchJson(API.lastResult);
+    const mapped = mapSimulationResult(raw, name);
 
     simulationDetailsCache.set(name, mapped);
     return mapped;
@@ -391,8 +394,8 @@ async function loadComparison(simAName, simBName) {
     currentSimNames.A = simAName;
     currentSimNames.B = simBName;
 
-    setText('simNameA', simA.name.toUpperCase());
-    setText('simNameB', simB.name.toUpperCase());
+    setText('simNameA', getDisplaySimulationName(simAName || simA.name).toUpperCase());
+    setText('simNameB', getDisplaySimulationName(simBName || simB.name).toUpperCase());
 
     hideSelectModal();
     populateSimulationData(simA, 'A');
@@ -598,7 +601,8 @@ async function ensureCurrentSelectionAndLoad() {
     const names = simulationSummaries.map(s => s.simulationName);
 
     if (!names.length) {
-        throw new Error('No saved simulations available for comparison');
+        await loadComparison('A', 'B');
+        return;
     }
 
     if (!currentSimNames.A || !names.includes(currentSimNames.A)) {
@@ -762,7 +766,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await ensureCurrentSelectionAndLoad();
     } catch (error) {
         console.error('Error initialising comparison page:', error);
-        alert('No saved simulation results found. Save at least one result from the results page first.');
+        alert('Failed to load the latest simulation result. Please ensure a simulation has completed.');
         window.location.href = '/';
     }
 
