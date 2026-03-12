@@ -632,7 +632,7 @@ document.getElementById("new-event-mode").addEventListener("change", function ()
 // 3. The actual LOAD function
 function applyConfigToPage(data) {
     const fieldMapping = {
-        "input-sim_mode": data.simulationMode,
+        "simulation-mode": data.simulationMode,
         "input-inbound_rate": data.inboundRate,
         "input-outbound_rate": data.outboundRate,
         "input-sim_duration": data.duration,

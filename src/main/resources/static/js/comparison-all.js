@@ -16,6 +16,7 @@ let currentSort = {
 document.addEventListener('DOMContentLoaded', async () => {
     await loadAllSimulations();
     setupSortingListeners();
+    updateSortIndicators();
 });
 
 // Fetch all simulation summaries
@@ -130,7 +131,7 @@ function renderTable(sortColumn = null, sortDirection = null) {
     bindDeleteButtons();
 
     // Highlight best values
-    highlightBestValues();
+    // highlightBestValues();
 }
 
 function bindDeleteButtons() {
@@ -229,6 +230,9 @@ function setupSortingListeners() {
     headers.forEach(header => {
         header.addEventListener('click', () => {
             const column = header.dataset.column;
+            // if (column === 'name') {
+            //     return;
+            // }
             const bestDirection = header.dataset.best || 'desc';
 
             // Determine sort direction
@@ -261,7 +265,9 @@ function updateSortIndicators(activeColumn, direction) {
         const indicator = header.querySelector('.sort-indicator');
         const column = header.dataset.column;
 
-        if (column === activeColumn) {
+        if (!indicator) return;
+
+        if (activeColumn && direction && column === activeColumn) {
             indicator.classList.add('active', direction);
             indicator.classList.remove(direction === 'asc' ? 'desc' : 'asc');
         } else {

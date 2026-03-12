@@ -25,18 +25,27 @@ body {
     padding: 0 6vw;
 }
 
-.compare-all-centre {
+.compare-all-centre-padding {
     padding: 30px 0;
 }
 
-/* Table Container */
-.table-container {
-    width: min(1800px, 100%);
+.compare-all-centre {
+    width: min(1840px, 100%);
     margin: 0 auto;
+    padding: 16px;
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.05);
+}
+
+/* Table Container */
+.table-container {
+    width: 100%;
+    margin: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0;
     overflow: hidden;
     overflow-x: auto;
 }
@@ -96,7 +105,11 @@ body {
     top: 50%;
     transform: translateY(-50%);
     font-size: 12px;
-    opacity: 0.5;
+    opacity: 0.75;
+}
+
+.sort-indicator::after {
+    content: '↑↓';
 }
 
 .sort-indicator.active {
@@ -133,22 +146,22 @@ body {
 }
 
 .comparison-table td:first-child {
-    text-align: left;
+    text-align: center;
     font-weight: 700;
     color: #0f172a;
-    background-color: #f8fafc;
+    /*background-color: #f8fafc;*/
 }
 
 .comparison-table td:last-child {
     border-right: none;
 }
 
-/* Best Value Highlighting */
-.best-value {
+/* Best Value Highlighting (disabled by request) */
+/*.best-value {
     background-color: transparent !important;
     font-weight: 700;
     color: #b91c1c;
-}
+}*/
 
 .btn-delete {
     border: none;
@@ -180,12 +193,12 @@ body {
     padding: 40px;
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.05);
+    border-radius: 0;
+    box-shadow: none;
     color: #64748b;
     font-size: 1.1rem;
-    width: min(1800px, 100%);
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
 }
 
 .loading-message {
@@ -238,12 +251,12 @@ body {
 
 .table-container::-webkit-scrollbar-track {
     background: #f8fafc;
-    border-radius: 0 0 8px 8px;
+    border-radius: 0;
 }
 
 .table-container::-webkit-scrollbar-thumb {
     background: linear-gradient(90deg, #94a3b8 0%, #64748b 100%);
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .table-container::-webkit-scrollbar-thumb:hover {

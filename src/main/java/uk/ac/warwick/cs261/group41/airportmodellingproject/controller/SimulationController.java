@@ -30,6 +30,24 @@ public class SimulationController {
         return ResponseEntity.ok("Simulation started");
     }
 
+    @PostMapping("/runway/{id}/mode")
+    public ResponseEntity<String> updateRunwayMode(@PathVariable int id, @RequestParam String mode) {
+        simulationService.manualRunwayModeChange(id, mode);
+        return ResponseEntity.ok("Runway mode updated");
+    }
+
+    @PostMapping("/runway/{id}/status")
+    public ResponseEntity<String> updateRunwayStatus(@PathVariable int id, @RequestParam String status) {
+        simulationService.manualRunwayStatusChange(id, status);
+        return ResponseEntity.ok("Runway status updated");
+    }
+
+    @PostMapping("/aircraft/{callsign}/emergency")
+    public ResponseEntity<String> updateAircraftEmergency(@PathVariable String callsign, @RequestParam String status) {
+        simulationService.manualAircraftEmergencyChange(callsign, status);
+        return ResponseEntity.ok("Aircraft emergency status updated");
+    }
+
     @PostMapping("/pause")
     public ResponseEntity<String> pause() {
         simulationService.pauseSimulation();
