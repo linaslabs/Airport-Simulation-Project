@@ -19,10 +19,10 @@ body {
   padding: 30px 0;
 }
 
-.compare-all-centre {
+.compare-all-card {
   width: min(1840px, 100%);
   margin: 0 auto;
-  padding: 16px;
+  padding: 30px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
@@ -138,10 +138,10 @@ body {
 }
 
 .comparison-table td:first-child {
-    text-align: center;
-    font-weight: 700;
-    color: #0f172a;
-    /*background-color: #f8fafc;*/
+  text-align: center;
+  font-weight: 700;
+  color: #0f172a;
+  background-color: #f8fafc;
 }
 
 .comparison-table td:last-child {

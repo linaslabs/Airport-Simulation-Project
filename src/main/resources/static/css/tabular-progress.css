@@ -28,12 +28,6 @@
   min-height: 0;
 }
 
-/* Override to fit page without scroll */
-.progress-wrap {
-  min-height: 880px;
-  padding: 8px 2vw !important;
-}
-
 /* Floating panel */
 .sim-card {
   background: #ffffff;
@@ -44,11 +38,11 @@
   overflow: hidden;
   width: 100%;
   max-width: 1400px;
-  max-height: 890px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  padding: 15px;
 }
 
 /* Column split */

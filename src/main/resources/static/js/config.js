@@ -76,7 +76,7 @@ const inputConfig = [
     { label: "Inbound Rate /hr",           name: "inbound_rate",      range: "0 - 100",     min: 0,  max: 100,     step: 1,    val: 15 },
     { label: "Outbound Rate /hr",          name: "outbound_rate",     range: "0 - 100",     min: 0,  max: 100,     step: 1,    val: 15 },
     { label: "Simulation Duration (mins)", name: "sim_duration",      range: "60 - 1440",   min: 60, max: 1440,    step: 1,    val: 120 },
-    { label: "Max Wait Time (mins)",      name: "max_delay",         range: "0 - 60",      min: 0,  max: 60,      step: 1,    val: 30 },
+    { label: "Max Delay Time (mins)",      name: "max_delay",         range: "0 - 60",      min: 0,  max: 60,      step: 1,    val: 30 },
     { label: "Simulation Seed",            name: "seed",              range: "0 - 10^8",    min: 0,  max: 100000000,step: 1,    val: 0 },
     { label: "Mechanical Failure Rate",    name: "mech_failure_rate", range: "0.00 - 0.10", min: 0,  max: 0.1,     step: 0.01, val: 0.00 },
     { label: "Health Issue Rate",          name: "health_issue_rate", range: "0.00 - 0.10", min: 0,  max: 0.1,     step: 0.01, val: 0.00 },

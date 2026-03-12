@@ -83,7 +83,7 @@
           style="
             background: white;
             border-radius: 16px;
-            padding: 24px;
+            padding: 30px;
             max-width: 1200px;
             margin: 0 auto;
           "
@@ -112,51 +112,22 @@
                   </div>
                 </div>
 
-    <div class="nav-title">
-        Configuration
-    </div>
-</header>
+                <div id="input-parameters-list"></div>
 
-<!--CONFIGURATION TITLE-->
-<!--<div class="container text-center mb-5 mt-4">-->
-<!--    <h1 class="display-3 fw-bold text-uppercase" style="color: #0f172a; letter-spacing: 2px;">-->
-<!--        Configuration-->
-<!--    </h1>-->
-<!--    <p class="lead text-muted fw-bold">Set parameters, manage runways, and schedule airport events.</p>-->
-<!--</div>-->
-<main class="wrap progress-wrap">
-    <div class="progress-centre">
-        <div class="shadow-lg" style="background:white; border-radius:16px; padding:24px; max-width:1200px; margin: 0 auto;">
-            <div class="container">
-                <div class="row mt-1">
-                    <div class="col">
-                        <h5>Input Parameters</h5>
-                        <div class="wrapper d-flex align-items-center mb-2">
-                            <div class="me-2">
-                                <label class="form-label mb-0 small fw-bold field-label text-dark">Number of Runways</label>
-                                <div class="text-muted field-range" style="font-size: 0.7rem; line-height: 1;">Range: 1 - 10</div>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <button id="minus-button">-</button>
-                                <div id="runway-counter">1</div>
-                                <button id="add-button">+</button>
-                            </div>
-                        </div>
-
-                        <div id="input-parameters-list"></div>
-
-                        <div class="mb-2 d-flex justify-content-between align-items-center">
-                            <div class="me-2">
-                                <label class="form-label mb-0 small fw-bold text-dark" for="input-auto_gen">Enable Random Events</label>
-                                <div class="text-muted" style="font-size: 0.7rem; line-height: 1;">Uses failure rates to generate unplanned issues.</div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <input class="form-check-input border-secondary" type="checkbox" id="input-auto_gen"
-                                       style="width: 20px; height: 20px; cursor: pointer; margin-top: 0;">
-                            </div>
-                        </div>
-
-                        <div id="rate-parameters-list"></div>
+                <div
+                  class="mb-2 d-flex justify-content-between align-items-center"
+                >
+                  <div class="me-2">
+                    <label
+                      class="form-label mb-0 small fw-bold text-dark"
+                      for="input-auto_gen"
+                      >Enable Random Events</label
+                    >
+                    <div
+                      class="text-muted"
+                      style="font-size: 0.7rem; line-height: 1"
+                    >
+                      Uses failure rates to generate unplanned issues.
                     </div>
                   </div>
                   <div class="d-flex align-items-center">
