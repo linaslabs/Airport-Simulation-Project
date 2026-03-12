@@ -1,4 +1,6 @@
-/* Progress Bar */
+/* tabular-progress.html specific styling */
+
+/* Progress bar */
 .custom-progress-bar {
   width: 100%;
   background-color: #e0e0e0;
@@ -15,10 +17,7 @@
   transition: width 0.3s ease;
 }
 
-/* Main Layout – body flex, .progress-wrap, .progress-centre
-   are in layout.css.
-   .comparison-content is just a structural wrapper here;
-   .sim-card is the actual floating panel. */
+/* Main Layout */
 .comparison-content {
   background: none;
   box-shadow: none;
@@ -29,12 +28,13 @@
   min-height: 0;
 }
 
-/* Override shared layout spacing to fit panel without page scroll */
+/* Override to fit page without scroll */
 .progress-wrap {
   min-height: 880px;
   padding: 8px 2vw !important;
 }
 
+/* Floating panel */
 .sim-card {
   background: #ffffff;
   border-radius: 16px;
@@ -51,11 +51,11 @@
   min-height: 0;
 }
 
-/* Column Split */
+/* Column split */
 .sim-card .comparison-grid {
   flex: 1;
   min-height: 0;
-  display: flex !important; /* Swapped from grid to flex for perfect height constraint */
+  display: flex !important;
   margin: 10px !important;
   background: #ffffff !important;
   gap: 0 !important;
@@ -76,7 +76,7 @@
   border-left: 1px solid #e5e7eb !important;
 }
 
-/* Table Sections */
+/* Table sections */
 .sim-card .comparison-section {
   display: flex;
   flex-direction: column;
@@ -126,7 +126,7 @@
   table-layout: fixed;
 }
 
-/* Control Panel */
+/* Control panel */
 .control-panel {
   display: flex;
   justify-content: center;
@@ -163,8 +163,7 @@
 }
 
 /* Table UI */
-
-/* Dropdown Menus */
+/* Dropdown menus */
 .events-table select {
   appearance: none;
   -webkit-appearance: none;
@@ -217,7 +216,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Typography Utilities (for reusability) */
+/* Font utilities for reusability */
 .text-bold-dark {
   font-weight: bold;
   color: #0f172a;
@@ -247,7 +246,7 @@
   color: #dc2626;
 }
 
-/* Emergency State */
+/* Emergency states */
 .emergency-row {
   background-color: #fee2e2 !important;
 }
@@ -270,9 +269,8 @@
   font-weight: 700;
 }
 
-/* Automated Events Indicators */
-
-/* Scheduled Events (Soft Purple) */
+/* Automated events indicators */
+/* Scheduled events (soft purple) */
 .events-table select:disabled.lock-scheduled {
   border: 2px dashed #8b5cf6 !important;
   background-color: rgba(139, 92, 246, 0.1) !important;
@@ -280,7 +278,7 @@
   font-weight: 700;
 }
 
-/* Random Events (orange) */
+/* Random events (orange) */
 .events-table select:disabled.lock-random {
   border: 2px dashed #f59e0b !important;
   background-color: rgba(245, 158, 11, 0.1) !important;
@@ -288,7 +286,7 @@
   font-weight: 700;
 }
 
-/* Event Legend */
+/* Event legend */
 .event-legend {
   display: flex;
   gap: 15px;

@@ -1,6 +1,6 @@
-/* Reset and body styles are in base.css */
+/* index.html specific styling */
 
-/* ===== NAVBAR ===== */
+/* Completely different navbar to the application navbar */
 .navbar{
     position:absolute;
     top:0;
@@ -24,7 +24,7 @@
     opacity:.7;
 }
 
-/* ===== HERO SECTION ===== */
+/* Hero */
 .hero{
     height:100vh;
     background:
@@ -50,7 +50,7 @@
     opacity:.85;
 }
 
-/* ===== CONTENT SECTION ===== */
+/* Content */
 .section{
     padding:100px 12%;
     background:white;
@@ -110,6 +110,7 @@
     transform:translateY(-3px);
 }
 
+/* Responsive Design */
 @media(max-width:900px){
     .hero h1{
         font-size:42px;

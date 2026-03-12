@@ -1,21 +1,10 @@
-/* ===================================================
-   layout.css – Shared page layout & centered panel
-   Provides the "floating card" pattern used across
-   every page (except index / hero).
-   =================================================== */
+/* SHARED STYLES - Floating panel layout */
 
-/* ===== PAGE WRAPPER ===== */
 .wrap {
   width: 100%;
   padding: 38px 6vw 80px;
 }
 
-/* ===== PROGRESS / CENTRED LAYOUT ===== */
-/*
-   Used by config, results, tabular-progress – any page
-   where the panel should sit in the vertical centre of
-   the remaining viewport below the 79 px navbar.
-*/
 body.layout-centred {
   display: flex;
   flex-direction: column;
@@ -39,7 +28,7 @@ body.layout-centred {
   justify-content: center;
 }
 
-/* ===== FLOATING WHITE PANEL ===== */
+/* Floating panel */
 .panel {
   width: min(1200px, 100%);
   margin: 0 auto;
@@ -50,7 +39,6 @@ body.layout-centred {
   padding: 30px;
 }
 
-/* ===== PAGE TITLE ===== */
 .page-title {
   text-align: center;
   margin: 8px 0 28px;
@@ -66,7 +54,7 @@ body.layout-centred {
   font-weight: 650;
 }
 
-/* ===== RESPONSIVE ===== */
+/* Responsive Design */
 @media (max-width: 900px) {
   .wrap {
     padding: 26px 18px 60px;

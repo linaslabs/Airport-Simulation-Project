@@ -1,3 +1,5 @@
+/* graphical-progress.html specific styling */
+
 .sim-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;

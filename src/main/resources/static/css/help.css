@@ -1,13 +1,14 @@
-/* Reset and body styles are in base.css; .wrap and .panel base in layout.css */
+/* help.html specific styling */
 
-/* Override the shared .wrap for help: narrower + less top padding */
+
+/* Override */
 .wrap {
   padding: 10px 6vw 80px;
   max-width: 1100px;
   margin: 0 auto;
 }
 
-/* Override the shared .panel for help: lighter shadow, more padding */
+/* Override */
 .panel {
   padding: 36px;
   margin-bottom: 28px;
@@ -98,7 +99,6 @@
   margin-top: 2px;
 }
 
-/* Badges use the 4px border radius for consistency with app buttons */
 .badge-custom {
   display: inline-block;
   padding: 2px 8px;
@@ -218,6 +218,7 @@
   margin-bottom: 0;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
   .wrap {
     padding: 24px 16px 60px;

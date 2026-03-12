@@ -1,12 +1,5 @@
-/* ===================================================
-   components.css – Shared UI widgets
-   Everything that is used on more than one page lives
-   here.  Page-specific files add on TOP of these.
-   =================================================== */
+/* SHARED UI WIDGETS */
 
-/* ╔══════════════════════════════════════════════════╗
-   ║  BUTTONS                                        ║
-   ╚══════════════════════════════════════════════════╝ */
 .btn {
   border: none;
   cursor: pointer;
@@ -103,9 +96,7 @@
   transform: translateY(0);
 }
 
-/* ╔══════════════════════════════════════════════════╗
-   ║  MODALS                                         ║
-   ╚══════════════════════════════════════════════════╝ */
+/* Modals */
 .modal {
   display: none;
   position: fixed;
@@ -119,7 +110,6 @@
 }
 
 .modal.flex-modal {
-  /* comparison.html JS toggles via .hidden instead of display */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -216,9 +206,8 @@
   overflow-x: auto;
 }
 
-/* ╔══════════════════════════════════════════════════╗
-   ║  DATA DISPLAY: throughput, stat grids, metrics  ║
-   ╚══════════════════════════════════════════════════╝ */
+/* Data Display */
+
 .throughput {
   font-size: 13px;
   font-weight: 700;
@@ -230,7 +219,6 @@
   border-radius: 2px;
 }
 
-/* Large throughput used on the results page panel */
 .throughput-lg {
   font-size: 30px;
   font-weight: 900;
@@ -348,9 +336,7 @@
   background: #fef2f2;
 }
 
-/* ╔══════════════════════════════════════════════════╗
-   ║  EVENT LOG                                      ║
-   ╚══════════════════════════════════════════════════╝ */
+/* Event Log */
 .event-log-section {
   margin-top: 26px;
   padding-top: 18px;
@@ -375,9 +361,7 @@
   color: var(--muted);
 }
 
-/* ╔══════════════════════════════════════════════════╗
-   ║  CONFIG / EVENTS TABLES (comparison & tabular)  ║
-   ╚══════════════════════════════════════════════════╝ */
+/* Config and Event tables */
 .config-content-container {
   max-height: 350px;
   overflow-y: auto;
@@ -455,9 +439,7 @@
   border-bottom: none;
 }
 
-/* ╔══════════════════════════════════════════════════╗
-   ║  COMPARISON GRID (side-by-side)                 ║
-   ╚══════════════════════════════════════════════════╝ */
+/* Comparison Grid */
 .comparison-content {
   width: 100%;
   background: #ffffff;
@@ -465,7 +447,6 @@
   box-shadow: var(--shadow);
   padding: 20px;
   margin: 0 auto;
-  /* for centred layouts */
   flex: 1;
   min-height: 0;
   display: flex;
@@ -568,9 +549,7 @@
   text-transform: uppercase;
 }
 
-/* ╔══════════════════════════════════════════════════╗
-   ║  RESPONSIVE: shared                             ║
-   ╚══════════════════════════════════════════════════╝ */
+/* Responsive Design */
 @media (max-width: 900px) {
   .btn {
     min-width: 0;

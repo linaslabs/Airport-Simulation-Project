@@ -1,5 +1,4 @@
-/* ===== COMPARE ALL PAGE STYLES ===== */
-/* Reset, tokens and body base styles are in base.css */
+/* comparison-all.html specific styling */
 
 body {
   overflow: auto;
@@ -32,7 +31,7 @@ body {
     0 1px 4px rgba(15, 23, 42, 0.05);
 }
 
-/* Table Container */
+/* Table container */
 .table-container {
   width: 100%;
   margin: 0;
@@ -43,7 +42,7 @@ body {
   overflow-x: auto;
 }
 
-/* Table Styles */
+/* Table styles */
 .comparison-table {
   width: 100%;
   border-collapse: collapse;
@@ -118,7 +117,7 @@ body {
   content: "↓";
 }
 
-/* Table Body */
+/* Table body */
 .comparison-table tbody tr {
   border-bottom: 1px solid #cbd5e1;
   transition: background-color 0.2s ease;
@@ -149,14 +148,13 @@ body {
   border-right: none;
 }
 
-/* Best Value Highlighting (disabled by request) */
 /*.best-value {
     background-color: transparent !important;
     font-weight: 700;
     color: #b91c1c;
 }*/
 
-/* Loading and No Results Messages */
+/* Loading and no results messages */
 .loading-message,
 .no-results {
   text-align: center;

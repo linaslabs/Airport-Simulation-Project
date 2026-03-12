@@ -1,11 +1,6 @@
-/* ===================================================
-   comparison.css – Comparison page only.
-   Shared components (comparison-grid, metrics, config
-   tables, events tables, buttons, modals) are in
-   components.css.  Layout helpers are in layout.css.
-   =================================================== */
+/* comparison.html specific styling */
 
-/* ---- Parameters box (comparison-page specific) ---- */
+/* Parameters box */
 .config-box {
   margin: 0;
   padding: 12px 8px;
@@ -41,14 +36,14 @@
   font-size: 12px;
 }
 
-/* ---- Select-modal sizing ---- */
+/* Select-modal sizing */
 #selectModal .modal-content {
   max-width: 1400px;
   width: 95%;
   max-height: 85vh;
 }
 
-/* ---- View-modal specifics ---- */
+/* View-modal specifics */
 .view-modal-content {
   max-width: 1100px;
 }
@@ -100,7 +95,7 @@
   overflow-x: auto;
 }
 
-/* ---- #selectList table ---- */
+/* #selectList table */
 #selectList {
   width: 100%;
   border-collapse: collapse;
@@ -166,7 +161,7 @@
   min-width: 200px;
 }
 
-/* ---- Responsive ---- */
+/* Responsive Design */
 @media (max-width: 768px) {
   .param-label {
     font-size: 10px;
