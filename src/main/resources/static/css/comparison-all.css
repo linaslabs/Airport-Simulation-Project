@@ -149,7 +149,7 @@ body {
     text-align: center;
     font-weight: 700;
     color: #0f172a;
-    background-color: #f8fafc;
+    /*background-color: #f8fafc;*/
 }
 
 .comparison-table td:last-child {
