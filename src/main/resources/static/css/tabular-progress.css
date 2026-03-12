@@ -16,16 +16,23 @@
 }
 
 /* Main Layout – body flex, .progress-wrap, .progress-centre
-   are in layout.css.  Only sim-card overrides below. */
-
-.progress-centre,
-.comparison-content,
-.sim-card {
-  flex: 1;
-  min-height: 0;
+   are in layout.css.
+   .comparison-content is just a structural wrapper here;
+   .sim-card is the actual floating panel. */
+.comparison-content {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  min-height: 0;
+}
+
+/* Override shared layout spacing to fit panel without page scroll */
+.progress-wrap {
+  min-height: 880px;
+  padding: 8px 2vw !important;
 }
 
 .sim-card {
@@ -37,7 +44,11 @@
   overflow: hidden;
   width: 100%;
   max-width: 1400px;
+  max-height: 890px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* Column Split */
@@ -45,7 +56,7 @@
   flex: 1;
   min-height: 0;
   display: flex !important; /* Swapped from grid to flex for perfect height constraint */
-  margin: 16px !important;
+  margin: 10px !important;
   background: #ffffff !important;
   gap: 0 !important;
   border: none !important;
@@ -120,23 +131,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 15px;
-  padding: 15px;
+  gap: 12px;
+  padding: 10px 15px;
   background: #f8fafc !important;
-  margin: 0 16px 16px 16px !important;
+  margin: 0 10px 10px 10px !important;
   border-radius: 8px !important;
   flex-shrink: 0;
 }
 
 .btn-control {
   min-width: 140px;
-  padding: 12px 20px;
-  font-size: 15px;
+  padding: 10px 18px;
+  font-size: 14px;
 }
 .btn-speed {
   min-width: 60px;
-  padding: 12px 15px;
-  font-size: 14px;
+  padding: 10px 14px;
+  font-size: 13px;
 }
 .control-divider {
   width: 2px;
