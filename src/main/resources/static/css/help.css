@@ -1,11 +1,4 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background: #f4f7fb;
-    color: #0f172a;
-    overflow-x: hidden;
-}
+/* Reset and body styles are in base.css */
 
 .wrap {
     padding: 10px 6vw 80px;

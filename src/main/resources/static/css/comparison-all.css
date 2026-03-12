@@ -1,16 +1,7 @@
 /* ===== COMPARE ALL PAGE STYLES ===== */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* Reset, tokens and body base styles are in base.css */
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: #f4f7fb;
-    min-height: 100vh;
-    color: #0f172a;
     overflow: auto;
     display: flex;
     flex-direction: column;

@@ -1,14 +1,4 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    font-family: 'Segoe UI', sans-serif;
-    background:#f4f7fb;
-    overflow-x:hidden;
-}
+/* Reset and body styles are in base.css */
 
 /* ===== NAVBAR ===== */
 .navbar{
