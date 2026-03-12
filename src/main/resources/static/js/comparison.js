@@ -1,5 +1,6 @@
 const API = {
     summaries: '/api/results/summaries',
+    lastResult: '/api/results/lastresult',
     viewOrCompare: (name) => `/api/results/vieworcompare/${encodeURIComponent(name)}`,
     deleteResult: (name) => `/api/results/delete/${encodeURIComponent(name)}`
 };
@@ -21,6 +22,24 @@ function enumToLabel(value) {
         .split('_')
         .map(part => part.charAt(0).toUpperCase() + part.slice(1))
         .join(' ');
+}
+
+function formatEmergencyType(value) {
+    const normalized = value ? String(value).toUpperCase() : '';
+
+    if (normalized === 'MECHANICAL') {
+        return 'Mechanical Failure';
+    }
+
+    if (normalized === 'PASSENGER') {
+        return 'Passenger Health';
+    }
+
+    if (normalized === 'NONE') {
+        return 'None';
+    }
+
+    return enumToLabel(value);
 }
 
 function toNumber(value) {
@@ -90,7 +109,7 @@ function formatRawEventLog(rawEvents) {
                 if (event.duration < 0) {
                     duration = 'duration: indefinite';
                 } else if (event.duration === 0) {
-                    duration = 'duration: immediate';
+                    duration = 'duration: unspecified';
                 } else {
                     duration = 'duration: ' + event.duration + ' mins';
                 }
@@ -98,7 +117,7 @@ function formatRawEventLog(rawEvents) {
 
             formatted.push('Minute ' + tick + ': ' + runwayLabel + ' ' + eventType + '. Status: ' + status + ', mode: ' + mode + ', ' + duration + '.');
         } else {
-            const callsign = event.callsign ? ('aircraft ' + event.callsign) : 'an aircraft';
+            const callsign = event.callsign ? ('Aircraft ' + event.callsign) : 'an aircraft';
             const eventType = toReadableText(event.type);
             const status = toReadableText(event.status);
             formatted.push('Minute ' + tick + ': ' + callsign + ' triggered ' + eventType + ' (' + status + ').');
@@ -246,7 +265,8 @@ async function fetchJson(url, options = {}) {
 }
 
 function buildEventRows(config) {
-    const rows = [];
+    const runwayRows = [];
+    const aircraftRows = [];
 
     const scheduledRunwayEvents = config?.scheduledRunwayEvents || {};
     Object.entries(scheduledRunwayEvents).forEach(([runwayKey, events]) => {
@@ -258,36 +278,42 @@ function buildEventRows(config) {
             const tick = Number.isFinite(event?.tick) ? event.tick : '--';
             const duration = event?.duration === -1 || event?.duration == null ? 'Indefinite' : `${event.duration} mins`;
 
-            rows.push({
+            runwayRows.push({
                 event: `${enumToLabel(event?.type)} on ${runwayLabel}`,
                 time: `${tick} mins`,
                 duration,
-                scheduled: 'Yes',
+                runwayMode: enumToLabel(event?.runwayMode),
+                status: enumToLabel(event?.runwayStatus),
                 tickSort: Number.isFinite(event?.tick) ? event.tick : Number.MAX_SAFE_INTEGER
             });
         });
     });
 
     const scheduledAircraftEvents = config?.scheduledAircraftEvents || {};
-    Object.values(scheduledAircraftEvents).forEach(events => {
+    Object.entries(scheduledAircraftEvents).forEach(([, events]) => {
         if (!Array.isArray(events)) return;
 
         events.forEach(event => {
             const tick = Number.isFinite(event?.tick) ? event.tick : '--';
-            const callsign = event?.callsign ? ` (${event.callsign})` : '';
+            const callsign = event?.callsign;
 
-            rows.push({
-                event: `${enumToLabel(event?.type)}${callsign}`,
+            aircraftRows.push({
+                event: callsign ? `${enumToLabel(event?.type)} (${callsign})` : enumToLabel(event?.type),
                 time: `${tick} mins`,
-                duration: 'Indefinite',
-                scheduled: 'Yes',
+                duration: '--',
+                emergencyType: formatEmergencyType(event?.status),
                 tickSort: Number.isFinite(event?.tick) ? event.tick : Number.MAX_SAFE_INTEGER
             });
         });
     });
 
-    rows.sort((a, b) => a.tickSort - b.tickSort);
-    return rows;
+    runwayRows.sort((a, b) => a.tickSort - b.tickSort);
+    aircraftRows.sort((a, b) => a.tickSort - b.tickSort);
+
+    return {
+        runway: runwayRows,
+        aircraft: aircraftRows
+    };
 }
 
 function mapSavedResult(savedResult) {
@@ -341,6 +367,18 @@ async function fetchSimulationByName(name) {
 
     const raw = await fetchJson(API.viewOrCompare(name));
     const mapped = mapSavedResult(raw);
+
+    if (!Array.isArray(mapped.eventLog) || mapped.eventLog.length === 0) {
+        try {
+            const lastResult = await fetchJson(API.lastResult);
+            if (lastResult && lastResult.simulationName === name) {
+                mapped.eventLog = getEventLogLines(lastResult, lastResult && lastResult.config);
+            }
+        } catch (error) {
+            console.warn('Unable to fetch last simulation result for event log fallback:', error);
+        }
+    }
+
     simulationDetailsCache.set(name, mapped);
     return mapped;
 }
@@ -368,7 +406,10 @@ async function showViewModal(simName) {
         const sim = await fetchSimulationByName(simName);
         const stats = sim.statistics;
 
-        setText('viewModalTitle', sim.name);
+        setText('viewModalTitle', `Simulation Name: ${sim.name}`);
+        populateConfigTable(sim, 'viewConfigTable');
+        populateRunwayEventsTable(sim.events?.runway, 'viewRunwayEvents');
+        populateAircraftEventsTable(sim.events?.aircraft, 'viewAircraftEvents');
         setText('viewThroughput', formatNumber(stats.throughput));
         setText('viewDepAvgWait', formatNumber(stats.depAvgWait));
         setText('viewDepMaxQueue', formatInteger(stats.depMaxQueue));
@@ -574,7 +615,8 @@ async function ensureCurrentSelectionAndLoad() {
 
 function populateSimulationData(simData, suffix) {
     populateConfigTable(simData, `config${suffix}`);
-    populateEventsTable(simData.events, `events${suffix}`);
+    populateRunwayEventsTable(simData.events?.runway, `runwayEvents${suffix}`);
+    populateAircraftEventsTable(simData.events?.aircraft, `aircraftEvents${suffix}`);
     populateEventLog(simData.eventLog, `eventLog${suffix}`);
 
     const stats = simData.statistics;
@@ -626,13 +668,13 @@ function populateConfigTable(simData, targetId) {
     });
 }
 
-function populateEventsTable(events, targetId) {
+function populateRunwayEventsTable(events, targetId) {
     const tbody = document.querySelector(`#${targetId} tbody`);
     tbody.innerHTML = '';
 
     if (!Array.isArray(events) || events.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="4" style="text-align: center; color: #999;">No events scheduled</td>';
+        row.innerHTML = '<td colspan="5" style="text-align: center; color: #999;">No scheduled runway events</td>';
         tbody.appendChild(row);
         return;
     }
@@ -643,7 +685,31 @@ function populateEventsTable(events, targetId) {
             <td>${event.event}</td>
             <td>${event.time}</td>
             <td>${event.duration}</td>
-            <td>${event.scheduled}</td>
+            <td>${event.runwayMode}</td>
+            <td>${event.status}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function populateAircraftEventsTable(events, targetId) {
+    const tbody = document.querySelector(`#${targetId} tbody`);
+    tbody.innerHTML = '';
+
+    if (!Array.isArray(events) || events.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="4" style="text-align: center; color: #999;">No scheduled aircraft events</td>';
+        tbody.appendChild(row);
+        return;
+    }
+
+    events.forEach(event => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${event.event}</td>
+            <td>${event.time}</td>
+            <td>${event.duration}</td>
+            <td>${event.emergencyType}</td>
         `;
         tbody.appendChild(row);
     });
