@@ -45,7 +45,6 @@
 
 /* Option buttons (comparison modals & compare-all) */
 .btn-option {
-  border: none;
   padding: 10px 18px;
   border-radius: 6px;
   font-size: 13px;
@@ -76,7 +75,6 @@
 }
 
 .btn-delete {
-  border: none;
   cursor: pointer;
   padding: 10px 18px;
   border-radius: 6px;
