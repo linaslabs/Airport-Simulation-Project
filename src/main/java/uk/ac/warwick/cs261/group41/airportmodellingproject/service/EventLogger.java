@@ -19,4 +19,11 @@ public class EventLogger {
     public  List<SimulationEvent> getEventLog() {
         return this.eventLog;
     }
+
+    public void setEventLog(List<SimulationEvent> eventLog) {
+        this.eventLog.clear();
+        if (eventLog != null) {
+            this.eventLog.addAll(eventLog);
+        }
+    }
 }

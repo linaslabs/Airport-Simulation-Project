@@ -1,12 +1,22 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.dto;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+@JsonSubTypes({
+        @JsonSubTypes.Type(AircraftEvent.class),
+        @JsonSubTypes.Type(RunwayEvent.class)
+})
 public abstract class SimulationEvent {
     protected int tick;
 
     // Default constructor required for Jackson.
-    public SimulationEvent() {}
+    public SimulationEvent() {
+    }
 
-    // Parameterised constructor used in the constructors of children, called by EventManager.
+    // Parameterised constructor used in the constructors of children, called by
+    // EventManager.
     public SimulationEvent(int tick) {
         this.tick = tick;
     }

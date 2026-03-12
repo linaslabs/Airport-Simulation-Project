@@ -1,6 +1,7 @@
 const API = {
     summaries: '/api/results/summaries',
     lastResult: '/api/results/lastresult',
+    viewOrCompare: (name) => `/api/results/vieworcompare/${encodeURIComponent(name)}`,
     deleteResult: (name) => `/api/results/delete/${encodeURIComponent(name)}`
 };
 
@@ -378,7 +379,8 @@ async function fetchSimulationByName(name) {
         return simulationDetailsCache.get(name);
     }
 
-    const raw = await fetchJson(API.lastResult);
+    const isLatestResult = !name || name === 'A' || name === 'B';
+    const raw = await fetchJson(isLatestResult ? API.lastResult : API.viewOrCompare(name));
     const mapped = mapSimulationResult(raw, name);
 
     simulationDetailsCache.set(name, mapped);
