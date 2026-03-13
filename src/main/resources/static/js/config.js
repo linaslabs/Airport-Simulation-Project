@@ -75,11 +75,11 @@ const inputConfig = [
   { label: "Simulation Duration (mins)", name: "sim_duration",      range: "60 - 1440",   min: 60, max: 1440,     step: 1,    val: 120 },
   { label: "Max Departure Wait Time (mins)",  name: "max_delay",         range: "0 - 360",     min: 0,  max: 360,      step: 1,    val: 20 },
   { label: "Simulation Seed",            name: "seed",              range: "0 - 10^7",    min: 0,  max: 10000000, step: 1,    val: 0 },
-  { label: "Mechanical Failure Multiplier", name: "mech_failure_rate", range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance () of an aircraft in the holding pattern experiencing a mechanical issue each minute" },
-  { label: "Health Issue Multiplier",       name: "health_issue_rate", range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance () of an aircraft in the holding pattern experiencing a mechanical issue each minute" },
-  { label: "Runway Inspection Multiplier",  name: "inspection_rate",   range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance () of a runway temporarily closing for inspection each minute." },
-  { label: "Snow Clearance Multiplier",     name: "snow_rate",         range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance () of a runway temporarily closing for snow removal each minute." },
-  { label: "Equipment Failure Multiplier",  name: "equip_failure_rate",range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance () of runway temporarily closing due to equipment failure each minute." },
+  { label: "Mechanical Failure Multiplier", name: "mech_failure_rate", range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance (0.000008) of an aircraft in the holding pattern experiencing a mechanical issue each minute" },
+  { label: "Health Issue Multiplier",       name: "health_issue_rate", range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance (0.00008) of an aircraft in the holding pattern experiencing a passenger health emergency, serious enough to require early landing, each minute" },
+  { label: "Runway Inspection Multiplier",  name: "inspection_rate",   range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance (0.001388) of a runway temporarily closing for inspection each minute." },
+  { label: "Snow Clearance Multiplier",     name: "snow_rate",         range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance (0.00000476) of a runway temporarily closing for snow clearance each minute." },
+  { label: "Equipment Failure Multiplier",  name: "equip_failure_rate",range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance (0.00000278) of runway temporarily closing due to equipment failure each minute." },
 ];
 // generate input params
 function generateInputs() {

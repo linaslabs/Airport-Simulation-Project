@@ -28,10 +28,10 @@ public class SimulationEngine {
 
     // Failure rates for random aircraft emergencies and runway failures
     private final double emergencyMechanicalBaselinePerTick = 0.000008;
-    private final double emergencyHealthBaselinePerTick = 0.000008;
-    private final double failureInspectionBaselinePerTick = 0.00008;
-    private final double failureSnowBaselinePerTick = 0.00008;
-    private final double failureEquipmentBaselinePerTick = 0.00008;
+    private final double emergencyHealthBaselinePerTick = 0.00008;
+    private final double failureInspectionBaselinePerTick = 0.001388;
+    private final double failureSnowBaselinePerTick = 0.00000476;
+    private final double failureEquipmentBaselinePerTick = 0.00000278;
 
     public SimulationEngine(@NonNull SimulationConfig config) {
         this.config = config;
