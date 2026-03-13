@@ -26,6 +26,13 @@ public class SimulationEngine {
     private final int durationTicks;
     private final Random random;
 
+    // Failure rates for random aircraft emergencies and runway failures
+    private final double emergencyMechanicalBaselinePerTick = 0.000008;
+    private final double emergencyHealthBaselinePerTick = 0.000008;
+    private final double failureInspectionBaselinePerTick = 0.00008;
+    private final double failureSnowBaselinePerTick = 0.00008;
+    private final double failureEquipmentBaselinePerTick = 0.00008;
+
     public SimulationEngine(@NonNull SimulationConfig config) {
         this.config = config;
         this.durationTicks = config.getDuration();
@@ -36,11 +43,11 @@ public class SimulationEngine {
 
         if (this.config.getAutomaticGenerationEnabled()){
             log.info("--- Automatic Event Generation is ENABLED ---");
-            log.info("- Runway Inspection Rate:      {}", this.config.getRunwayInspectionRate());
-            log.info("- Snow Clearance Rate:         {}", this.config.getSnowClearanceRate());
-            log.info("- Equipment Failure Rate:      {}", this.config.getEquipmentFailureRate());
-            log.info("- Mechanical Failure Rate:     {}", this.config.getMechanicalFailureRate());
-            log.info("- Passenger Health Issue Rate: {}", this.config.getPassengerHealthIssueRate());
+            log.info("- Runway Inspection Multiplier:      {}x", this.config.getRunwayInspectionMultiplier());
+            log.info("- Snow Clearance Multiplier:         {}x", this.config.getSnowClearanceMultiplier());
+            log.info("- Equipment Failure Multiplier:      {}x", this.config.getEquipmentFailureMultiplier());
+            log.info("- Mechanical Failure Multiplier:     {}x", this.config.getMechanicalFailureMultiplier());
+            log.info("- Passenger Health Issue Multiplier: {}x", this.config.getPassengerHealthIssueMultiplier());
             log.info("---------------------------------------------");
         }
 
@@ -80,9 +87,37 @@ public class SimulationEngine {
         }
 
         if (this.config.getAutomaticGenerationEnabled()){
-            this.eventManager.generateRandomEventsForTick(currentTick, this.config.getRunwayInspectionRate(),
-                    this.config.getSnowClearanceRate(), this.config.getEquipmentFailureRate(),
-                    this.config.getMechanicalFailureRate(), this.config.getPassengerHealthIssueRate());
+
+          // Calculate probabilities and clamp to between 0 and 1 for safety
+          double mechanicalProbability = clampProbability(
+              "mechanicalFailure",
+              this.emergencyMechanicalBaselinePerTick * this.config.getMechanicalFailureMultiplier()
+          );
+          double healthProbability = clampProbability(
+              "passengerHealthIssue",
+              this.emergencyHealthBaselinePerTick  * this.config.getPassengerHealthIssueMultiplier()
+          );
+          double inspectionProbability = clampProbability(
+              "runwayInspection",
+              this.failureInspectionBaselinePerTick * this.config.getRunwayInspectionMultiplier()
+          );
+          double snowProbability = clampProbability(
+              "snowClearance",
+              this.failureSnowBaselinePerTick * this.config.getSnowClearanceMultiplier()
+          );
+          double equipmentProbability = clampProbability(
+              "equipmentFailure",
+              this.failureEquipmentBaselinePerTick * this.config.getEquipmentFailureMultiplier()
+          );
+
+          this.eventManager.generateRandomEventsForTick(
+              currentTick,
+              inspectionProbability,
+              snowProbability,
+              equipmentProbability,
+              mechanicalProbability,
+              healthProbability
+          );
         }
 
 
@@ -188,5 +223,16 @@ public class SimulationEngine {
     public SimulationConfig getConfig() { return this.config; }
 
     public Statistics getStats() { return this.stats; }
+
+    // Just to make sure that probabilities do not exceed 1 (100%)
+    private double clampProbability(String rateName, double value) {
+        double clampedValue = Math.max(0, Math.min(1, value));
+
+        if (Double.compare(value, clampedValue) != 0) {
+            log.warn("Clamped {} probability from {} to {}", rateName, value, clampedValue);
+        }
+
+        return clampedValue;
+    }
 
 }

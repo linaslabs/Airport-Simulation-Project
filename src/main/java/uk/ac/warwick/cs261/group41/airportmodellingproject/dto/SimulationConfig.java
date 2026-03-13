@@ -53,30 +53,30 @@ public class SimulationConfig {
     @NotNull(message = "Automatic generation flag is required") // In case front end sends a null explicitly
     private Boolean automaticGenerationEnabled = false;
 
-    @NotNull(message = "Mechanical failure rate is required")
-    @DecimalMin(value = "0.0", message = "Mechanical failure rate cannot be less than 0.0")
-    @DecimalMax(value = "0.1", message = "Mechanical failure rate cannot exceed 0.1")
-    private Double mechanicalFailureRate = 0.0;
+    @NotNull(message = "Mechanical failure multiplier is required")
+    @DecimalMin(value = "0.0", message = "Mechanical failure multiplier cannot be less than 0.0")
+    @DecimalMax(value = "10000.0", message = "Mechanical failure multiplier cannot exceed 10000.0")
+    private Double mechanicalFailureMultiplier = 1.0;
 
-    @NotNull(message = "Passenger health issue rate is required")
-    @DecimalMin(value = "0.0", message = "Passenger health issue rate cannot be less than 0.0")
-    @DecimalMax(value = "0.1", message = "Passenger health issue rate cannot exceed 0.1")
-    private Double passengerHealthIssueRate = 0.0;
+    @NotNull(message = "Passenger health issue multiplier is required")
+    @DecimalMin(value = "0.0", message = "Passenger health issue multiplier cannot be less than 0.0")
+    @DecimalMax(value = "10000.0", message = "Passenger health issue multiplier cannot exceed 10000.0")
+    private Double passengerHealthIssueMultiplier = 1.0;
 
-    @NotNull(message = "Runway inspection rate is required")
-    @DecimalMin(value = "0.0", message = "Runway inspection rate cannot be less than 0.0")
-    @DecimalMax(value = "0.1", message = "Runway inspection rate cannot exceed 0.1")
-    private Double runwayInspectionRate = 0.0;
+    @NotNull(message = "Runway inspection multiplier is required")
+    @DecimalMin(value = "0.0", message = "Runway inspection multiplier cannot be less than 0.0")
+    @DecimalMax(value = "10000.0", message = "Runway inspection multiplier cannot exceed 10000.0")
+    private Double runwayInspectionMultiplier = 1.0;
 
-    @NotNull(message = "Snow clearance rate is required")
-    @DecimalMin(value = "0.0", message = "Snow clearance rate cannot be less than 0.0")
-    @DecimalMax(value = "0.1", message = "Snow clearance rate cannot exceed 0.1")
-    private Double snowClearanceRate = 0.0;
+    @NotNull(message = "Snow clearance multiplier is required")
+    @DecimalMin(value = "0.0", message = "Snow clearance multiplier cannot be less than 0.0")
+    @DecimalMax(value = "10000.0", message = "Snow clearance multiplier cannot exceed 10000.0")
+    private Double snowClearanceMultiplier = 1.0;
 
-    @NotNull(message = "Equipment failure rate is required")
-    @DecimalMin(value = "0.0", message = "Equipment failure rate cannot be less than 0.0")
-    @DecimalMax(value = "0.1", message = "Equipment failure rate cannot exceed 0.1")
-    private Double equipmentFailureRate = 0.0;
+    @NotNull(message = "Equipment failure multiplier is required")
+    @DecimalMin(value = "0.0", message = "Equipment failure multiplier cannot be less than 0.0")
+    @DecimalMax(value = "10000.0", message = "Equipment failure multiplier cannot exceed 10000.0")
+    private Double equipmentFailureMultiplier = 1.0;
 
     // Added seed as a Long object.
     @NotNull(message = "A random seed is required. Please enter a value or randomly generate one.")
@@ -95,8 +95,8 @@ public class SimulationConfig {
 
     // Parameterised constructor exclusively used for testing purposes.
     public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime,
-                            Integer duration, Integer tickTime, Boolean automaticGenerationEnabled, Double mechanicalFailureRate, Double passengerHealthIssueRate,
-                            Double runwayInspectionRate, Double snowClearanceRate, Double equipmentFailureRate, Long seed,
+                            Integer duration, Integer tickTime, Boolean automaticGenerationEnabled, Double mechanicalFailureMultiplier, Double passengerHealthIssueMultiplier,
+                            Double runwayInspectionMultiplier, Double snowClearanceMultiplier, Double equipmentFailureMultiplier, Long seed,
                             Map<Integer, List<RunwayEvent>> scheduledRunwayEvents,
                             Map<Integer, List<AircraftEvent>> scheduledAircraftEvents,
                             SimulationMode simulationMode) {
@@ -110,11 +110,11 @@ public class SimulationConfig {
 
         // For statistical modelling
         this.automaticGenerationEnabled = automaticGenerationEnabled;
-        this.mechanicalFailureRate = mechanicalFailureRate;
-        this.passengerHealthIssueRate = passengerHealthIssueRate;
-        this.runwayInspectionRate = runwayInspectionRate;
-        this.snowClearanceRate = snowClearanceRate;
-        this.equipmentFailureRate = equipmentFailureRate;
+        this.mechanicalFailureMultiplier = mechanicalFailureMultiplier;
+        this.passengerHealthIssueMultiplier = passengerHealthIssueMultiplier;
+        this.runwayInspectionMultiplier = runwayInspectionMultiplier;
+        this.snowClearanceMultiplier = snowClearanceMultiplier;
+        this.equipmentFailureMultiplier = equipmentFailureMultiplier;
 
         this.seed = seed;
         this.scheduledRunwayEvents = (scheduledRunwayEvents != null) ? new HashMap<>(scheduledRunwayEvents) : new HashMap<>();
@@ -192,25 +192,25 @@ public class SimulationConfig {
         this.seed = seed;
     }
 
-    public Double getMechanicalFailureRate() { return mechanicalFailureRate; }
+    public Double getMechanicalFailureMultiplier() { return mechanicalFailureMultiplier; }
 
-    public void setMechanicalFailureRate(Double mechanicalFailureRate) { this.mechanicalFailureRate = mechanicalFailureRate; }
+    public void setMechanicalFailureMultiplier(Double mechanicalFailureMultiplier) { this.mechanicalFailureMultiplier = mechanicalFailureMultiplier; }
 
-    public Double getPassengerHealthIssueRate() { return passengerHealthIssueRate; }
+    public Double getPassengerHealthIssueMultiplier() { return passengerHealthIssueMultiplier; }
 
-    public void setPassengerHealthIssueRate(Double passengerHealthIssueRate) { this.passengerHealthIssueRate = passengerHealthIssueRate; }
+    public void setPassengerHealthIssueMultiplier(Double passengerHealthIssueMultiplier) { this.passengerHealthIssueMultiplier = passengerHealthIssueMultiplier; }
 
-    public Double getRunwayInspectionRate() { return runwayInspectionRate; }
+    public Double getRunwayInspectionMultiplier() { return runwayInspectionMultiplier; }
 
-    public void setRunwayInspectionRate(Double runwayInspectionRate) { this.runwayInspectionRate = runwayInspectionRate; }
+    public void setRunwayInspectionMultiplier(Double runwayInspectionMultiplier) { this.runwayInspectionMultiplier = runwayInspectionMultiplier; }
 
-    public Double getSnowClearanceRate() { return snowClearanceRate; }
+    public Double getSnowClearanceMultiplier() { return snowClearanceMultiplier; }
 
-    public void setSnowClearanceRate(Double snowClearanceRate) { this.snowClearanceRate = snowClearanceRate; }
+    public void setSnowClearanceMultiplier(Double snowClearanceMultiplier) { this.snowClearanceMultiplier = snowClearanceMultiplier; }
 
-    public Double getEquipmentFailureRate() { return equipmentFailureRate; }
+    public Double getEquipmentFailureMultiplier() { return equipmentFailureMultiplier; }
 
-    public void setEquipmentFailureRate(Double equipmentFailureRate) { this.equipmentFailureRate = equipmentFailureRate; }
+    public void setEquipmentFailureMultiplier(Double equipmentFailureMultiplier) { this.equipmentFailureMultiplier = equipmentFailureMultiplier; }
 
     public SimulationMode getSimulationMode() {
         return simulationMode;

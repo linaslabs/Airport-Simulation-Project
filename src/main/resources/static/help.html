@@ -170,22 +170,23 @@
             </tr>
             <tr>
               <td>
-                <div class="param-name">Random Event Rates</div>
-                <div class="param-range">Range: 0.00 – 0.10</div>
+                <div class="param-name">Random Event Multipliers</div>
+                <div class="param-range">Range: 0.0 - 10.0</div>
               </td>
               <td>
-                Controls the probability of unplanned emergencies and closures
-                occurring each simulated minute (tick).
+                Controls how strongly random events are scaled relative to
+                backend baseline probabilities each simulated minute (tick).
                 <br /><br />
-                <strong>Aircraft rates</strong> (Mechanical, Health) are rolled
-                individually for <em>each aircraft</em> currently in the holding
-                pattern. <strong>Runway rates</strong> (Inspection, Snow,
-                Equipment) are rolled individually for
+                <strong>Aircraft multipliers</strong> (Mechanical, Health) are
+                applied individually for <em>each aircraft</em> currently in the
+                holding pattern.
+                <strong>Runway multipliers</strong> (Inspection, Snow,
+                Equipment) are applied individually for
                 <em>each active runway</em>. <br /><br />
                 <em
-                  >Example: A rate of 0.10 means each individual aircraft/runway
-                  has a 10% chance of experiencing that event every single
-                  minute.</em
+                  >Example: A multiplier of 2.0 means each individual
+                  aircraft/runway is twice as likely as the baseline to
+                  experience that event every simulated minute.</em
                 >
               </td>
             </tr>
