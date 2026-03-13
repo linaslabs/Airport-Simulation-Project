@@ -344,8 +344,14 @@ function connectWebSocket() {
             }, 500);
         });
 
-        // Tell the backend when we're ready to start.
-        stompClient.send("/app/simulation/ready", {}, "");
+        // Tell the backend to start the simulation once the frontend has finished subscribing to the websockets.
+        fetch('/api/simulation/start', { method: 'POST' })
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to start simulation: ' + res.status);
+            })
+            .catch( error => {
+                console.error('Error: ', error);
+            });
     }, function(error) {
         console.error('WebSocket Error: ', error);
         // Web socket failure handling can happen here if necessary (maybe fallback to polling?)
