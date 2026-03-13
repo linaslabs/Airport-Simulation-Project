@@ -3,6 +3,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 import org.junit.jupiter.api.Test;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EventSource;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
@@ -134,7 +135,7 @@ class AirportTest {
         Airport airport = makeAirport(rc(0, RunwayMode.LANDING), rc(1, RunwayMode.LANDING));
         airport.acceptInboundAircraft(arrival("BA006", 0));
         airport.acceptInboundAircraft(arrival("BA007", 0));
-        airport.updateAircraftStatus("BA007", EmergencyStatus.FUEL);
+        airport.updateAircraftStatus("BA007", EmergencyStatus.FUEL, EventSource.MANUAL);
 
         airport.assignRunways(0);
 
@@ -150,7 +151,7 @@ class AirportTest {
     void assignRunways_shouldAssignEmergencyAircraft_onLandingRunway() {
         Airport airport = makeAirport(rc(0, RunwayMode.LANDING));
         airport.acceptInboundAircraft(arrival("BA008", 0));
-        airport.updateAircraftStatus("BA008", EmergencyStatus.MECHANICAL);
+        airport.updateAircraftStatus("BA008", EmergencyStatus.MECHANICAL, EventSource.MANUAL);
 
         airport.assignRunways(0);
 
@@ -165,7 +166,7 @@ class AirportTest {
     void updateRunway_shouldUpdateStatusAndMode_forKnownId() {
         Airport airport = makeAirport(rc(0, RunwayMode.LANDING));
 
-        airport.updateRunway(0, RunwayStatus.INSPECTION, RunwayMode.TAKEOFF);
+        airport.updateRunway(0, RunwayStatus.INSPECTION, RunwayMode.TAKEOFF, EventSource.MANUAL);
 
         RunwayConfig snapshot = airport.getRunwaySnapshot(0);
         assertEquals(RunwayStatus.INSPECTION, snapshot.getStatus(),
@@ -182,7 +183,7 @@ class AirportTest {
     void updateRunway_shouldLeaveNullFieldsUnchanged() {
         Airport airport = makeAirport(rc(0, RunwayMode.LANDING));
 
-        airport.updateRunway(0, RunwayStatus.INSPECTION, null);
+        airport.updateRunway(0, RunwayStatus.INSPECTION, null, EventSource.MANUAL);
 
         RunwayConfig snapshot = airport.getRunwaySnapshot(0);
         assertEquals(RunwayStatus.INSPECTION, snapshot.getStatus());
@@ -198,7 +199,7 @@ class AirportTest {
         Airport airport = makeAirport(rc(0, RunwayMode.LANDING));
 
         assertThrows(IllegalArgumentException.class,
-                () -> airport.updateRunway(99, RunwayStatus.INSPECTION, null));
+            () -> airport.updateRunway(99, RunwayStatus.INSPECTION, null, EventSource.MANUAL));
     }
 
     /**

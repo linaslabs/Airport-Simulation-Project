@@ -110,7 +110,7 @@ class EventManagerTest {
 
         em.processScheduledEvents(3);
 
-        verify(airport).updateRunway(0, RunwayStatus.INSPECTION, RunwayMode.LANDING);
+        verify(airport).updateRunway(0, RunwayStatus.INSPECTION, RunwayMode.LANDING, EventSource.SCHEDULED);
     }
 
     /**
@@ -124,7 +124,7 @@ class EventManagerTest {
 
         em.processScheduledEvents(99);
 
-        verify(airport, never()).updateRunway(anyInt(), any(), any());
+        verify(airport, never()).updateRunway(anyInt(), any(), any(), any());
     }
 
     /**
@@ -139,7 +139,7 @@ class EventManagerTest {
         EventManager em = makeManager(logger, airport, new Statistics());
 
         // Fire event at tick 1 with duration 5; reversion should be scheduled at tick 6.
-        em.triggerRunwayEvent(0, RunwayStatus.INSPECTION, RunwayMode.LANDING, 1, 5, false);
+        em.triggerRunwayEvent(0, RunwayStatus.INSPECTION, RunwayMode.LANDING, 1, 5, false, false);
 
         List<RunwayEvent> reversionBucket = em.getScheduledRunwayEvents().get(6);
         assertNotNull(reversionBucket, "A reversion event should be scheduled at tick 6.");
@@ -159,7 +159,7 @@ class EventManagerTest {
         when(airport.getRunwaySnapshot(0)).thenReturn(snapshot(0));
         EventManager em = makeManager(logger, airport, new Statistics());
 
-        em.triggerRunwayEvent(0, RunwayStatus.INSPECTION, RunwayMode.LANDING, 2, -1, false);
+        em.triggerRunwayEvent(0, RunwayStatus.INSPECTION, RunwayMode.LANDING, 2, -1, false, false);
 
         assertEquals(1, logger.getEventLog().size(),
                 "triggerRunwayEvent should log exactly one event.");
@@ -219,7 +219,7 @@ class EventManagerTest {
 
         em.triggerAircraftEmergency("BA001", EmergencyStatus.MECHANICAL, 3, false);
 
-        verify(airport).updateAircraftStatus("BA001", EmergencyStatus.MECHANICAL);
+        verify(airport).updateAircraftStatus("BA001", EmergencyStatus.MECHANICAL, EventSource.MANUAL);
         List<SimulationEvent> log = logger.getEventLog();
         assertEquals(1, log.size());
         AircraftEvent logged = (AircraftEvent) log.get(0);
@@ -241,7 +241,7 @@ class EventManagerTest {
 
         em.triggerAircraftEmergency(null, EmergencyStatus.MECHANICAL, 5, true);
 
-        verify(airport, never()).updateAircraftStatus(anyString(), any());
+        verify(airport, never()).updateAircraftStatus(anyString(), any(), any());
         assertTrue(logger.getEventLog().isEmpty(),
                 "No event should be logged when the holding pattern is empty.");
     }
@@ -263,7 +263,7 @@ class EventManagerTest {
 
         em.processScheduledEvents(7);
 
-        verify(airport).updateAircraftStatus("BA002", EmergencyStatus.PASSENGER);
+        verify(airport).updateAircraftStatus("BA002", EmergencyStatus.PASSENGER, EventSource.SCHEDULED);
         assertEquals(1, logger.getEventLog().size(),
                 "processScheduledEvents should log the aircraft emergency event.");
     }
