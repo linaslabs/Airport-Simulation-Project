@@ -335,7 +335,7 @@ function startSimulation() {
     outboundRate: parseInt(
       document.getElementById("input-outbound_rate").value,
     ),
-    maxWaitTime: parseInt(document.getElementById("input-max_delay").value), // maybe could allow forr indefintie wait time
+    maxWaitTime: parseInt(document.getElementById("input-max_delay").value), // maybe could allow for indefinite wait time
     duration: parseInt(document.getElementById("input-sim_duration").value),
 
     // Random-event multipliers (backend applies baseline probabilities)
@@ -809,19 +809,33 @@ function applyConfigToPage(data) {
     "input-max_delay": data.maxWaitTime,
     "input-seed": data.seed,
     "input-mech_failure_rate":
-      data.mechanicalFailureMultiplier ?? data.mechanicalFailureRate,
+      data.mechanicalFailureMultiplier ??
+      data.mechanicalFailureRate ??
+      1.0,
     "input-health_issue_rate":
-      data.passengerHealthIssueMultiplier ?? data.passengerHealthIssueRate,
+      data.passengerHealthIssueMultiplier ??
+      data.passengerHealthIssueRate ??
+      1.0,
     "input-inspection_rate":
-      data.runwayInspectionMultiplier ?? data.runwayInspectionRate,
-    "input-snow_rate": data.snowClearanceMultiplier ?? data.snowClearanceRate,
+      data.runwayInspectionMultiplier ??
+      data.runwayInspectionRate ??
+      1.0,
+    "input-snow_rate":
+      data.snowClearanceMultiplier ??
+      data.snowClearanceRate ??
+      1.0,
     "input-equip_failure_rate":
-      data.equipmentFailureMultiplier ?? data.equipmentFailureRate,
+      data.equipmentFailureMultiplier ??
+      data.equipmentFailureRate ??
+      1.0,
   };
 
   Object.keys(fieldMapping).forEach((id) => {
     const el = document.getElementById(id);
-    if (el) el.value = fieldMapping[id];
+    const value = fieldMapping[id];
+    if (el && value !== undefined) {
+      el.value = value;
+    }
   });
 
   const autoGenCheckbox = document.getElementById("input-auto_gen");
@@ -1226,20 +1240,33 @@ function saveConfiguration() {
 
   const backendEvents = formatEventsForBackend(scheduledEventsData);
 
+  function parseIntOrDefault(value, defaultValue) {
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? defaultValue : parsed;
+  }
+
   const seedRaw = document.getElementById("input-seed")?.value;
   const seed = seedRaw !== "" && seedRaw != null ? parseInt(seedRaw) : 0;
 
   const payload = {
     templateName: configName,
     runwaySettings: runwaySettings,
-    inboundRate:
-      parseInt(document.getElementById("input-inbound_rate").value) || 15,
-    outboundRate:
-      parseInt(document.getElementById("input-outbound_rate").value) || 15,
-    maxWaitTime:
-      parseInt(document.getElementById("input-max_delay").value) || 30,
-    duration:
-      parseInt(document.getElementById("input-sim_duration").value) || 120,
+    inboundRate: parseIntOrDefault(
+      document.getElementById("input-inbound_rate").value,
+      15
+    ),
+    outboundRate: parseIntOrDefault(
+      document.getElementById("input-outbound_rate").value,
+      15
+    ),
+    maxWaitTime: parseIntOrDefault(
+      document.getElementById("input-max_delay").value,
+      30
+    ),
+    duration: parseIntOrDefault(
+      document.getElementById("input-sim_duration").value,
+      120
+    ),
     tickTime: 1000,
     automaticGenerationEnabled:
       document.getElementById("input-auto_gen").checked || false,
