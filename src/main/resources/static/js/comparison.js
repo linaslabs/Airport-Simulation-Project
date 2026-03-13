@@ -459,6 +459,9 @@ function mapSavedResult(savedResult) {
       "Equipment Failure Multiplier": formatMultiplier(
         config.equipmentFailureMultiplier ?? config.equipmentFailureRate,
       ),
+      "Mechanical Failure Multiplier": formatMultiplier(
+          config.mechanicalFailureMultiplier ?? config.mechanicalFailureRate,
+      ),
     },
     events: buildEventRows(config),
     eventLog: getEventLogLines(savedResult, config),
