@@ -3,6 +3,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 import org.junit.jupiter.api.Test;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EventSource;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
@@ -202,7 +203,7 @@ class HoldingPatternTest {
         hp.updateAltitudes();
 
         EmergencyStatus emergency = someNonNoneEmergencyStatus();
-        hp.updateAircraftStatus("B-1", emergency);
+        hp.updateAircraftStatus("B-1", emergency, EventSource.MANUAL);
 
         Optional<Aircraft> next = hp.peekNextAircraft();
         assertTrue(next.isPresent(), "Expected an aircraft at the front of the queue.");
@@ -247,8 +248,8 @@ class HoldingPatternTest {
         }
 
         // Make all aircraft emergencies -> no eligible aircraft.
-        hp.updateAircraftStatus("N-1", emergency);
-        hp.updateAircraftStatus("N-2", emergency);
+        hp.updateAircraftStatus("N-1", emergency, EventSource.MANUAL);
+        hp.updateAircraftStatus("N-2", emergency, EventSource.MANUAL);
 
         assertNull(hp.getRandomAircraft(new Random(1)),
                 "Expected null when no aircraft with EmergencyStatus.NONE are available.");
