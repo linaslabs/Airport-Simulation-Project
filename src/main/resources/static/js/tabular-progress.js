@@ -169,7 +169,6 @@ function updateHoldingTable(aircraftList) {
             <td>
                 <select class="${lockClass}" onchange="changeAircraftEmergency('${aircraft.callsign}', this.value)" ${disableAttribute}>
                     <option value="NONE" ${aircraft.emergencyStatus === 'NONE' ? 'selected' : ''}>None</option>
-                    <option value="FUEL" ${aircraft.emergencyStatus === 'FUEL' ? 'selected' : ''}>Fuel</option>
                     <option value="MECHANICAL" ${aircraft.emergencyStatus === 'MECHANICAL' ? 'selected' : ''}>Mechanical</option>
                     <option value="PASSENGER" ${aircraft.emergencyStatus === 'PASSENGER' ? 'selected' : ''}>Health</option>
                 </select>
