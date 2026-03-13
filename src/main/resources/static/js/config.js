@@ -255,21 +255,19 @@ function startSimulation() {
         .then(async response => {
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(errorText || `Failed to start simulation (HTTP ${response.status})`);
+                throw new Error(errorText || `Failed to initialise simulation (HTTP ${response.status})`);
             }
             return response.text();
         })
         .then(data => {
-            console.log('Simulation started:', data);
+            console.log('Simulation initialised:', data);
             // Redirect to progress page
             const simMode = payload.simulationMode
 
             if (simMode == "QUICK_SIM"){
                 window.location.href = '/quick-progress.html';
-            } else if(simMode == "TABLE_VIEW"){
-                window.location.href = '/tabular-progress.html';
             } else {
-                window.location.href = '/graphical-progress.html';
+                window.location.href = '/tabular-progress.html';
             }
         })
         .catch(error => {

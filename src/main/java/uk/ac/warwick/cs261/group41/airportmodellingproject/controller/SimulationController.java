@@ -1,7 +1,6 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationConfig;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.SimulationProgress;
@@ -21,7 +20,7 @@ public class SimulationController {
     @PostMapping("/initialise")
     public ResponseEntity<String> initialise(@RequestBody SimulationConfig config) {
         simulationService.initialiseSimulation(config);
-        return ResponseEntity.ok("Simulation started");
+        return ResponseEntity.ok("Simulation initialised");
     }
 
     @PostMapping("/start")
