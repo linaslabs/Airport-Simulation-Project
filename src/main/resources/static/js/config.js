@@ -1240,20 +1240,33 @@ function saveConfiguration() {
 
   const backendEvents = formatEventsForBackend(scheduledEventsData);
 
+  function parseIntOrDefault(value, defaultValue) {
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? defaultValue : parsed;
+  }
+
   const seedRaw = document.getElementById("input-seed")?.value;
   const seed = seedRaw !== "" && seedRaw != null ? parseInt(seedRaw) : 0;
 
   const payload = {
     templateName: configName,
     runwaySettings: runwaySettings,
-    inboundRate:
-      parseInt(document.getElementById("input-inbound_rate").value) || 15,
-    outboundRate:
-      parseInt(document.getElementById("input-outbound_rate").value) || 15,
-    maxWaitTime:
-      parseInt(document.getElementById("input-max_delay").value) || 30,
-    duration:
-      parseInt(document.getElementById("input-sim_duration").value) || 120,
+    inboundRate: parseIntOrDefault(
+      document.getElementById("input-inbound_rate").value,
+      15
+    ),
+    outboundRate: parseIntOrDefault(
+      document.getElementById("input-outbound_rate").value,
+      15
+    ),
+    maxWaitTime: parseIntOrDefault(
+      document.getElementById("input-max_delay").value,
+      30
+    ),
+    duration: parseIntOrDefault(
+      document.getElementById("input-sim_duration").value,
+      120
+    ),
     tickTime: 1000,
     automaticGenerationEnabled:
       document.getElementById("input-auto_gen").checked || false,
