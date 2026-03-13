@@ -335,7 +335,7 @@ function startSimulation() {
     outboundRate: parseInt(
       document.getElementById("input-outbound_rate").value,
     ),
-    maxWaitTime: parseInt(document.getElementById("input-max_delay").value), // maybe could allow forr indefintie wait time
+    maxWaitTime: parseInt(document.getElementById("input-max_delay").value), // maybe could allow for indefinite wait time
     duration: parseInt(document.getElementById("input-sim_duration").value),
 
     // Random-event multipliers (backend applies baseline probabilities)
