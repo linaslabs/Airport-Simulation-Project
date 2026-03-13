@@ -809,19 +809,33 @@ function applyConfigToPage(data) {
     "input-max_delay": data.maxWaitTime,
     "input-seed": data.seed,
     "input-mech_failure_rate":
-      data.mechanicalFailureMultiplier ?? data.mechanicalFailureRate,
+      data.mechanicalFailureMultiplier ??
+      data.mechanicalFailureRate ??
+      1.0,
     "input-health_issue_rate":
-      data.passengerHealthIssueMultiplier ?? data.passengerHealthIssueRate,
+      data.passengerHealthIssueMultiplier ??
+      data.passengerHealthIssueRate ??
+      1.0,
     "input-inspection_rate":
-      data.runwayInspectionMultiplier ?? data.runwayInspectionRate,
-    "input-snow_rate": data.snowClearanceMultiplier ?? data.snowClearanceRate,
+      data.runwayInspectionMultiplier ??
+      data.runwayInspectionRate ??
+      1.0,
+    "input-snow_rate":
+      data.snowClearanceMultiplier ??
+      data.snowClearanceRate ??
+      1.0,
     "input-equip_failure_rate":
-      data.equipmentFailureMultiplier ?? data.equipmentFailureRate,
+      data.equipmentFailureMultiplier ??
+      data.equipmentFailureRate ??
+      1.0,
   };
 
   Object.keys(fieldMapping).forEach((id) => {
     const el = document.getElementById(id);
-    if (el) el.value = fieldMapping[id];
+    const value = fieldMapping[id];
+    if (el && value !== undefined) {
+      el.value = value;
+    }
   });
 
   const autoGenCheckbox = document.getElementById("input-auto_gen");
