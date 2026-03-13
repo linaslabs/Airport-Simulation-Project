@@ -70,106 +70,16 @@ minus1Btn.onclick = minus1;
 // format for inputs with text boxes
 // If you DONT want a help icon, you can get rid of the field or set it to null
 const inputConfig = [
-  {
-    label: "Inbound Rate /hr",
-    name: "inbound_rate",
-    range: "0 - 100",
-    min: 0,
-    max: 100,
-    step: 1,
-    val: 15,
-    // help: "Average inbound aircraft generated per simulated hour",
-  },
-  {
-    label: "Outbound Rate /hr",
-    name: "outbound_rate",
-    range: "0 - 100",
-    min: 0,
-    max: 100,
-    step: 1,
-    val: 15,
-    // help: "Average outbound aircraft generated per simulated hour",
-  },
-  {
-    label: "Simulation Duration (mins)",
-    name: "sim_duration",
-    range: "60 - 1440",
-    min: 60,
-    max: 1440,
-    step: 1,
-    val: 120,
-    // help: "Total simulated minutes before the run stops",
-  },
-  {
-    label: "Max Delay Time (mins)",
-    name: "max_delay",
-    range: "0 - 60",
-    min: 0,
-    max: 60,
-    step: 1,
-    val: 30,
-    // help: "Maximum departure queue wait before cancellation",
-  },
-  {
-    label: "Simulation Seed",
-    name: "seed",
-    range: "0 - 10^8",
-    min: 0,
-    max: 100000000,
-    step: 1,
-    val: 0,
-    // help: "Controls randomness. Same seed and config reproduce the same run",
-  },
-  {
-    label: "Mechanical Failure Multiplier",
-    name: "mech_failure_rate",
-    range: "0.0 - 10000",
-    min: 0,
-    max: 10000,
-    step: 0.1,
-    val: 1.0,
-    help: "Multiplier for baseline aircraft mechanical emergency probability each tick",
-  },
-  {
-    label: "Health Issue Multiplier",
-    name: "health_issue_rate",
-    range: "0.0 - 10000",
-    min: 0,
-    max: 10000,
-    step: 0.1,
-    val: 1.0,
-    help: "Multiplier for baseline passenger health emergency probability each tick",
-  },
-  {
-    label: "Runway Inspection Multiplier",
-    name: "inspection_rate",
-    range: "0.0 - 10000",
-    min: 0,
-    max: 10000,
-    step: 0.1,
-    val: 1.0,
-    help: "Multiplier for baseline runway inspection closure probability each tick",
-  },
-  {
-    label: "Snow Clearance Multiplier",
-    name: "snow_rate",
-    range: "0.0 - 10000",
-    min: 0,
-    max: 10000,
-    step: 0.1,
-    val: 1.0,
-    help: "Multiplier for baseline snow clearance closure probability each tick",
-  },
-  {
-    label: "Equipment Failure Multiplier",
-    name: "equip_failure_rate",
-    range: "0.0 - 10000",
-    min: 0,
-    max: 10000,
-    step: 0.1,
-    val: 1.0,
-    help: "Multiplier for baseline runway equipment failure probability each tick",
-  },
+  { label: "Inbound Rate /hr",           name: "inbound_rate",      range: "0 - 100",     min: 0,  max: 100,      step: 1,    val: 15 },
+  { label: "Outbound Rate /hr",          name: "outbound_rate",     range: "0 - 100",     min: 0,  max: 100,      step: 1,    val: 15 },
+  { label: "Simulation Duration (mins)", name: "sim_duration",      range: "60 - 1440",   min: 60, max: 1440,     step: 1,    val: 120 },
+  { label: "Max Wait Time (mins)",       name: "max_delay",         range: "0 - 360",     min: 0,  max: 360,      step: 1,    val: 20 },
+  { label: "Simulation Seed",            name: "seed",              range: "0 - 10^7",    min: 0,  max: 10000000, step: 1,    val: 0 },
+  { label: "Mechanical Failure Multiplier", name: "mech_failure_rate", range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0" },
+  { label: "Health Issue Multiplier",       name: "health_issue_rate", range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0" },
+  { label: "Runway Inspection Multiplier",  name: "inspection_rate",   range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0" },
+  { label: "Snow Clearance Multiplier",     name: "snow_rate",         range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0" },
+  { label: "Equipment Failure Multiplier",  name: "equip_failure_rate",range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0" },
 ];
 // generate input params
 function generateInputs() {
@@ -266,6 +176,7 @@ function setupRateToggle() {
       } else {
         el.disabled = true;
         el.style.opacity = "0.4";
+        el.value = "0.0"; // Forces the value back to 0 when disabled!
       }
     });
   }
@@ -422,7 +333,7 @@ function startSimulation() {
 
 function generateRandomSeed() {
   // Generates a random number
-  const randomSeed = Math.floor(Math.random() * 100000000);
+  const randomSeed = Math.floor(Math.random() * 10000000);
   document.getElementById("input-seed").value = randomSeed;
 }
 
