@@ -28,8 +28,8 @@
           <div class="comparison-grid">
             <div class="comparison-column d-flex flex-column">
               <div class="comparison-section">
-                <h3>GLOBAL METRICS</h3>
-                <div class="throughput" style="margin-bottom: 15px">
+                <h3 class="global-metrics-title">GLOBAL METRICS</h3>
+                <div class="throughput global-throughput">
                   Throughput: <span id="stat-throughput">0</span> /hr
                 </div>
                 <div class="metrics-cols">
@@ -240,11 +240,7 @@
                 <h3>
                   TAKE-OFF QUEUE
                   <span
-                    style="
-                      float: right;
-                      font-size: 0.9rem;
-                      font-weight: normal;
-                    "
+                    style="float: right; font-size: 0.9rem; font-weight: normal"
                     >Waiting: <span id="takeoff-count">0</span></span
                   >
                 </h3>
@@ -279,12 +275,7 @@
             style="flex-direction: column; padding: 15px 20px; gap: 15px"
           >
             <div
-              style="
-                width: 100%;
-                display: flex;
-                align-items: center;
-                gap: 15px;
-              "
+              style="width: 100%; display: flex; align-items: center; gap: 15px"
             >
               <span
                 style="
@@ -303,18 +294,15 @@
                 <div class="custom-progress-fill" id="progressBar"></div>
               </div>
 
-              <div
-                style="
-                  color: #64748b;
-                  font-size: 0.95rem;
-                  min-width: 160px;
-                  text-align: right;
-                "
-              >
-                Time:
-                <strong id="tickCount" style="color: #0f172a">0</strong> |
-                Elapsed:
-                <strong id="elapsedTime" style="color: #0f172a">0s</strong>
+              <div class="sim-time-meta">
+                <div class="sim-time-row">
+                  <span class="sim-time-label">Time</span>
+                  <strong id="tickCount">0</strong>
+                </div>
+                <div class="sim-time-row">
+                  <span class="sim-time-label">Elapsed</span>
+                  <strong id="elapsedTime">0s</strong>
+                </div>
               </div>
             </div>
 
