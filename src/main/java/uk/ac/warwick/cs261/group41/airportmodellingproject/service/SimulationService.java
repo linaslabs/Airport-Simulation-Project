@@ -419,8 +419,13 @@ public class SimulationService {
         log.info("--- STATISTICAL MODELLING ---");
         log.info("  - Enabled: {}", config.getAutomaticGenerationEnabled());
         if (Boolean.TRUE.equals(config.getAutomaticGenerationEnabled())) {
-            log.info("  - Inspection: {} | Snow: {} | Equip Fail: {}", config.getRunwayInspectionRate(), config.getSnowClearanceRate(), config.getEquipmentFailureRate());
-            log.info("  - Mech Fail:  {} | Passenger Health: {}", config.getMechanicalFailureRate(), config.getPassengerHealthIssueRate());
+            log.info("  - Inspection Multiplier: {}x | Snow Multiplier: {}x | Equip Fail Multiplier: {}x",
+                config.getRunwayInspectionMultiplier(),
+                config.getSnowClearanceMultiplier(),
+                config.getEquipmentFailureMultiplier());
+            log.info("  - Mech Fail Multiplier: {}x | Passenger Health Multiplier: {}x",
+                config.getMechanicalFailureMultiplier(),
+                config.getPassengerHealthIssueMultiplier());
         }
 
         log.info("--- SCHEDULED RUNWAY EVENTS ---");

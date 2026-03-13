@@ -1,6 +1,5 @@
 let stompClient = null;
 let startTime;
-let elapsedTimerId = null;
 
 let isSimulationPaused = false; // For playback controls
 
@@ -70,32 +69,10 @@ function updateProgress(progressDecimal) {
     const percentageText = document.getElementById('progressPercentage');
     if (percentageText) percentageText.textContent = Math.round(progressPercentage).toString();
 
-    // Keep elapsed display refreshed when progress updates arrive.
-    updateElapsedTime();
-}
-
-function updateElapsedTime() {
-    if (!startTime) return;
-
-    // Update elapsed time (independent of actual simulation time)
+    // Update elapsed time
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const timeText = document.getElementById('elapsedTime');
     if (timeText) timeText.textContent = elapsed + 's';
-}
-
-function startElapsedTimer() {
-    if (elapsedTimerId !== null) return;
-
-    // UI will show the elapsed time straight away
-    updateElapsedTime();
-    elapsedTimerId = setInterval(updateElapsedTime, 1000);
-}
-
-function stopElapsedTimer() {
-    if (elapsedTimerId !== null) {
-        clearInterval(elapsedTimerId);
-        elapsedTimerId = null;
-    }
 }
 
 function updateGlobalStats(data) {
@@ -311,9 +288,7 @@ async function stopSimulation() {
 }
 
 function connectWebSocket() {
-    if (!startTime) {
-        startTime = Date.now();
-    }
+    startTime = Date.now();
 
     // Connect to the websocket endpoint defined in the backend (config/WebSocketConfig)
     const socket = new SockJS('/simulation-websocket');
@@ -404,14 +379,11 @@ function changeAircraftEmergency(callsign, newStatus) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    startTime = Date.now();
-    startElapsedTimer();
     connectWebSocket();
 });
 
 // If user leaves page early, clean-up
 window.addEventListener('beforeunload', () => {
-    stopElapsedTimer();
     if (stompClient !== null) {
         stompClient.disconnect();
     }

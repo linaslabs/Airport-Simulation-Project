@@ -15,67 +15,13 @@
     <link rel="stylesheet" href="/css/navbar.css" />
   </head>
   <body class="layout-centred" style="background-color: #f4f7fb">
-    <!--<div class="container-fluid py-3 mb-4 shadow-sm" style="background-color: #374151; color: white;">-->
-    <!--    <div class="row align-items-center px-4">-->
-
-    <!--        <div class="col-4 d-flex align-items-center gap-3">-->
-    <!--            <a href="index.html" class="btn btn-outline-light btn-sm fw-bold px-3 rounded-2">-->
-    <!--                Home-->
-    <!--            </a>-->
-    <!--&lt;!&ndash;            <span class="fs-5 fw-bold text-nowrap" style="letter-spacing: 0.5px;">Airport Simulation</span>&ndash;&gt;-->
-    <!--        </div>-->
-
-    <!--        <div class="col-4 d-flex justify-content-center">-->
-    <!--            <span class="fw-bold text-white" style="font-size: 2.5rem; letter-spacing: 2px; white-space: nowrap;">Configuration</span>-->
-    <!--        </div>-->
-
-    <!--        <div class="col-4"></div>-->
-
-    <!--&lt;!&ndash;        <div class="col-4 d-flex justify-content-center gap-2">&ndash;&gt;-->
-    <!--&lt;!&ndash;            <button class="btn btn-light btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="openLoadConfigModal()">&ndash;&gt;-->
-    <!--&lt;!&ndash;                Load Config&ndash;&gt;-->
-    <!--&lt;!&ndash;            </button>&ndash;&gt;-->
-    <!--&lt;!&ndash;            <button class="btn btn-primary btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="openSaveModal()">&ndash;&gt;-->
-    <!--&lt;!&ndash;                Save Config&ndash;&gt;-->
-    <!--&lt;!&ndash;            </button>&ndash;&gt;-->
-    <!--&lt;!&ndash;            <button class="btn btn-danger btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="resetConfig()">&ndash;&gt;-->
-    <!--&lt;!&ndash;                Reset&ndash;&gt;-->
-    <!--&lt;!&ndash;            </button>&ndash;&gt;-->
-    <!--&lt;!&ndash;        </div>&ndash;&gt;-->
-
-    <!--&lt;!&ndash;        <div class="col-4 d-flex justify-content-end align-items-center gap-3">&ndash;&gt;-->
-    <!--&lt;!&ndash;            <div class="d-flex align-items-center bg-white rounded ps-2 pe-1 py-1 shadow-sm rounded-pill">&ndash;&gt;-->
-    <!--&lt;!&ndash;                <span class="fw-bold me-2 small text-muted text-nowrap">Mode:</span>&ndash;&gt;-->
-    <!--&lt;!&ndash;                <select id="simulation-mode" class="form-select form-select-sm border-0 shadow-none fw-bold text-dark py-0" style="width: auto; background-color: transparent;">&ndash;&gt;-->
-    <!--&lt;!&ndash;                    <option value="QUICK_SIM">Quick Sim</option>&ndash;&gt;-->
-    <!--&lt;!&ndash;                    <option value="TABLE_VIEW">Table View</option>&ndash;&gt;-->
-    <!--&lt;!&ndash;                    <option value="GRAPHICAL_VIEW">Graphical View</option>&ndash;&gt;-->
-    <!--&lt;!&ndash;                </select>&ndash;&gt;-->
-    <!--&lt;!&ndash;            </div>&ndash;&gt;-->
-    <!--&lt;!&ndash;            <button class="btn btn-success btn-sm fw-bold px-4 shadow-sm rounded-pill" onclick="startSimulation()">&ndash;&gt;-->
-    <!--&lt;!&ndash;                Start Simulation&ndash;&gt;-->
-    <!--&lt;!&ndash;            </button>&ndash;&gt;-->
-    <!--&lt;!&ndash;        </div>&ndash;&gt;-->
-
-    <!--    </div>-->
-    <!--</div>-->
-
     <header class="navbar">
       <div class="nav-left">
         <a class="nav-link" href="/">Home</a>
-        <!--        <div class="nav-title">Airport Simulation</div>-->
       </div>
 
       <div class="nav-title">Configuration</div>
     </header>
-
-    <!--CONFIGURATION TITLE-->
-    <!--<div class="container text-center mb-5 mt-4">-->
-    <!--    <h1 class="display-3 fw-bold text-uppercase" style="color: #0f172a; letter-spacing: 2px;">-->
-    <!--        Configuration-->
-    <!--    </h1>-->
-    <!--    <p class="lead text-muted fw-bold">Set parameters, manage runways, and schedule airport events.</p>-->
-    <!--</div>-->
     <main class="wrap progress-wrap">
       <div class="progress-centre">
         <div
@@ -102,7 +48,7 @@
                       class="text-muted field-range"
                       style="font-size: 0.7rem; line-height: 1"
                     >
-                      Range: 0 - 10
+                      Range: 1 - 10
                     </div>
                   </div>
                   <div class="d-flex align-items-center gap-2">
@@ -114,34 +60,17 @@
 
                 <div id="input-parameters-list"></div>
 
-                <div
-                  class="mb-2 d-flex justify-content-between align-items-center"
-                >
+                <div class="mb-2 d-flex justify-content-between align-items-center">
                   <div class="me-2">
-                    <label
-                      class="form-label mb-0 small fw-bold text-dark"
-                      for="input-auto_gen"
-                      >Enable Random Events</label
-                    >
-                    <div
-                      class="text-muted"
-                      style="font-size: 0.7rem; line-height: 1"
-                    >
-                      Uses failure rates to generate unplanned issues.
+                    <label class="form-label mb-0 small fw-bold text-dark d-flex align-items-center gap-1" for="input-auto_gen">
+                      Enable Random Events
+                    </label>
+                    <div class="text-muted" style="font-size: 0.7rem; line-height: 1; margin-top: 2px;">
+                      Uses baseline event rates scaled by multipliers.
                     </div>
                   </div>
                   <div class="d-flex align-items-center">
-                    <input
-                      class="form-check-input border-secondary"
-                      type="checkbox"
-                      id="input-auto_gen"
-                      style="
-                        width: 20px;
-                        height: 20px;
-                        cursor: pointer;
-                        margin-top: 0;
-                      "
-                    />
+                    <input class="form-check-input border-secondary" type="checkbox" id="input-auto_gen" style="width: 20px; height: 20px; cursor: pointer; margin-top: 0;"/>
                   </div>
                 </div>
 
