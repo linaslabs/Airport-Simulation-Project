@@ -1,0 +1,77 @@
+This text file provides references for the baseline rates for random events, which are based on real data.
+
+==========================================================================================
+Aircraft Rates:
+==========================================================================================
+Mechanical Failure Rate:
+emergencyMechanicalBaselinePerTick = 0.000000135
+
+How this is derived:
+For passenger jet turbine engines, every 1 in 375000 hours there is an engine failure.
+Reference: Rosen Aviation. How are airplanes able to fly with a failed engine? [Internet].
+           Aviation; [cited 2026 Mar 14]. Available from: https://www.rosenaviation.com/blog/how-are-airplanes-able-to-fly-with-a-failed-engine/
+
+33% of mechanical failures are due to engine failure.
+Reference: Reveley MS, Briggs JL, Evans JK, Jones SM, Kurtoglu T, Leone KM, et al. Causal
+           factors and adverse events of aviation accidents and incidents related to integrated
+           vehicle health management. NASA/TM—2011-216967. Cleveland (OH): NASA Glenn Research Center; 2011 Mar.
+
+Calculation: ((1/375000)/60)/0.33 = 0.000000135 chance of mechanical failures/minute
+
+==========================================================================================
+Passenger Health Emergency Rate:
+emergencyHealthBaselinePerTick = 0.000000556
+
+How this is derived:
+Between January 2022 and December 2023, it was found that 1 in 212 flights involved a medical emergency.
+Of those flights, 1.7% of the medical events were so serious that they caused the plane to divert.
+Reference: Medical Xpress. Global analysis reveals the frequency of in-flight medical emergencies
+           [Internet]. Medical Xpress; 2025 Sep 29 [cited 2026 Mar 14]. Available from: https://medicalxpress.com/news/2025-09-global-analysis-reveals-frequency-flight.html
+
+We assume an average flight time of 144 minutes (2h 24m).
+
+Calculation: ((1/212)*0.017)/144 = 0.000000556 change of health emergencies requiring diversion/minute
+
+==========================================================================================
+Runway Rates:
+==========================================================================================
+Runway Inspection Rate:
+failureInspectionBaselinePerTick = 0.001388
+
+How this is derived:
+Runways should be inspected at least daily, but one should be in darkness, so it is a good estimate to say 2 per day.
+Reference: Federal Aviation Administration. Advisory Circular 150/5200-18C: Airport safety self-inspection
+                  [Internet]. Washington (DC): US Department of Transportation, Federal Aviation Administration; 2004
+                  Apr 23 [cited 2026 Mar 14]. Available from: https://www.faa.gov/documentLibrary/media/Advisory_Circular/150_5200_18C.pdf
+
+Calculation: (2/24)/60 = 0.001388 chance of inspection/minute
+
+==========================================================================================
+Snow Clearance Rate:
+failureSnowBaselinePerTick = 0.00000951
+
+How this is derived:
+If we use Heathrow as an example of an airport in the UK, snow lies approximately 5 days per year.
+Reference: Met Office. Southern England: climate [Internet]. Exeter: Met Office; 2016 [cited 2026 Mar 14]. Available from:
+           https://www.metoffice.gov.uk/binaries/content/assets/metofficegovuk/pdf/weather/learn-about/weather/regional-climates/southern-england_-climate-met-office.pdf
+
+Calculation: ((5/365)/24)/60 = 0.00000951 chance of snow/minute
+
+==========================================================================================
+Runway Failure Rate:
+failureEquipmentBaselinePerTick = 0.00000278
+
+How this is derived:
+The MTTF for an incandescent runway light is 6000 hours.
+Reference: Burns J, Dennie C, Elshetwy S, Lean D, Vigilante J. LED Airfield Lighting System Operation
+           and Maintenance. Washington, DC: Transportation Research Board; 2015. ACRP Report 148.
+
+The runway must close if two consecutive lights fail.
+Reference: U.S. Department of Transportation, Federal Aviation Administration. Maintenance of
+           airport visual aid facilities. Washington, DC: Federal Aviation Administration; 2014 Jun 20.
+           144 p. Advisory Circular No.: 150/5340-26C.
+
+Because the cause of failures are roughly correlated, we can assume that the rate of a runway closure would
+be roughly equal to the rate of a single light failing.
+
+Calculation: (1/6000)/60 = 0.00000278
