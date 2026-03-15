@@ -26,10 +26,24 @@ import static org.mockito.Mockito.*;
  */
 class EventManagerTest {
 
+    /**
+     * Creates a RunwayConfig with AVAILABLE status and LANDING mode for the given ID.
+     *
+     * @param id the runway ID
+     * @return a RunwayConfig with RunwayStatus.AVAILABLE and RunwayMode.LANDING
+     */
     private static RunwayConfig snapshot(int id) {
         return new RunwayConfig(id, RunwayStatus.AVAILABLE, RunwayMode.LANDING);
     }
 
+    /**
+     * Creates an EventManager wired with the provided collaborators and empty event schedules.
+     *
+     * @param logger  the EventLogger to record events
+     * @param airport the Airport mock or real instance to dispatch events to
+     * @param stats   the Statistics instance for accumulating counts
+     * @return a fully constructed EventManager using a seeded Random for determinism
+     */
     private static EventManager makeManager(EventLogger logger, Airport airport, Statistics stats) {
         return new EventManager(logger, new HashMap<>(), new HashMap<>(), new Random(42), airport, stats);
     }

@@ -1,8 +1,5 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * Data transfer object representing the current progress of a simulation.
  * Contains the current tick and percentage completion for progress bar updates.

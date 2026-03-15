@@ -18,6 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class SimulationEngineTest {
 
+    /**
+     * Creates a RunwayConfig with AVAILABLE status and the specified ID and mode.
+     *
+     * @param id   the runway ID
+     * @param mode the operating mode for the runway
+     * @return a RunwayConfig with RunwayStatus.AVAILABLE
+     */
     private static RunwayConfig rc(int id, RunwayMode mode) {
         return new RunwayConfig(id, RunwayStatus.AVAILABLE, mode);
     }
@@ -25,6 +32,9 @@ class SimulationEngineTest {
     /**
      * Builds a minimal SimulationConfig with a single LANDING runway,
      * no outbound traffic, no auto-generation, and no scheduled events.
+     *
+     * @param duration the total number of simulation ticks
+     * @return a SimulationConfig suitable for engine lifecycle tests
      */
     private static SimulationConfig makeConfig(int duration) {
         return new SimulationConfig(
