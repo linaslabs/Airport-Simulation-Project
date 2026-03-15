@@ -30,7 +30,7 @@ public class SimulationService {
     private static final Logger log = LoggerFactory.getLogger(SimulationService.class);
 
     private SimulationEngine engine;
-    private int currentTickDelay; // Milliseconds between each tick
+    private int currentTickDelay;
     private volatile boolean isPaused = false;
     private volatile boolean isFinished = false;
     private volatile boolean isAborted = false; // In order to better differentiate between natural finishing and abrupt stopping
@@ -43,19 +43,28 @@ public class SimulationService {
     // Inject the messaging template
     private final SimpMessagingTemplate messagingTemplate;
 
+    /**
+     * Constructor to initialise the simulation service with the messaging template
+     * @param messagingTemplate a key "wrapper" for sending a message from the backend to the frontend
+     */
     public SimulationService(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
 
-    // Helper method to cancel tasks and clean up threads
+    /**
+     * Helper method to cancel tasks and clean up threads
+     * @param forceInterrupt if this is true, the thread is killed forcefully, otherwise it is shut down gracefully
+     */
     private void cancelCurrentTask(boolean forceInterrupt) {
-        // Let the simulation shut down gracefully if forceInterrupt is false (allows it to finish)
-        // If forceInterrupt is true, the thread is killed mid-task
         if (simulationTask != null) {
             simulationTask.cancel(forceInterrupt);
         }
     }
 
+    /**
+     * Method to set up the simulation and initialise the simulation engine to trigger it to initialise its own dependencies
+     * @param config a simulation configuration object containing all the user's simulations settings
+     */
     public void initialiseSimulation(SimulationConfig config) {
         // Cancel any tasks previously
         cancelCurrentTask(true);
@@ -63,15 +72,15 @@ public class SimulationService {
         this.isAborted = false;
         this.isFinished = false;
         this.isPaused = false;
-
         this.engine = new SimulationEngine(config);
-
+        // For debugging purposes, log the configuration to the console
         printConfigurationSummary(config);
-
+        // Instruct the engine to initialise its simulation through its dependencies
         this.engine.initialiseSimulation();
 
         // If the executor of the single (performTick) thread is shut down or doesn't exist, initialise it again
         if (executor == null || executor.isShutdown()) {
+            // We use single threads to make sure that one tick executes fully before the next one begins
             executor = Executors.newSingleThreadScheduledExecutor();
         }
 
@@ -79,28 +88,33 @@ public class SimulationService {
         this.currentTickDelay = config.getTickTime();
     }
 
-    // This is only called once the frontend sends a message back to tell the backend its websockets are set up.
+    /**
+     * Method that begins the simulation, the frontend calls this function once the websockets are set up for communication
+     */
     public void startSimulation() {
         if (isFinished || isAborted || engine == null) {
             log.warn("Ignoring ready signal - no simulation is waiting to start, the user likely clicked back in their browser.");
             return;
         }
-
-        scheduleNextTick();
+        scheduleNextTicks();
     }
 
-    // This method is only called ONCE to initialise the scheduler to start the regular call the runTick function at intervals
-    // However, this method is called AGAIN only when we want to SHORTEN THE INTERVAL between calling runTick to run a tick (i.e. increase the speed)
-    private void scheduleNextTick(){
+    /**
+     * Method to schedule the threads to perform the next ticks of the simulation with a set interval
+     * This method is only called ONCE to initialise the scheduler for the rest of the simulation
+     * It is called again only when we want to change the intervals between running the ticks (i.e. the user wants to change the speed)
+     */
+    private void scheduleNextTicks(){
         // Cancel any tasks currently running
         cancelCurrentTask(false);
 
+        // Call the fast-forward to the end function immediately if the user has set the configuration of the simulation to a quick simulation
         if (engine.getConfig().getSimulationMode() == SimulationMode.QUICK_SIM) {
             fastForwardToEnd();
             return;
         }
 
-        // Schedule the runTick method (which will call performTick) to execute at the currentTickDelay rate
+        // Schedule the runTick method (which will call performTick) to execute at currentTickDelay intervals
         simulationTask = executor.scheduleWithFixedDelay(
                 this::runTick,
                 0, // Start immediately
@@ -109,6 +123,9 @@ public class SimulationService {
         );
     }
 
+    /**
+     * Method to run the simulation (perform the tick in the simulation engine) and send the snapshot for each tick to the frontend
+     */
     private void runTick() {
         // If the user has paused, skip this tick process
         if (isPaused || isAborted) {
@@ -123,38 +140,46 @@ public class SimulationService {
             cancelCurrentTask(false);
             log.info("Simulation ended naturally.");
 
-            // Notification that the simulation has completed is sent to the channel "/simulation/complete" which the front end is subscribed to (the web socket)
+            // Notification that the simulation has completed is sent to the channel "/simulation/complete" which the front end is listening to (the web-socket)
+            // Sending it here is an indication the simulation has completed
             messagingTemplate.convertAndSend("/simulation/complete", "done");
         } else{
 
-            // Simulation snapshot is sent to the channel "/simulation/snapshot" which the front end is subscribed to (the web socket)
+            // Simulation snapshot is sent to the channel "/simulation/snapshot" which the front end is listening to (the web-socket)
+            // Sending it here is an indication that the simulation is still running
             messagingTemplate.convertAndSend("/simulation/snapshot", this.engine.getSimulationSnapshot());
         }
 
     }
 
-    public void pauseSimulation() {
-        this.isPaused = true;
-    }
+    public void pauseSimulation() { this.isPaused = true; }
 
     public void resumeSimulation() {
         this.isPaused = false;
-        if (!isFinished && !isAborted) scheduleNextTick(); // Safety checks
+        if (!isFinished && !isAborted) scheduleNextTicks(); // Safety checks
     }
 
     // Pass in 1 for 1x, 5 for 5x, 20 for 20x
+
+    /**
+     * Method to set the speed of the simulation by changing the time between tick operations
+     * @param multiplier the speed the user wants to set the simulation to (1 for 1x, 5 for 5x, 20 for 20x)
+     */
     public void setSpeedMultiplier(int multiplier) {
-        if (multiplier <= 0) return;
+        if (multiplier <= 0) return; // Safety checks
 
         // Calculate the new delay by dividing the tick time set by the multiplier
         this.currentTickDelay = Math.max(1, this.engine.getConfig().getTickTime() / multiplier);
 
         // Reschedule the task with the new tick delay
         if (!isPaused && !isFinished && !isAborted) {
-            scheduleNextTick();
+            scheduleNextTicks();
         }
     }
 
+    /**
+     * Method to loop the threads consecutively with as little tick time as possible to fast-forward the simulation to the end
+     */
     public void fastForwardToEnd() {
         // Cancel the current schedule
         cancelCurrentTask(false);
@@ -167,15 +192,12 @@ public class SimulationService {
             return;
         }
 
-        // Submit a task to performTick as fast as possible (note, the user cannot stop the simulation while this runs).
-        // I added a notion of ticks to this so the progress indicator can update while this is being executed.
+        // Submit a task to performTick as fast as possible
         executor.submit(() -> {
             int tickCount = 0;
-            // In case user managed to stop simulation mid fast-forward, this loop breaks
+            // In case user managed to stop simulation midway through the fast-forward, this loop breaks
             while (!this.isFinished && !this.isAborted && currentEngine.performTick()) {
-                // Engine runs to the end without delays - Comment no longer true.
-                // Now the engine runs to the end almost as fast as possible.
-                // The only thing it does it track the number of ticks and every 100 ticks it updates the progress percentage shown in the progress screen.
+                // Tracks the number of ticks and every 100 ticks to update the progress percentage shown in the progress screen.
                 tickCount++;
                 if (tickCount % 100 == 0) {
                     messagingTemplate.convertAndSend("/simulation/snapshot",
@@ -188,7 +210,6 @@ public class SimulationService {
             }
 
             // Notify the frontend that the simulation has completed. ONLY if the user hasn't aborted
-            // We don't send the results here as we get the results using a GET request when we swap to the results page.
             if (!this.isAborted) {
                 this.isFinished = true;
                 messagingTemplate.convertAndSend("/simulation/complete", "done");
@@ -197,7 +218,9 @@ public class SimulationService {
         });
     }
 
-
+    /**
+     * Method called by the simulation controllers that receive requests from the frontend to manually change a runway mode
+     */
     public void manualRunwayModeChange(int runwayId, String mode) {
         if (this.engine != null && !isFinished && !isAborted) {
             try {
@@ -210,6 +233,9 @@ public class SimulationService {
         }
     }
 
+    /**
+     * Method called by the simulation controllers that receive requests from the frontend to manually change a runway status
+     */
     public void manualRunwayStatusChange(int runwayId, String status) {
         if (this.engine != null && !isFinished && !isAborted) {
             try {
@@ -221,6 +247,9 @@ public class SimulationService {
         }
     }
 
+    /**
+     * Method called by the simulation controllers that receive requests from the frontend to manually change an aircraft to an emergency
+     */
     public void manualAircraftEmergencyChange(String callsign, String status) {
         if (this.engine != null && !isFinished && !isAborted) {
             try {
@@ -232,19 +261,26 @@ public class SimulationService {
         }
     }
 
-    // This function will HARD stop the simulation (when user presses the "stop simulation" button)
+    /**
+     * Method to HARD stop the simulation, called by the simulation controllers when a stop simulation request is received from the frontend
+     */
     public void stopSimulation() {
         log.info("Simulation triggered to stop.");
 
         this.isAborted = true;
-        this.isPaused = false; // in case
+        this.isPaused = false;
 
         // Shut down the simulation immediately
         cancelCurrentTask(true);
 
-        // executor.shutdown() can be called to shut it down completely, but leaving it alive means the user can start a new simulation later
+        // executor.shutdown() can be also called to shut it down completely, but leaving it alive means the user can start a new simulation later
     }
 
+    /**
+     * Function to return a simulation progress object detailing the current simulation progress
+     * Previously used in testing, is redundant now that progress is sent within the simulation snapshot but kept for future testing
+     * @return simulation progress object with current tick and the simulation progress as a percentage
+     */
     public SimulationProgress getSimulationProgress() {
         // Return percentage of time through duration the simulation is.
         if (this.engine == null) return new SimulationProgress(0, 0.0);
