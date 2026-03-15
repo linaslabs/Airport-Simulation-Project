@@ -2,26 +2,31 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import java.util.*;
 
-// This class holds the data used to populate the callsign, operator, origin and destination fields of aircraft.
-// In future this could be moved to a file.
+/**
+ * Holds data for airline operators used to generate realistic aircraft callsigns and identities.
+ * Contains operator names, ICAO prefixes, and probability distributions based on London Heathrow statistics.
+ * Used by AircraftGenerator to create realistic flight data.
+ */
 public class OperatorData {
 
-    // Maps Operator Name (e.g. British Airways) to its Prefix, the ICAO Code for the operator (e.g. BAW)
+    /** Maps operator name to ICAO prefix code (e.g., "British Airways" -> "BAW") */
     private final Map<String, String> prefixes = new HashMap<>();
 
-    // Maps the Operator Name to its current aircraft counter.
-    // Allows callsigns to consist of Prefix + count for that operator.
+    /** Maps operator name to current flight counter for generating unique callsigns */
     private final Map<String, Integer> counters = new HashMap<>();
 
-    // Map of Operator Name to probability to allow representative variation of different airlines (based on Heathrow).
-    // Note we use a LinkedHashMap to ensure the order of the iterator is the same each simulation,
-    // ensuring the same operator will be generated for a given random seed.
+    /** Maps operator name to probability of selection, based on Heathrow traffic data */
     private final Map<String, Double> probabilities = new LinkedHashMap<>();
 
+    /** Random number generator for stochastic operator selection */
     private final Random random;
 
-    // These operators are based on the 20 airlines with the most operations at London Heathrow:
-    // https://simpleflying.com/london-heathrow-largest-airlines-guide/
+    /**
+     * Constructs OperatorData with the 20 largest airlines at London Heathrow.
+     * Probability distributions are based on actual traffic statistics.
+     *
+     * @param random the random number generator for operator selection
+     */
     public OperatorData(Random random) {
         addOperator("British Airways", "BAW", 0.601);
         addOperator("Virgin Atlantic", "VIR", 0.049);
@@ -46,13 +51,24 @@ public class OperatorData {
         this.random = random;
     }
 
-    // Helper function to make adding operators and their prefix easier.
+    /**
+     * Adds an operator with its ICAO prefix and selection probability.
+     *
+     * @param name the full operator name
+     * @param prefix the ICAO code prefix for callsigns
+     * @param probability the probability of this operator being selected
+     */
     private void addOperator(String name, String prefix, double probability) {
         prefixes.put(name, prefix);
         counters.put(name, 1);
         probabilities.put(name, probability);
     }
 
+    /**
+     * Selects a random operator name based on probability distribution.
+     *
+     * @return the selected operator name
+     */
     public String getRandomOperatorName() {
         // Generate a number between 0.0 and 1.0.
         double p = random.nextDouble();
@@ -70,7 +86,14 @@ public class OperatorData {
         return probabilities.keySet().iterator().next();
     }
 
-    // Ensure you pass valid operator names, otherwise it will throw an IllegalArgumentException.
+    /**
+     * Generates the next unique callsign for the specified operator.
+     * Callsigns consist of the ICAO prefix plus an incrementing number.
+     *
+     * @param operatorName the name of the operator
+     * @return the generated callsign (e.g., "BAW1", "BAW2")
+     * @throws IllegalArgumentException if the operator name is unknown
+     */
     public String getNextCallsign(String operatorName) {
         String prefix = prefixes.get(operatorName);
         Integer count = counters.get(operatorName);
