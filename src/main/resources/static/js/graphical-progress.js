@@ -1,3 +1,10 @@
+/*
+ * This file contains the graphical progress view implementation.
+ * We kept it in the project for reference, but it is not used in the final
+ * application flow at the moment, so we chose not to add the same level of
+ * detailed JSDoc comments as the used pages.
+ */
+
 let stompClient = null;
 let startTime;
 let wsReady = false;
@@ -37,9 +44,11 @@ function setText(id, value) {
     if (element) element.textContent = value;
 }
 
+// keeps all playback buttons in sync with the current simulation state
 function updateControlUi() {
     const pauseButton = document.getElementById('ctrlPause');
     if (pauseButton) {
+        // Pause and resume share one button, so the label follows the current state.
         pauseButton.textContent = isPaused ? '▶ Play' : '⏸ Pause';
         pauseButton.title = isPaused ? 'Resume' : 'Pause';
         pauseButton.disabled = isStopping || isFastForwarding;
@@ -55,6 +64,7 @@ function updateControlUi() {
         const button = document.getElementById(id);
         if (!button) return;
 
+        // Highlight whichever speed matches the current multiplier.
         const isActive = speedLevels[speedIndex] === value;
         button.disabled = isStopping || isFastForwarding;
         button.classList.toggle('secondary', !isActive);
@@ -101,6 +111,7 @@ async function applySpeedIndex(nextIndex) {
     const safeIndex = Math.max(0, Math.min(speedLevels.length - 1, nextIndex));
     if (safeIndex === speedIndex) return;
 
+    // The backend owns the actual simulation speed, so update that first.
     const multiplier = speedLevels[safeIndex];
     await postControl(`/api/simulation/speed/${multiplier}`);
     speedIndex = safeIndex;
@@ -154,6 +165,7 @@ async function triggerFastForward() {
     }
 }
 
+// wires the top control buttons to the backend simulation endpoints
 function bindControls() {
     const stopButton = document.getElementById('ctrlStop');
     if (stopButton) {
@@ -236,6 +248,7 @@ function clearLayer(layerId) {
     const layer = document.getElementById(layerId);
     if (!layer) return;
 
+    // These SVG layers are redrawn from scratch on each snapshot.
     while (layer.firstChild) {
         layer.removeChild(layer.firstChild);
     }
@@ -266,6 +279,7 @@ function openPlaneInfoCard(title, lines) {
     planeInfoTitle.textContent = title || 'Aircraft';
     planeInfoBody.innerHTML = '';
 
+    // Filter out empty values so the info card only shows meaningful lines.
     lines.filter(Boolean).forEach(line => {
         const item = document.createElement('li');
         item.textContent = line;
@@ -278,6 +292,7 @@ function openPlaneInfoCard(title, lines) {
 function attachPlaneInfoClick(planeElement, title, lines) {
     if (!planeElement) return;
 
+    // Treat each plane icon like a small accessible button.
     planeElement.setAttribute('tabindex', '0');
     planeElement.setAttribute('role', 'button');
     planeElement.setAttribute('aria-label', title || 'Aircraft details');
@@ -317,6 +332,7 @@ function initPlaneInfoCard() {
 
     if (scene) {
         scene.addEventListener('click', () => {
+            // Clicking empty space closes the info card, like dismissing a popover.
             closePlaneInfoCard();
         });
     }
@@ -336,6 +352,7 @@ function getAltitudeColor(altitude) {
     return ALTITUDE_COLORS[Math.min(bandIndex, ALTITUDE_COLORS.length - 1)];
 }
 
+// draws the altitude colour key used for aircraft in the holding pattern
 function renderAltitudeLegend() {
     clearLayer('altitudeLegendLayer');
 
@@ -375,6 +392,7 @@ function renderAltitudeLegend() {
     layer.appendChild(border);
 
     for (let i = 0; i < ALTITUDE_COLORS.length; i++) {
+        // Each colour block represents a 1000 ft altitude band.
         const rect = createSvgElement('rect');
         rect.setAttribute('x', String(baseX + (i * barWidth)));
         rect.setAttribute('y', String(baseY));
@@ -433,6 +451,7 @@ function getRunwayLayout(runwayCount) {
     const availableHeight = maxY - minY;
     const slotGap = RUNWAY_SLOT_GAP;
 
+    // Keep runway slots inside the visible area even when runway count changes.
     const rawSlotHeight = (availableHeight - (slotGap * (safeCount - 1))) / safeCount;
     const slotHeight = Math.max(24, Math.min(38, rawSlotHeight));
     const usedHeight = (slotHeight * safeCount) + (slotGap * (safeCount - 1));
@@ -450,6 +469,7 @@ function getRunwayLayout(runwayCount) {
     };
 }
 
+// decides the visual styling for each runway slot based on runway status and occupancy
 function getRunwaySlotStyle(runway) {
     const statusKey = String(runway?.status || '').toUpperCase();
     const hasAircraft = Boolean(runway?.aircraftCallsign);
@@ -472,6 +492,7 @@ function getRunwaySlotStyle(runway) {
     }
 
     if (hasAircraft) {
+        // Occupied runway slots are highlighted separately from status colour alone.
         fill = '#ffffff';
         stroke = '#93c5fd';
     }
@@ -479,6 +500,7 @@ function getRunwaySlotStyle(runway) {
     return { fill, stroke };
 }
 
+// draws the runway slots themselves before aircraft icons are added on top
 function renderRunwaySlots(runways) {
     clearLayer('runwaySlotsLayer');
 
@@ -489,6 +511,7 @@ function renderRunwaySlots(runways) {
         ? runways.slice().sort((a, b) => (a.runwayID ?? 0) - (b.runwayID ?? 0))
         : [];
 
+    // Sort by runway id so the drawing order always matches the labels and table.
     const layout = getRunwayLayout(sortedRunways.length);
 
     for (let i = 0; i < sortedRunways.length; i++) {
@@ -529,6 +552,7 @@ function renderHoldingAircraft(holdingAircraft) {
 
     for (let i = 0; i < holdingAircraft.length; i++) {
         const aircraft = holdingAircraft[i] || {};
+        // Spread holding aircraft evenly around the circle to keep the picture readable.
         const angle = (Math.PI * 2 * i) / holdingAircraft.length;
         const x = cx + Math.cos(angle) * radius;
         const y = cy + Math.sin(angle) * radius;
@@ -549,6 +573,7 @@ function renderHoldingAircraft(holdingAircraft) {
     }
 }
 
+// draws aircraft currently sitting on runways
 function renderRunwayAircraft(runways) {
     clearLayer('runwayAircraftLayer');
 
@@ -587,6 +612,7 @@ function renderTakeoffAircraft(takeoffAircraft, currentTick = 0) {
         const y = TAKEOFF_QUEUE_Y;
         const plane = createPlaneText(x, y, 'takeoff-plane');
         plane.setAttribute('transform', `rotate(-90 ${x} ${y})`);
+        // Queue time is derived on the client from the live tick and the aircraft entry tick.
         const timeInQueue = Number.isFinite(aircraft.entryTick) ? Math.max(0, currentTick - aircraft.entryTick) : 0;
         attachPlaneInfoClick(plane, 'Take-off Queue Aircraft', [
             `Callsign: ${aircraft.callsign || 'N/A'}`,
@@ -597,6 +623,7 @@ function renderTakeoffAircraft(takeoffAircraft, currentTick = 0) {
     }
 }
 
+// shared table renderer used by the runway, holding, and take-off data tables
 function renderTableRows(tableId, rows, rowMapper) {
     const table = document.getElementById(tableId);
     if (!table) return;
@@ -614,6 +641,7 @@ function renderTableRows(tableId, rows, rowMapper) {
     }
 
     rows.forEach(row => {
+        // The mapper keeps table-specific formatting outside this shared renderer.
         const values = rowMapper(row);
         const tr = document.createElement('tr');
         values.forEach(value => {
@@ -625,6 +653,7 @@ function renderTableRows(tableId, rows, rowMapper) {
     });
 }
 
+// takes one live snapshot from the backend and refreshes both the scene and the tables
 function renderSnapshot(snapshotData) {
     const currentTick = Number.isFinite(snapshotData.currentTick) ? snapshotData.currentTick : 0;
     const holdingCount = Number.isFinite(snapshotData.holdingPatternSize) ? snapshotData.holdingPatternSize : 0;
@@ -647,6 +676,7 @@ function renderSnapshot(snapshotData) {
     setText('diversionCount', String(diversionCount));
     setText('cancellationCount', String(cancellationCount));
 
+    // Live throughput is estimated from completed movements so far.
     const throughput = currentTick > 0 ? (((landedCount + departedCount) * 60) / currentTick) : 0;
     setText('throughputLive', throughput.toFixed(1) + ' /hr');
 
@@ -654,6 +684,7 @@ function renderSnapshot(snapshotData) {
     const runwayData = Array.isArray(snapshotData.runways) ? snapshotData.runways : [];
     const takeoffAircraft = Array.isArray(snapshotData.takeoffAircraft) ? snapshotData.takeoffAircraft : [];
 
+    // Redraw the visual layers first, then refresh the supporting tables underneath.
     renderHoldingAircraft(holdingAircraft);
     renderRunwaySlots(runwayData);
     renderRunwayAircraft(runwayData);
@@ -689,12 +720,14 @@ function renderSnapshot(snapshotData) {
     });
 }
 
+// opens the websocket connection and listens for live simulation updates
 function connectWebSocket() {
     startTime = Date.now();
     window.setInterval(updateElapsedTime, 1000);
     wsReady = false;
     updateControlUi();
 
+    // SockJS handles the browser connection, while STOMP provides topic subscriptions.
     const socket = new SockJS('/simulation-websocket');
     stompClient = Stomp.over(socket);
     stompClient.debug = null;
@@ -705,6 +738,7 @@ function connectWebSocket() {
         updateControlUi();
 
         stompClient.subscribe('/simulation/snapshot', function (message) {
+            // Each snapshot contains the current live state for the whole visualisation.
             const snapshotData = JSON.parse(message.body);
             renderSnapshot(snapshotData);
         });
@@ -719,11 +753,13 @@ function connectWebSocket() {
                 updateControlUi();
             }
 
+            // Give the user a moment to see the completed state before redirecting.
             setTimeout(() => {
                 window.location.href = '/results.html';
             }, 2000);
         });
 
+        // Tell the backend that the page is ready to receive updates.
         stompClient.send('/app/simulation/ready', {}, '');
     }, function (error) {
         wsReady = false;

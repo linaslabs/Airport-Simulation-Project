@@ -6,20 +6,34 @@ const API = {
     deleteResult: (name) => `/api/results/delete/${encodeURIComponent(name)}`
 };
 
+/**
+ * @typedef {Object} SortState
+ * @property {?string} column Current sorted column.
+ * @property {?('asc'|'desc')} direction Current sort direction.
+ */
+
 let allSimulations = [];
+
+/** @type {SortState} */
 let currentSort = {
     column: null,
     direction: null // 'asc' or 'desc'
 };
 
-// Initialize on page load
+/**
+ * Initialise the compare-all page when the DOM is ready.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
     await loadAllSimulations();
     setupSortingListeners();
     updateSortIndicators();
 });
 
-// Fetch all simulation summaries
+/**
+ * Load all saved simulations and decide whether to show the table or the empty state.
+ *
+ * @returns {Promise<void>}
+ */
 async function loadAllSimulations() {
     const loadingMessage = document.getElementById('loadingMessage');
     const noResults = document.getElementById('noResults');
@@ -50,6 +64,13 @@ async function loadAllSimulations() {
     }
 }
 
+/**
+ * Fetch JSON from the backend and throw a readable error for failed requests.
+ *
+ * @param {string} url Endpoint URL.
+ * @param {RequestInit} [options={}] Fetch options.
+ * @returns {Promise<Object>} Parsed JSON payload.
+ */
 async function fetchJson(url, options = {}) {
     const response = await fetch(url, options);
     if (!response.ok) {
@@ -59,6 +80,13 @@ async function fetchJson(url, options = {}) {
     return response.json();
 }
 
+/**
+ * Expand summary rows into full simulation details so every sortable metric is available.
+ * If one detail request fails, keep a minimal fallback object so the table can still load.
+ *
+ * @param {Array<Object>} summaries Simulation summaries from the backend.
+ * @returns {Promise<Array<Object>>} Full simulation results that can be shown in the table.
+ */
 async function fetchSimulationDetailsFromSummaries(summaries) {
     if (!Array.isArray(summaries) || summaries.length === 0) {
         return [];
@@ -72,6 +100,7 @@ async function fetchSimulationDetailsFromSummaries(summaries) {
             return await fetchJson(API.viewOrCompare(name));
         } catch (error) {
             console.warn(`Failed to load detail for simulation ${name}:`, error);
+            // Keep a lightweight fallback row instead of dropping the simulation completely.
             return {
                 simulationName: name,
                 dateExecuted: summary?.dateExecuted || null,
@@ -86,7 +115,13 @@ async function fetchSimulationDetailsFromSummaries(summaries) {
     return resolved.filter(sim => sim && sim.simulationName);
 }
 
-// Render the table with simulation data
+/**
+ * Render the comparison table, optionally using the current sort selection.
+ *
+ * @param {?string} [sortColumn=null] Column key to sort by.
+ * @param {?('asc'|'desc')} [sortDirection=null] Sort direction.
+ * @returns {void}
+ */
 function renderTable(sortColumn = null, sortDirection = null) {
     const tbody = document.getElementById('tableBody');
 
@@ -95,16 +130,17 @@ function renderTable(sortColumn = null, sortDirection = null) {
         return;
     }
 
-    // Clone and sort data if needed
+    // Work on a copy so sorting the table does not accidentally reorder the source list.
     let displayData = [...allSimulations];
 
     if (sortColumn && sortDirection) {
         displayData = sortData(displayData, sortColumn, sortDirection);
     }
 
-    // Build table rows
+    // Build the rows as HTML because this table is fully regenerated after each sort or delete.
     tbody.innerHTML = displayData.map(sim => {
         const stats = sim.stats || {};
+        // Some fallback rows only have throughput on the summary object, not in stats.
         const throughput = stats.hourlyThroughput ?? sim.throughput ?? null;
 
         return `
@@ -130,10 +166,15 @@ function renderTable(sortColumn = null, sortDirection = null) {
 
     bindDeleteButtons();
 
-    // Highlight best values
+    // Best-value highlighting is currently optional, so leave the hook here.
     // highlightBestValues();
 }
 
+/**
+ * Attach delete handlers after the table rows have been rendered.
+ *
+ * @returns {void}
+ */
 function bindDeleteButtons() {
     const buttons = document.querySelectorAll('.btn-delete');
 
@@ -146,6 +187,7 @@ function bindDeleteButtons() {
                 return;
             }
 
+            // Lock the button immediately so the same delete request cannot be sent twice.
             button.disabled = true;
             button.textContent = 'Deleting...';
 
@@ -159,6 +201,12 @@ function bindDeleteButtons() {
     });
 }
 
+/**
+ * Delete one saved simulation and refresh the table state.
+ *
+ * @param {string} simName Simulation name to delete.
+ * @returns {Promise<void>}
+ */
 async function deleteSimulation(simName) {
     const response = await fetch(API.deleteResult(simName), { method: 'DELETE' });
     if (!response.ok) {
@@ -177,7 +225,14 @@ async function deleteSimulation(simName) {
     renderTable(currentSort.column, currentSort.direction);
 }
 
-// Sort data based on column and direction
+/**
+ * Sort simulation data by a requested column.
+ *
+ * @param {Array<Object>} data Simulation list to sort.
+ * @param {string} column Column key from the table header.
+ * @param {'asc'|'desc'} direction Sort direction.
+ * @returns {Array<Object>} Sorted array.
+ */
 function sortData(data, column, direction) {
     const columnMap = {
         'name': 'simulationName',
@@ -201,63 +256,72 @@ function sortData(data, column, direction) {
         let aVal = getNestedValue(a, path);
         let bVal = getNestedValue(b, path);
 
-        // Handle null/undefined values
+        // Give missing values a predictable fallback so sorting stays stable.
         if (aVal === null || aVal === undefined) aVal = column === 'name' ? '' : -Infinity;
         if (bVal === null || bVal === undefined) bVal = column === 'name' ? '' : -Infinity;
 
-        // String comparison
+        // Name uses locale-aware string sorting; the metrics use numeric sorting.
         if (typeof aVal === 'string' && typeof bVal === 'string') {
             return direction === 'asc'
                 ? aVal.localeCompare(bVal)
                 : bVal.localeCompare(aVal);
         }
 
-        // Numeric comparison
         return direction === 'asc' ? aVal - bVal : bVal - aVal;
     });
 }
 
-// Get nested object value by path (e.g., 'stats.avgWaitTime')
+/**
+ * Read a nested property using a dotted path such as stats.avgWaitTime.
+ *
+ * @param {Object} obj Source object.
+ * @param {string} path Dotted property path.
+ * @returns {*} Nested value or null when any level is missing.
+ */
 function getNestedValue(obj, path) {
     return path.split('.').reduce((current, prop) =>
         current && current[prop] !== undefined ? current[prop] : null, obj);
 }
 
-// Set up click listeners for sortable columns
+/**
+ * Wire up the sortable column headers.
+ * First click follows the column's preferred "best" direction, then toggles.
+ *
+ * @returns {void}
+ */
 function setupSortingListeners() {
     const headers = document.querySelectorAll('th.sortable');
 
     headers.forEach(header => {
         header.addEventListener('click', () => {
             const column = header.dataset.column;
-            // if (column === 'name') {
-            //     return;
-            // }
             const bestDirection = header.dataset.best || 'desc';
 
-            // Determine sort direction
             let direction;
             if (currentSort.column === column) {
-                // Toggle direction
+                // Clicking the same header again just flips the order.
                 direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
             } else {
-                // First click: sort by "best" direction
+                // New headers start from the direction that matches the metric definition.
                 direction = bestDirection;
             }
 
-            // Update sort state
             currentSort = { column, direction };
 
-            // Update UI indicators
             updateSortIndicators(column, direction);
 
-            // Re-render table
             renderTable(column, direction);
         });
     });
 }
 
-// Update sort indicator arrows in headers
+/**
+ * Update the active sort arrow in the table header.
+ *
+ * @param {?string} activeColumn Column currently being sorted.
+ * @param {?('asc'|'desc')} direction Current sort direction.
+ * @returns {void}
+ */
 function updateSortIndicators(activeColumn, direction) {
     const headers = document.querySelectorAll('th.sortable');
 
@@ -276,7 +340,12 @@ function updateSortIndicators(activeColumn, direction) {
     });
 }
 
-// Highlight the best value in each column
+/**
+ * Highlight the best cell in each metric column.
+ * This helper is currently unused but kept for future visual emphasis.
+ *
+ * @returns {void}
+ */
 function highlightBestValues() {
     const headers = document.querySelectorAll('th.sortable');
 
@@ -286,12 +355,10 @@ function highlightBestValues() {
 
         if (!bestDirection || column === 'name') return;
 
-        // Get all cells in this column
         const cells = document.querySelectorAll(`#tableBody tr td:nth-child(${colIndex + 1})`);
 
         if (cells.length === 0) return;
 
-        // Find best value
         let bestValue = null;
         let bestCell = null;
 
@@ -314,26 +381,41 @@ function highlightBestValues() {
             }
         });
 
-        // Highlight best cell
         if (bestCell) {
             bestCell.classList.add('best-value');
         }
     });
 }
 
-// Utility: Format number with decimals
+/**
+ * Format a numeric metric with a fixed number of decimal places.
+ *
+ * @param {*} value Raw value.
+ * @param {number} [decimals=2] Number of decimal places.
+ * @returns {string} Formatted number or '--'.
+ */
 function formatNumber(value, decimals = 2) {
     if (value === null || value === undefined || isNaN(value)) return '--';
     return Number(value).toFixed(decimals);
 }
 
-// Utility: Format integer
+/**
+ * Format a numeric value as a whole number.
+ *
+ * @param {*} value Raw value.
+ * @returns {string} Rounded integer or '--'.
+ */
 function formatInteger(value) {
     if (value === null || value === undefined || isNaN(value)) return '--';
     return Math.round(Number(value)).toString();
 }
 
-// Utility: Escape HTML to prevent XSS
+/**
+ * Escape text before inserting it into an HTML string.
+ *
+ * @param {string} text Raw text.
+ * @returns {string} Escaped HTML-safe text.
+ */
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
