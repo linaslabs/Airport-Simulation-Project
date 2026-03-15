@@ -1,6 +1,10 @@
 let stompClient = null;
 let startTime;
 
+/**
+ * Updates the UI progress bar, percentage text, and elapsed time counter.
+ * @param {number} progressDecimal - The current simulation progress as a decimal (e.g., 0.5 for 50%).
+ */
 function updateProgress(progressDecimal) {
     const progressPercentage = progressDecimal * 100;
 
@@ -18,6 +22,10 @@ function updateProgress(progressDecimal) {
     if (timeText) timeText.textContent = elapsed + 's';
 }
 
+/**
+ * Initialises the WebSocket connection using SockJS and STOMP.
+ * Subscribes to the simulation snapshot and completion streams, then triggers the backend to start.
+ */
 function connectWebSocket() {
     startTime = Date.now();
 
@@ -80,6 +88,9 @@ function connectWebSocket() {
     });
 }
 
+/**
+ * Event listener that initiates the WebSocket connection as soon as the DOM is ready.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
 });
