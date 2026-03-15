@@ -37,14 +37,14 @@ function connectWebSocket() {
     stompClient.debug = null;
 
     stompClient.connect({}, function (frame) {
-        console.log('Connected to WebSocket: ' + frame);
+        //console.log('Connected to WebSocket: ' + frame);
 
         // Subscribe to snapshot stream
         const snapshotSubscription = stompClient.subscribe('/simulation/snapshot', function (message) {
             // Parse the body into a JS object
             const snapshotData = JSON.parse(message.body);
 
-            console.log("Received Snapshot Data:", snapshotData);
+            //console.log("Received Snapshot Data:", snapshotData);
 
             // Extract the progress and update the UI
             updateProgress(snapshotData.progressPercent);
@@ -58,7 +58,7 @@ function connectWebSocket() {
 
         // Subscribe to the complete stream so we know when the simulation finishes
         const completeSubscription = stompClient.subscribe('/simulation/complete', function () {
-            console.log('Simulation complete. Redirecting to results...');
+            //console.log('Simulation complete. Redirecting to results...');
 
             // Simulation 100 percent completion
             updateProgress(1.0);

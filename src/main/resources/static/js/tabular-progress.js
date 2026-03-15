@@ -1,8 +1,25 @@
+/**
+ * The active STOMP client used for WebSocket communication.
+ * @type {Object|null}
+ */
 let stompClient = null;
+/**
+ * The timestamp of when the WebSocket connection was established.
+ * Used to calculate the elapsed simulation time.
+ * @type {number}
+ */
 let startTime;
 
+/**
+ * Tracks whether the simulation is currently paused.
+ * @type {boolean}
+ */
 let isSimulationPaused = false; // For playback controls
 
+/**
+ * Toggles the simulation playback state between play and pause.
+ * Updates the UI button and sends the corresponding API request.
+ */
 function togglePlayPause(){
     const btn = document.getElementById('btn-play-pause');
 
@@ -23,9 +40,13 @@ function togglePlayPause(){
     }
 }
 
+/**
+ * Changes the simulation execution speed and updates the active state of the speed control buttons.
+ * @param {number} multiplier - The speed multiplier to apply (e.g., 1, 5, 20).
+ */
 function setSpeed(multiplier){
     fetch(`/api/simulation/speed/${multiplier}`, { method: 'POST'})
-        .then(() => console.log(`Speed changed to ${multiplier}x`))
+        //.then(() => console.log(`Speed changed to ${multiplier}x`))
 
     // Update UI buttons
     const allSpeeds = [1, 5, 20];
@@ -48,6 +69,10 @@ function setSpeed(multiplier){
 
 }
 
+/**
+ * Triggers the simulation to fast-forward to the end.
+ * Disables playback controls to prevent state bugs during processing.
+ */
 function triggerFastForward() {
     // Disable controls in the event that we have state bugs
     document.getElementById('btn-play-pause').disabled = true;
@@ -55,9 +80,13 @@ function triggerFastForward() {
     document.getElementById('btn-fast-forward').innerHTML = '⏳ Processing...';
 
     fetch('/api/simulation/fastforward', { method: 'POST' })
-        .then(() => console.log('Fast forwarding to end...'));
+        //.then(() => console.log('Fast forwarding to end...'));
 }
 
+/**
+ * Updates the UI progress bar, percentage text, and elapsed time counter.
+ * @param {number} progressDecimal - The current simulation progress as a decimal (e.g., 0.5 for 50%).
+ */
 function updateProgress(progressDecimal) {
     const progressPercentage = progressDecimal * 100;
 
@@ -75,6 +104,10 @@ function updateProgress(progressDecimal) {
     if (timeText) timeText.textContent = elapsed + 's';
 }
 
+/**
+ * Updates the global statistics panel with the latest throughput, arrival, and departure data.
+ * @param {Object} data - The snapshot data object from the backend.
+ */
 function updateGlobalStats(data) {
     let throughput = 0;
     if (data.currentTick > 0) {
@@ -100,6 +133,11 @@ function updateGlobalStats(data) {
     document.getElementById('stat-cancellations').textContent = data.cancellationCount;
 }
 
+/**
+ * Rebuilds the holding pattern table UI with the current list of aircraft.
+ * Applies visual styling for emergency states and locks inputs if triggered by external events.
+ * @param {Array<Object>} aircraftList - The list of aircraft currently in the holding pattern.
+ */
 function updateHoldingTable(aircraftList) {
     const tbody = document.getElementById('holding-table-body');
     const countBadge = document.getElementById('holding-count');
@@ -155,6 +193,12 @@ function updateHoldingTable(aircraftList) {
     });
 }
 
+/**
+ * Rebuilds the takeoff queue table UI, calculating wait times and flagging aircraft at risk of cancellation.
+ * @param {Array<Object>} aircraftList - The list of aircraft waiting to take off.
+ * @param {number} currentTick - The current simulation tick.
+ * @param {number} cancellationThreshold - The maximum wait time before an aircraft cancels its flight.
+ */
 function updateTakeoffTable(aircraftList, currentTick, cancellationThreshold) {
     const tbody = document.getElementById('takeoff-table-body');
     const countBadge = document.getElementById('takeoff-count');
@@ -196,6 +240,12 @@ function updateTakeoffTable(aircraftList, currentTick, cancellationThreshold) {
     });
 }
 
+/**
+ * Rebuilds the runway status table UI, showing active modes, statuses, and occupied states.
+ * Fills inactive runways to maintain a consistent layout.
+ * @param {Array<Object>} runways - The current state of all active runways.
+ * @param {number} currentTick - The current simulation tick.
+ */
 function updateRunwayTable(runways, currentTick) {
     const tbody = document.getElementById('runway-table-body');
     if (!tbody || !runways) return;
@@ -259,6 +309,10 @@ function updateRunwayTable(runways, currentTick) {
     }
 }
 
+/**
+ * Halts the simulation, disconnects the WebSocket, and redirects the user back to the configuration page.
+ * Sets a session flag to allow state restoration.
+ */
 async function stopSimulation() {
     // Disable button to stop spam
     const btn = document.getElementById('btn-stop-sim');
@@ -287,6 +341,10 @@ async function stopSimulation() {
     }
 }
 
+/**
+ * Initialises the WebSocket connection using SockJS and STOMP.
+ * Subscribes to the simulation snapshot and completion streams, then triggers the backend to start.
+ */
 function connectWebSocket() {
     startTime = Date.now();
 
@@ -298,14 +356,14 @@ function connectWebSocket() {
     stompClient.debug = null;
 
     stompClient.connect({}, function (frame) {
-        console.log('Connected to WebSocket: ' + frame);
+        //console.log('Connected to WebSocket: ' + frame);
 
         // Subscribe to snapshot stream
         const snapshotSubscription = stompClient.subscribe('/simulation/snapshot', function (message) {
             // Parse the body into a JS object
             const snapshotData = JSON.parse(message.body);
 
-            console.log("Received Snapshot Data:", snapshotData);
+            //console.log("Received Snapshot Data:", snapshotData);
 
             // Extract the progress and update the UI
             updateProgress(snapshotData.progressPercent);
@@ -327,7 +385,7 @@ function connectWebSocket() {
 
         // Subscribe to the complete stream so we know when the simulation finishes
         const completeSubscription = stompClient.subscribe('/simulation/complete', function () {
-            console.log('Simulation complete. Redirecting to results...');
+            //console.log('Simulation complete. Redirecting to results...');
 
             // Simulation 100 percent completion
             updateProgress(1.0);
@@ -357,6 +415,11 @@ function connectWebSocket() {
     });
 }
 
+/**
+ * Sends an API request to change the operational mode of a specific runway.
+ * @param {number} runwayId - The ID of the runway.
+ * @param {string} newMode - The new mode to apply (e.g., 'LANDING', 'TAKEOFF').
+ */
 function changeRunwayMode(runwayId, newMode) {
     fetch(`/api/simulation/runway/${runwayId}/mode?mode=${newMode}`, { method: 'POST' })
         .then(response => {
@@ -364,6 +427,11 @@ function changeRunwayMode(runwayId, newMode) {
         });
 }
 
+/**
+ * Sends an API request to change the operational status of a specific runway.
+ * @param {number} runwayId - The ID of the runway.
+ * @param {string} newStatus - The new status to apply (e.g., 'AVAILABLE', 'INSPECTION').
+ */
 function changeRunwayStatus(runwayId, newStatus) {
     fetch(`/api/simulation/runway/${runwayId}/status?status=${newStatus}`, { method: 'POST' })
         .then(response => {
@@ -371,6 +439,11 @@ function changeRunwayStatus(runwayId, newStatus) {
         });
 }
 
+/**
+ * Sends an API request to change the emergency status of a specific aircraft.
+ * @param {string} callsign - The callsign of the aircraft.
+ * @param {string} newStatus - The new emergency status.
+ */
 function changeAircraftEmergency(callsign, newStatus) {
     fetch(`/api/simulation/aircraft/${callsign}/emergency?status=${newStatus}`, { method: 'POST' })
         .then(response => {
@@ -378,6 +451,9 @@ function changeAircraftEmergency(callsign, newStatus) {
         });
 }
 
+/**
+ * Event listener that initialises the WebSocket connection as soon as the DOM is ready.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
 });
