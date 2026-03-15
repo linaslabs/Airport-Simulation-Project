@@ -1,8 +1,8 @@
 /*
- * This file contains the graphical progress view implementation.
- * We kept it in the project for reference, but it is not used in the final
- * application flow at the moment, so we chose not to add the same level of
- * detailed JSDoc comments as the used pages.
+ * This file contains the graphical progress view prototype.
+ * We kept it in the project for reference, but it is not used in the final application.
+ * Because this was just an initial prototype to explore a possible feature, it did not receive the same level of
+ * detailed JSDoc comments as the other JS files during development.
  */
 
 let stompClient = null;
