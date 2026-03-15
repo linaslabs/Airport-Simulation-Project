@@ -87,23 +87,6 @@ public class AircraftGenerator {
         double fuel = generateFuelValue();
         int entryTick = generateEntryTick(scheduledTick);
 
-
-        // Statistical event modelling - determining if the plane generated should generate with an emergency
-        // Commented out for now, can be added back in if we want to add more realism (will need to determine how the rates are split between generation and triggering of existing aircraft)
-//        EmergencyStatus status = EmergencyStatus.NONE;
-//
-//        if (autoEnabled) {
-//            // Generate a value between 0 and 1
-//            double roll = random.nextDouble();
-//
-//            if (roll < mechanicalRate) {
-//                status = EmergencyStatus.MECHANICAL;
-//            } else if (roll < (mechanicalRate + healthRate)) {
-//                // If the roll hasn't landed in the range 0 to mechanicalRate, this "else if" checks that the roll lands mechanicalRate < x < mechanicalRate + healthRate i.e. the range for the health rate
-//                status = EmergencyStatus.PASSENGER;
-//            }
-//        }
-
         return new Aircraft(callsign, operator, origin, destination, fuel, scheduledTick, entryTick, type);
     }
 
@@ -118,8 +101,6 @@ public class AircraftGenerator {
 
         return min + (random.nextDouble() * (max - min));
     }
-
-
 
     /**
      * Generates an entry tick with Gaussian variation from the scheduled tick.
@@ -149,12 +130,6 @@ public class AircraftGenerator {
     public void initialiseSchedules(int duration) {
         double inboundInterval = 60.0 / inboundRate; // This gives the interval between each scheduled tick in minutes.
 
-        // Need to write a test to check that the correct number of planes are generated.
-        // Say the duration is 60 minutes, due to rounding errors, the last iteration may be 60.000001, so
-        // the last plane won't get spawned and the actual spawn rate will be 1 less than intended.
-        // So, we need to write a test to check that the correct number of planes are generated.
-        // If they are not then we could change the condition to "inboundUnroundedTick <= duration + 0.0001" for example.
-        // Changed comparison to inboundUnroundedTick < duration instead of <= (since a plane is generated at tick 0)
         for (double inboundUnroundedTick = 0.0; inboundUnroundedTick < duration; inboundUnroundedTick += inboundInterval) {
             // Round to the nearest integer as all scheduled ticks are integers.
             int scheduledTick = (int) Math.round(inboundUnroundedTick);
