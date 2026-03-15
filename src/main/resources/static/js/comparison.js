@@ -2,29 +2,80 @@ const API = {
   summaries: "/api/results/summaries",
   lastResult: "/api/results/lastresult",
   viewOrCompare: (name) =>
-    `/api/results/vieworcompare/${encodeURIComponent(name)}`,
+      `/api/results/vieworcompare/${encodeURIComponent(name)}`,
   deleteResult: (name) => `/api/results/delete/${encodeURIComponent(name)}`,
 };
+
+/**
+ * @typedef {Object} ComparisonStats
+ * @property {?number} throughput
+ * @property {?number} depAvgWait
+ * @property {?number} depMaxQueue
+ * @property {?number} depMaxDelay
+ * @property {?number} depAvgDelay
+ * @property {?number} depCancelled
+ * @property {?number} arrAvgHold
+ * @property {?number} arrMaxHolding
+ * @property {?number} arrMaxDelay
+ * @property {?number} arrAvgDelay
+ * @property {?number} arrDiverted
+ */
+
+/**
+ * @typedef {Object} EventRows
+ * @property {Array<Object>} runway Runway event rows shown in the scheduled runway events table.
+ * @property {Array<Object>} aircraft Aircraft event rows shown in the scheduled aircraft events table.
+ */
+
+/**
+ * @typedef {Object} SimulationViewModel
+ * @property {string} id Internal identifier for the saved simulation.
+ * @property {string} name Display name shown on the page.
+ * @property {string} timestamp Human-readable execution time.
+ * @property {Object<string, string|number>} config Key-value config summary for the UI table.
+ * @property {EventRows} events Scheduled runway and aircraft event rows.
+ * @property {string[]} eventLog Event timeline shown in the event log panel.
+ * @property {ComparisonStats} statistics Numeric metrics used for the comparison cards.
+ */
 
 let simulationSummaries = [];
 const simulationDetailsCache = new Map();
 let currentSimNames = { A: null, B: null };
 let selectingFor = null;
 
+/**
+ * Set plain text content on an element if it exists.
+ *
+ * @param {string} id Element id.
+ * @param {string|number} value Text value to render.
+ * @returns {void}
+ */
 function setText(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
 }
 
+/**
+ * Convert enum-style values like SNOW_CLEARANCE into a readable label.
+ *
+ * @param {string|null|undefined} value Raw enum value.
+ * @returns {string} Human-readable label, or "--" when missing.
+ */
 function enumToLabel(value) {
   if (!value) return "--";
   return String(value)
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+      .toLowerCase()
+      .split("_")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
 }
 
+/**
+ * Format aircraft emergency types using labels that match the UI wording.
+ *
+ * @param {string|null|undefined} value Raw emergency type.
+ * @returns {string} Display label for the emergency type.
+ */
 function formatEmergencyType(value) {
   const normalized = value ? String(value).toUpperCase() : "";
 
@@ -43,25 +94,56 @@ function formatEmergencyType(value) {
   return enumToLabel(value);
 }
 
+/**
+ * Keep only valid numbers and treat everything else as missing data.
+ *
+ * @param {*} value Value from the API.
+ * @returns {?number} Finite number or null when unavailable.
+ */
 function toNumber(value) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Format a numeric metric with a fixed number of decimal places.
+ *
+ * @param {*} value Raw value.
+ * @param {number} [decimals=2] Number of decimal places to keep.
+ * @returns {string} Formatted number or "--".
+ */
 function formatNumber(value, decimals = 2) {
   const n = toNumber(value);
   return n === null ? "--" : n.toFixed(decimals);
 }
 
+/**
+ * Format a numeric metric that should be shown as a whole number.
+ *
+ * @param {*} value Raw value.
+ * @returns {string} Rounded integer or "--".
+ */
 function formatInteger(value) {
   const n = toNumber(value);
   return n === null ? "--" : Math.round(n).toString();
 }
 
+/**
+ * Format probability multipliers for the config summary table.
+ *
+ * @param {*} value Raw multiplier value.
+ * @returns {string} Multiplier text such as 1.5x, or "--".
+ */
 function formatMultiplier(value) {
   const n = toNumber(value);
   return n === null ? "--" : `${n.toFixed(1)}x`;
 }
 
+/**
+ * Convert a date value from the API into the browser's local date-time format.
+ *
+ * @param {string|number|Date|null|undefined} dateValue Date value from the backend.
+ * @returns {string} Human-readable date string or "--".
+ */
 function formatDate(dateValue) {
   if (!dateValue) return "--";
   const date = new Date(dateValue);
@@ -69,6 +151,12 @@ function formatDate(dateValue) {
   return date.toLocaleString();
 }
 
+/**
+ * Turn raw enum-like values into simple readable text for timeline messages.
+ *
+ * @param {string|null|undefined} rawValue Raw value from saved results or config.
+ * @returns {string} Readable label, or "unknown" when no value exists.
+ */
 function toReadableText(rawValue) {
   if (rawValue === null || rawValue === undefined || rawValue === "") {
     return "unknown";
@@ -87,18 +175,26 @@ function toReadableText(rawValue) {
   return outputParts.join(" ");
 }
 
+/**
+ * Convert raw backend event log objects into readable event log lines.
+ * The entries are sorted by tick first so the timeline always reads in order.
+ *
+ * @param {Array<Object>|null|undefined} rawEvents Raw event log entries from the backend.
+ * @returns {string[]} Formatted event log lines for the UI.
+ */
 function formatRawEventLog(rawEvents) {
   const formatted = [];
   if (!Array.isArray(rawEvents)) {
     return formatted;
   }
 
+  // Work on a copy so we do not mutate the original payload from the backend.
   const sorted = rawEvents.slice();
   sorted.sort(function (a, b) {
     const tickA =
-      a && typeof a.tick === "number" ? a.tick : Number.MAX_SAFE_INTEGER;
+        a && typeof a.tick === "number" ? a.tick : Number.MAX_SAFE_INTEGER;
     const tickB =
-      b && typeof b.tick === "number" ? b.tick : Number.MAX_SAFE_INTEGER;
+        b && typeof b.tick === "number" ? b.tick : Number.MAX_SAFE_INTEGER;
     return tickA - tickB;
   });
 
@@ -107,6 +203,8 @@ function formatRawEventLog(rawEvents) {
     const tick = typeof event.tick === "number" ? event.tick : "--";
 
     if (typeof event.runwayID === "number") {
+      // Runway events and aircraft events arrive in slightly different shapes,
+      // so we build the sentence differently depending on which fields exist.
       const runwayLabel = "Runway " + (event.runwayID + 1);
       const eventType = toReadableText(event.type);
       const status = toReadableText(event.runwayStatus);
@@ -124,7 +222,7 @@ function formatRawEventLog(rawEvents) {
       }
 
       formatted.push(
-        "Minute " +
+          "Minute " +
           tick +
           ": " +
           runwayLabel +
@@ -140,12 +238,12 @@ function formatRawEventLog(rawEvents) {
       );
     } else {
       const callsign = event.callsign
-        ? "Aircraft " + event.callsign
-        : "an aircraft";
+          ? "Aircraft " + event.callsign
+          : "an aircraft";
       const eventType = toReadableText(event.type);
       const status = toReadableText(event.status);
       formatted.push(
-        "Minute " +
+          "Minute " +
           tick +
           ": " +
           callsign +
@@ -161,6 +259,13 @@ function formatRawEventLog(rawEvents) {
   return formatted;
 }
 
+/**
+ * Build a readable fallback event log from the saved config when no real event log was stored.
+ * This keeps older or partially saved results usable on the comparison page.
+ *
+ * @param {Object|null|undefined} config Saved simulation config.
+ * @returns {string[]} Best-effort event log lines derived from scheduled config events.
+ */
 function buildFallbackEventLogFromConfig(config) {
   const lines = [];
 
@@ -170,18 +275,20 @@ function buildFallbackEventLogFromConfig(config) {
 
   const scheduled = [];
   const runwaySettings = Array.isArray(config.runwaySettings)
-    ? config.runwaySettings
-    : [];
+      ? config.runwaySettings
+      : [];
 
   function getInitialRunwaySetting(runwayId) {
     if (!Number.isInteger(runwayId)) return null;
 
+    // Prefer an explicit runwayID match because the saved array is not guaranteed
+    // to stay perfectly aligned with runway numbering.
     for (let i = 0; i < runwaySettings.length; i++) {
       const setting = runwaySettings[i];
       if (
-        setting &&
-        Number.isInteger(setting.runwayID) &&
-        setting.runwayID === runwayId
+          setting &&
+          Number.isInteger(setting.runwayID) &&
+          setting.runwayID === runwayId
       ) {
         return setting;
       }
@@ -199,14 +306,15 @@ function buildFallbackEventLogFromConfig(config) {
     if (!Array.isArray(events)) return;
 
     events.forEach(function (event) {
+      // Missing ticks are pushed to the end so partial or invalid data does not break sorting.
       const tick = Number.isFinite(event && event.tick)
-        ? event.tick
-        : Number.MAX_SAFE_INTEGER;
+          ? event.tick
+          : Number.MAX_SAFE_INTEGER;
       const runwayId = Number.isInteger(event && event.runwayID)
-        ? event.runwayID
-        : Number.parseInt(runwayKey, 10);
+          ? event.runwayID
+          : Number.parseInt(runwayKey, 10);
       const eventTypeRaw =
-        event && event.type ? String(event.type).toUpperCase() : "";
+          event && event.type ? String(event.type).toUpperCase() : "";
 
       scheduled.push({
         tick: tick,
@@ -216,11 +324,13 @@ function buildFallbackEventLogFromConfig(config) {
       });
 
       if (
-        Number.isFinite(event && event.duration) &&
-        event.duration > 0 &&
-        eventTypeRaw !== "REVERSION"
+          Number.isFinite(event && event.duration) &&
+          event.duration > 0 &&
+          eventTypeRaw !== "REVERSION"
       ) {
         const initialSetting = getInitialRunwaySetting(runwayId);
+        // Some saved configs only know when a temporary runway change starts.
+        // Add a synthetic reversion event so the fallback log still reads like a full timeline.
         scheduled.push({
           tick: tick + event.duration,
           category: "runway-reversion",
@@ -234,15 +344,17 @@ function buildFallbackEventLogFromConfig(config) {
 
   const aircraftEventsByCallsign = config.scheduledAircraftEvents || {};
   Object.entries(aircraftEventsByCallsign).forEach(function ([
-    callsignKey,
-    events,
-  ]) {
+                                                               callsignKey,
+                                                               events,
+                                                             ]) {
     if (!Array.isArray(events)) return;
 
     events.forEach(function (event) {
       const tick = Number.isFinite(event && event.tick)
-        ? event.tick
-        : Number.MAX_SAFE_INTEGER;
+          ? event.tick
+          : Number.MAX_SAFE_INTEGER;
+      // Keep the callsign on each entry so the fallback timeline still reads clearly
+      // even if the event was stored under an object key rather than inside the event itself.
       scheduled.push({
         tick: tick,
         category: "aircraft",
@@ -262,7 +374,7 @@ function buildFallbackEventLogFromConfig(config) {
 
     if (item.category === "runway") {
       const runwayLabel =
-        item.runwayId === null ? "Runway ?" : "Runway " + (item.runwayId + 1);
+          item.runwayId === null ? "Runway ?" : "Runway " + (item.runwayId + 1);
       const eventType = toReadableText(item.event.type);
       const status = toReadableText(item.event.runwayStatus);
       const mode = toReadableText(item.event.runwayMode);
@@ -279,7 +391,7 @@ function buildFallbackEventLogFromConfig(config) {
       }
 
       lines.push(
-        "Minute " +
+          "Minute " +
           tick +
           ": " +
           runwayLabel +
@@ -295,11 +407,11 @@ function buildFallbackEventLogFromConfig(config) {
       );
     } else if (item.category === "runway-reversion") {
       const runwayLabel =
-        item.runwayId === null ? "Runway ?" : "Runway " + (item.runwayId + 1);
+          item.runwayId === null ? "Runway ?" : "Runway " + (item.runwayId + 1);
       const status = toReadableText(item.runwayStatus);
       const mode = toReadableText(item.runwayMode);
       lines.push(
-        "Minute " +
+          "Minute " +
           tick +
           ": " +
           runwayLabel +
@@ -311,12 +423,12 @@ function buildFallbackEventLogFromConfig(config) {
       );
     } else {
       const callsign = item.callsign
-        ? "aircraft " + item.callsign
-        : "an aircraft";
+          ? "aircraft " + item.callsign
+          : "an aircraft";
       const eventType = toReadableText(item.event.type);
       const status = toReadableText(item.event.status);
       lines.push(
-        "Minute " +
+          "Minute " +
           tick +
           ": " +
           callsign +
@@ -332,29 +444,47 @@ function buildFallbackEventLogFromConfig(config) {
   return lines;
 }
 
+/**
+ * Resolve the event log using the best data source available.
+ * Preference order is: saved text log, raw backend log, then config-based fallback.
+ *
+ * @param {Object|null|undefined} savedResult Saved simulation result.
+ * @param {Object|null|undefined} config Simulation config used for fallback generation.
+ * @returns {string[]} Event log lines ready for display.
+ */
 function getEventLogLines(savedResult, config) {
   if (
-    savedResult &&
-    Array.isArray(savedResult.eventLog) &&
-    savedResult.eventLog.length > 0
+      savedResult &&
+      Array.isArray(savedResult.eventLog) &&
+      savedResult.eventLog.length > 0
   ) {
+    // Best case: the saved result already contains fully formatted timeline text.
     return savedResult.eventLog;
   }
 
   if (
-    savedResult &&
-    savedResult.log &&
-    Array.isArray(savedResult.log.eventLog)
+      savedResult &&
+      savedResult.log &&
+      Array.isArray(savedResult.log.eventLog)
   ) {
+    // Next best option: convert the raw logger payload into readable lines on the client.
     const formatted = formatRawEventLog(savedResult.log.eventLog);
     if (formatted.length > 0) {
       return formatted;
     }
   }
 
+  // Final fallback: reconstruct a readable timeline from scheduled config events.
   return buildFallbackEventLogFromConfig(config);
 }
 
+/**
+ * Fetch JSON from the backend and throw a readable error when the request fails.
+ *
+ * @param {string} url Endpoint URL.
+ * @param {RequestInit} [options={}] Fetch options.
+ * @returns {Promise<Object>} Parsed JSON payload.
+ */
 async function fetchJson(url, options = {}) {
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -364,6 +494,12 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
+/**
+ * Convert scheduled events in the saved config into table rows used by the comparison page.
+ *
+ * @param {Object|null|undefined} config Saved simulation config.
+ * @returns {EventRows} Runway and aircraft event rows, already sorted by time.
+ */
 function buildEventRows(config) {
   const runwayRows = [];
   const aircraftRows = [];
@@ -373,17 +509,19 @@ function buildEventRows(config) {
     if (!Array.isArray(events)) return;
 
     events.forEach((event) => {
+      // Some saved entries keep the runway id in the event, others only in the parent object key.
       const runwayId = Number.isInteger(event?.runwayID)
-        ? event.runwayID
-        : Number.parseInt(runwayKey, 10);
+          ? event.runwayID
+          : Number.parseInt(runwayKey, 10);
       const runwayLabel = Number.isInteger(runwayId)
-        ? `Runway ${runwayId + 1}`
-        : `Runway ${runwayKey}`;
+          ? `Runway ${runwayId + 1}`
+          : `Runway ${runwayKey}`;
       const tick = Number.isFinite(event?.tick) ? event.tick : "--";
+      // -1 and null both mean the event does not have a normal fixed end time.
       const duration =
-        event?.duration === -1 || event?.duration == null
-          ? "Indefinite"
-          : `${event.duration} mins`;
+          event?.duration === -1 || event?.duration == null
+              ? "Indefinite"
+              : `${event.duration} mins`;
 
       runwayRows.push({
         event: `${enumToLabel(event?.type)} on ${runwayLabel}`,
@@ -392,8 +530,8 @@ function buildEventRows(config) {
         runwayMode: enumToLabel(event?.runwayMode),
         status: enumToLabel(event?.runwayStatus),
         tickSort: Number.isFinite(event?.tick)
-          ? event.tick
-          : Number.MAX_SAFE_INTEGER,
+            ? event.tick
+            : Number.MAX_SAFE_INTEGER,
       });
     });
   });
@@ -408,13 +546,13 @@ function buildEventRows(config) {
 
       aircraftRows.push({
         event: callsign
-          ? `${enumToLabel(event?.type)} (${callsign})`
-          : enumToLabel(event?.type),
+            ? `${enumToLabel(event?.type)} (${callsign})`
+            : enumToLabel(event?.type),
         time: `${tick} mins`,
         emergencyType: formatEmergencyType(event?.status),
         tickSort: Number.isFinite(event?.tick)
-          ? event.tick
-          : Number.MAX_SAFE_INTEGER,
+            ? event.tick
+            : Number.MAX_SAFE_INTEGER,
       });
     });
   });
@@ -428,36 +566,44 @@ function buildEventRows(config) {
   };
 }
 
+/**
+ * Map the backend saved result into the shape expected by the comparison page UI.
+ * This keeps all formatting decisions in one place before rendering starts.
+ *
+ * @param {Object|null|undefined} savedResult Raw saved result returned by the backend.
+ * @returns {SimulationViewModel} View model used across the comparison page.
+ */
 function mapSavedResult(savedResult) {
   const config = savedResult?.config || {};
   const stats = savedResult?.stats || {};
 
   const runwayCount = Array.isArray(config.runwaySettings)
-    ? config.runwaySettings.length
-    : 0;
+      ? config.runwaySettings.length
+      : 0;
 
   return {
     id: savedResult?.simulationName || "",
     name: savedResult?.simulationName || "Unnamed Simulation",
     timestamp: formatDate(savedResult?.dateExecuted),
     config: {
+      // Build this as display-ready text once so the render functions can stay simple.
       "Number of Runways": runwayCount,
       "Inbound Rate": `${config.inboundRate ?? "--"} /hr`,
       "Outbound Rate": `${config.outboundRate ?? "--"} /hr`,
       "Simulation Duration": `${config.duration ?? "--"} mins`,
       "Max Wait Time": `${config.maxWaitTime ?? "--"} mins`,
       "Passenger Health Issue Multiplier": formatMultiplier(
-        config.passengerHealthIssueMultiplier ??
+          config.passengerHealthIssueMultiplier ??
           config.passengerHealthIssueRate,
       ),
       "Runway Inspection Multiplier": formatMultiplier(
-        config.runwayInspectionMultiplier ?? config.runwayInspectionRate,
+          config.runwayInspectionMultiplier ?? config.runwayInspectionRate,
       ),
       "Snow Clearance Multiplier": formatMultiplier(
-        config.snowClearanceMultiplier ?? config.snowClearanceRate,
+          config.snowClearanceMultiplier ?? config.snowClearanceRate,
       ),
       "Equipment Failure Multiplier": formatMultiplier(
-        config.equipmentFailureMultiplier ?? config.equipmentFailureRate,
+          config.equipmentFailureMultiplier ?? config.equipmentFailureRate,
       ),
       "Mechanical Failure Multiplier": formatMultiplier(
           config.mechanicalFailureMultiplier ?? config.mechanicalFailureRate,
@@ -466,6 +612,8 @@ function mapSavedResult(savedResult) {
     events: buildEventRows(config),
     eventLog: getEventLogLines(savedResult, config),
     statistics: {
+      // Keep statistics numeric here because the comparison highlighter still needs
+      // to compare actual values before anything is formatted for display.
       throughput: toNumber(stats.hourlyThroughput),
       depAvgWait: toNumber(stats.avgWaitTime),
       depMaxQueue: toNumber(stats.maxTakeOffQueueSize),
@@ -481,13 +629,27 @@ function mapSavedResult(savedResult) {
   };
 }
 
+/**
+ * Load the list of saved simulation summaries used in the selection modal.
+ *
+ * @returns {Promise<Array<Object>>} Saved simulation summaries.
+ */
 async function fetchSummaries() {
   simulationSummaries = await fetchJson(API.summaries);
   return simulationSummaries;
 }
 
+/**
+ * Fetch one simulation by name and cache the mapped result for reuse.
+ * If the saved result does not include an event log, try the last-result endpoint
+ * as a final fallback before giving up.
+ *
+ * @param {string} name Simulation name.
+ * @returns {Promise<SimulationViewModel>} Simulation data ready for rendering.
+ */
 async function fetchSimulationByName(name) {
   if (simulationDetailsCache.has(name)) {
+    // Reuse the mapped version to avoid repeated fetches and repeated formatting work.
     return simulationDetailsCache.get(name);
   }
 
@@ -498,15 +660,17 @@ async function fetchSimulationByName(name) {
     try {
       const lastResult = await fetchJson(API.lastResult);
       if (lastResult && lastResult.simulationName === name) {
+        // Older saved results can miss the event log after deserialisation.
+        // If the requested simulation is also the latest run, reuse that endpoint's richer payload.
         mapped.eventLog = getEventLogLines(
-          lastResult,
-          lastResult && lastResult.config,
+            lastResult,
+            lastResult && lastResult.config,
         );
       }
     } catch (error) {
       console.warn(
-        "Unable to fetch last simulation result for event log fallback:",
-        error,
+          "Unable to fetch last simulation result for event log fallback:",
+          error,
       );
     }
   }
@@ -515,12 +679,20 @@ async function fetchSimulationByName(name) {
   return mapped;
 }
 
+/**
+ * Load both selected simulations and refresh the comparison page.
+ *
+ * @param {string} simAName Simulation name for the left column.
+ * @param {string} simBName Simulation name for the right column.
+ * @returns {Promise<void>}
+ */
 async function loadComparison(simAName, simBName) {
   const [simA, simB] = await Promise.all([
     fetchSimulationByName(simAName),
     fetchSimulationByName(simBName),
   ]);
 
+  // Store the active names so modal actions and delete handling know what is on screen.
   currentSimNames.A = simAName;
   currentSimNames.B = simBName;
 
@@ -533,11 +705,18 @@ async function loadComparison(simAName, simBName) {
   compareAndHighlight(simA, simB);
 }
 
+/**
+ * Open the single-simulation view modal and fill it with saved data.
+ *
+ * @param {string} simName Simulation name.
+ * @returns {Promise<void>}
+ */
 async function showViewModal(simName) {
   try {
     const sim = await fetchSimulationByName(simName);
     const stats = sim.statistics;
 
+    // The view modal reuses the same mapped data shape as the comparison columns.
     setText("viewModalTitle", `Simulation Name: ${sim.name}`);
     populateConfigTable(sim, "viewConfigTable");
     populateRunwayEventsTable(sim.events?.runway, "viewRunwayEvents");
@@ -561,50 +740,81 @@ async function showViewModal(simName) {
   }
 }
 
+/**
+ * Hide the single-simulation view modal.
+ *
+ * @returns {void}
+ */
 function hideViewModal() {
   document.getElementById("viewModal").classList.add("hidden");
 }
 
+/**
+ * Hide the simulation selection modal.
+ *
+ * @returns {void}
+ */
 function hideSelectModal() {
   document.getElementById("selectModal").classList.add("hidden");
 }
 
+/**
+ * Find one saved summary by simulation name.
+ *
+ * @param {string} name Simulation name.
+ * @returns {Object|undefined} Matching summary entry, if found.
+ */
 function getSummaryByName(name) {
   return simulationSummaries.find((sim) => sim.simulationName === name);
 }
 
+/**
+ * Delete a saved simulation, refresh summaries, and reload the comparison view.
+ *
+ * @param {string} simName Simulation name to delete.
+ * @returns {Promise<void>}
+ */
 async function deleteSimulation(simName) {
   await fetch(API.deleteResult(simName), { method: "DELETE" }).then(
-    async (response) => {
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "Delete failed");
-      }
-    },
+      async (response) => {
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || "Delete failed");
+        }
+      },
   );
 
   simulationDetailsCache.delete(simName);
   await fetchSummaries();
 
+  // Clear selections that no longer exist so the next load can pick replacements.
   if (currentSimNames.A === simName) currentSimNames.A = null;
   if (currentSimNames.B === simName) currentSimNames.B = null;
 
   await ensureCurrentSelectionAndLoad();
 }
 
+/**
+ * Render the selection modal rows and bind row action buttons.
+ *
+ * @param {Array<Object>} summaries Saved simulation summaries.
+ * @param {HTMLTableSectionElement} tbody Table body element.
+ * @returns {void}
+ */
 function renderSelectTableRows(summaries, tbody) {
   tbody.innerHTML = "";
 
   if (!summaries.length) {
     const tr = document.createElement("tr");
     tr.innerHTML =
-      '<td colspan="4" style="text-align: center; color: #999;">No saved simulations found</td>';
+        '<td colspan="4" style="text-align: center; color: #999;">No saved simulations found</td>';
     tbody.appendChild(tr);
     return;
   }
 
   summaries.forEach((sim) => {
     const tr = document.createElement("tr");
+    // Keep the summary row compact by collecting the small detail lines first.
     const infoLines = [
       `Runways: ${sim.runwayCount ?? "--"}`,
       `Inbound Rate: ${sim.inboundRate ?? "--"} /hr`,
@@ -637,6 +847,7 @@ function renderSelectTableRows(summaries, tbody) {
     btn.addEventListener("click", async (e) => {
       const simName = e.target.getAttribute("data-sim-name");
       try {
+        // When the modal was opened from a specific column button, only replace that side.
         if (selectingFor === "A") {
           await loadComparison(simName, currentSimNames.B || simName);
         } else if (selectingFor === "B") {
@@ -667,14 +878,21 @@ function renderSelectTableRows(summaries, tbody) {
   });
 }
 
+/**
+ * Show the simulation selection modal, with optional context for column A or B.
+ * Sorting is handled entirely on the client so the modal can be re-used cheaply.
+ *
+ * @param {("A"|"B"|null)} [columnLetter=null] Which comparison column is being changed.
+ * @returns {Promise<void>}
+ */
 async function showSelectModal(columnLetter = null) {
   selectingFor = columnLetter;
   const tbody = document.querySelector("#selectList tbody");
 
   if (selectingFor) {
     setText(
-      "selectModalTitle",
-      `Select simulation for SIMULATION ${selectingFor}`,
+        "selectModalTitle",
+        `Select simulation for SIMULATION ${selectingFor}`,
     );
   } else {
     setText("selectModalTitle", "Select simulations to compare");
@@ -685,6 +903,7 @@ async function showSelectModal(columnLetter = null) {
   let sortState = { column: null, ascending: true };
 
   const renderAndBind = () => {
+    // Re-render after sorting because the row buttons need fresh event listeners each time.
     renderSelectTableRows(simsList, tbody);
   };
 
@@ -696,7 +915,7 @@ async function showSelectModal(columnLetter = null) {
   headers.forEach((header) => {
     header.onclick = () => {
       const columnIndex = Array.from(header.parentNode.children).indexOf(
-        header,
+          header,
       );
       const columnName = columnIndex === 0 ? "name" : "date";
 
@@ -710,7 +929,7 @@ async function showSelectModal(columnLetter = null) {
       if (columnName === "name") {
         simsList.sort((a, b) => {
           const comparison = (a.simulationName || "").localeCompare(
-            b.simulationName || "",
+              b.simulationName || "",
           );
           return sortState.ascending ? comparison : -comparison;
         });
@@ -722,6 +941,7 @@ async function showSelectModal(columnLetter = null) {
         });
       }
 
+      // Reset all arrows first so only the active sort column shows a single direction.
       headers.forEach((h) => {
         const arrow = h.querySelector(".sort-arrow");
         if (arrow) arrow.textContent = "↑↓";
@@ -738,6 +958,12 @@ async function showSelectModal(columnLetter = null) {
   document.getElementById("selectModal").classList.remove("hidden");
 }
 
+/**
+ * Make sure the page always has valid simulation names selected before loading.
+ * If one of the current selections was deleted, pick a sensible replacement.
+ *
+ * @returns {Promise<void>}
+ */
 async function ensureCurrentSelectionAndLoad() {
   const names = simulationSummaries.map((s) => s.simulationName);
 
@@ -750,19 +976,29 @@ async function ensureCurrentSelectionAndLoad() {
   }
 
   if (!currentSimNames.B || !names.includes(currentSimNames.B)) {
+    // Prefer a different simulation for column B when possible, otherwise fall back to A.
     currentSimNames.B =
-      names.find((name) => name !== currentSimNames.A) || currentSimNames.A;
+        names.find((name) => name !== currentSimNames.A) || currentSimNames.A;
   }
 
   await loadComparison(currentSimNames.A, currentSimNames.B);
 }
 
+/**
+ * Fill one comparison column with config, scheduled events, event log, and metrics.
+ *
+ * @param {SimulationViewModel} simData Simulation data to render.
+ * @param {string} suffix Column suffix used by the page ids.
+ * @returns {void}
+ */
 function populateSimulationData(simData, suffix) {
+  // Every panel uses the same renderer functions; the suffix decides whether we are
+  // filling the A column or the B column.
   populateConfigTable(simData, `config${suffix}`);
   populateRunwayEventsTable(simData.events?.runway, `runwayEvents${suffix}`);
   populateAircraftEventsTable(
-    simData.events?.aircraft,
-    `aircraftEvents${suffix}`,
+      simData.events?.aircraft,
+      `aircraftEvents${suffix}`,
   );
   populateEventLog(simData.eventLog, `eventLog${suffix}`);
 
@@ -780,6 +1016,13 @@ function populateSimulationData(simData, suffix) {
   setText(`arrDiverted${suffix}`, formatInteger(stats.arrDiverted));
 }
 
+/**
+ * Render the event log list for one simulation panel.
+ *
+ * @param {string[]|null|undefined} eventLog Event log lines.
+ * @param {string} targetId List element id.
+ * @returns {void}
+ */
 function populateEventLog(eventLog, targetId) {
   const list = document.getElementById(targetId);
   if (!list) return;
@@ -796,11 +1039,19 @@ function populateEventLog(eventLog, targetId) {
 
   eventLog.forEach((line) => {
     const item = document.createElement("li");
+    // Use textContent so event log lines are rendered as plain text, not HTML.
     item.textContent = line;
     list.appendChild(item);
   });
 }
 
+/**
+ * Fill the config summary table for a simulation.
+ *
+ * @param {SimulationViewModel} simData Simulation data to render.
+ * @param {string} targetId Table body id.
+ * @returns {void}
+ */
 function populateConfigTable(simData, targetId) {
   const table = document.getElementById(targetId);
   table.innerHTML = "";
@@ -815,6 +1066,13 @@ function populateConfigTable(simData, targetId) {
   });
 }
 
+/**
+ * Fill the scheduled runway events table for one simulation.
+ *
+ * @param {Array<Object>|null|undefined} events Runway event rows.
+ * @param {string} targetId Table id.
+ * @returns {void}
+ */
 function populateRunwayEventsTable(events, targetId) {
   const tbody = document.querySelector(`#${targetId} tbody`);
   tbody.innerHTML = "";
@@ -822,13 +1080,14 @@ function populateRunwayEventsTable(events, targetId) {
   if (!Array.isArray(events) || events.length === 0) {
     const row = document.createElement("tr");
     row.innerHTML =
-      '<td colspan="5" style="text-align: center; color: #999;">No scheduled runway events</td>';
+        '<td colspan="5" style="text-align: center; color: #999;">No scheduled runway events</td>';
     tbody.appendChild(row);
     return;
   }
 
   events.forEach((event) => {
     const row = document.createElement("tr");
+    // These rows are already pre-formatted in buildEventRows, so rendering stays simple here.
     row.innerHTML = `
             <td>${event.event}</td>
             <td>${event.time}</td>
@@ -840,6 +1099,13 @@ function populateRunwayEventsTable(events, targetId) {
   });
 }
 
+/**
+ * Fill the scheduled aircraft events table for one simulation.
+ *
+ * @param {Array<Object>|null|undefined} events Aircraft event rows.
+ * @param {string} targetId Table id.
+ * @returns {void}
+ */
 function populateAircraftEventsTable(events, targetId) {
   const tbody = document.querySelector(`#${targetId} tbody`);
   tbody.innerHTML = "";
@@ -847,7 +1113,7 @@ function populateAircraftEventsTable(events, targetId) {
   if (!Array.isArray(events) || events.length === 0) {
     const row = document.createElement("tr");
     row.innerHTML =
-      '<td colspan="3" style="text-align: center; color: #999;">No scheduled aircraft events</td>';
+        '<td colspan="3" style="text-align: center; color: #999;">No scheduled aircraft events</td>';
     tbody.appendChild(row);
     return;
   }
@@ -863,6 +1129,14 @@ function populateAircraftEventsTable(events, targetId) {
   });
 }
 
+/**
+ * Compare the key statistics for both simulations and mark which side performs better.
+ * Throughput is better when higher; the delay and queue metrics are better when lower.
+ *
+ * @param {SimulationViewModel} simA Left-side simulation.
+ * @param {SimulationViewModel} simB Right-side simulation.
+ * @returns {void}
+ */
 function compareAndHighlight(simA, simB) {
   const metricConfig = {
     throughput: { higherBetter: true },
@@ -890,9 +1164,11 @@ function compareAndHighlight(simA, simB) {
     elementA.classList.remove("better", "worse");
     elementB.classList.remove("better", "worse");
 
+    // Skip highlighting when either side is missing data, or when both values tie.
     if (valA == null || valB == null || valA === valB) return;
 
     const { higherBetter } = metricConfig[metric];
+    // Each metric declares its own direction so one comparison loop can handle them all.
     const aIsBetter = higherBetter ? valA > valB : valA < valB;
     const bIsBetter = higherBetter ? valB > valA : valB < valA;
 
@@ -906,14 +1182,19 @@ function compareAndHighlight(simA, simB) {
   });
 }
 
+/**
+ * Initialise the page: load saved simulations, render the default comparison,
+ * and wire up modal buttons.
+ */
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     await fetchSummaries();
+    // On first load, pick sensible defaults from the saved result list.
     await ensureCurrentSelectionAndLoad();
   } catch (error) {
     console.error("Error initialising comparison page:", error);
     alert(
-      "No saved simulation results found. Save at least one result from the results page first.",
+        "No saved simulation results found. Save at least one result from the results page first.",
     );
     window.location.href = "/";
   }
@@ -927,15 +1208,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document
-    .getElementById("closeSelectModal")
-    .addEventListener("click", hideSelectModal);
+      .getElementById("closeSelectModal")
+      .addEventListener("click", hideSelectModal);
   document.getElementById("selectModal").addEventListener("click", (e) => {
     if (e.target.id === "selectModal") hideSelectModal();
   });
 
   document
-    .getElementById("closeViewModal")
-    .addEventListener("click", hideViewModal);
+      .getElementById("closeViewModal")
+      .addEventListener("click", hideViewModal);
   document.getElementById("viewModal").addEventListener("click", (e) => {
     if (e.target.id === "viewModal") hideViewModal();
   });

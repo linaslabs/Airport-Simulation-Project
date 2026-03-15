@@ -14,45 +14,71 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.service.SimulationSer
 
 import java.util.List;
 
+/**
+ * REST controller exposing endpoints for validating, saving, loading, and deleting
+ * simulation configuration templates. All endpoints are prefixed with /api/configuration.
+ */
 @RestController
 @RequestMapping("/api/configuration")
 public class ConfigurationController {
 
     private final SimulationService simulationService;
 
-    // Spring calls this constructor itself, called Constructor Injection.
+    /**
+     * Creates a ConfigurationController with the given SimulationService.
+     * Spring injects the dependency automatically via constructor injection.
+     *
+     * @param simulationService the service used to manage configuration templates
+     */
     public ConfigurationController(SimulationService simulationService) {
         this.simulationService = simulationService;
     }
 
-    // Used to validate the configuration before the user starts the simulation.
+    /**
+     * Validates the provided simulation configuration against its field-level constraints.
+     * If this method executes successfully, all validation annotations on SimulationConfig passed.
+     *
+     * @param config the simulation configuration to validate
+     * @return a 200 OK response confirming the configuration is valid
+     */
     @PostMapping("/validate")
     public ResponseEntity<String> validate(@Valid @RequestBody SimulationConfig config) {
-        // If the body of the function runs, then the validation from the annotations in the SimulationConfig class passed.
         return ResponseEntity.ok("Configuration is valid");
     }
 
 
 
-    // These 3 endpoints are used for the window to select a previous configuration template to
-    // view/load/delete.
-
+    /**
+     * Returns a summary list of all saved configuration templates, used to populate the
+     * template selection window for viewing, loading, or deleting templates.
+     *
+     * @return a 200 OK response containing a list of ConfigurationTemplateSummary objects
+     */
     @GetMapping("/templates/summaries")
     public ResponseEntity<List<ConfigurationTemplateSummary>> listSavedConfigurationTemplates() {
         return ResponseEntity.ok(simulationService.listSavedConfigTemplateSummaries());
     }
 
-    // This function and API endpoint is "view or load" because we can use the same logic for each.
-    // In the frontend, when loading a configuration into the input boxes, only the data needed from the
-    // ConfigurationTemplate object should be extracted, therefore it is used in the same way as if a SimulationConfig
-    // object was being sent.
-    // When viewing a configuration, it should take all the fields, including name and date, and the configuration
-    // itself.
+    /**
+     * Retrieves the full configuration template with the given name.
+     * The same endpoint serves both the view and load workflows: when loading, only the
+     * SimulationConfig fields need to be extracted; when viewing, all fields including
+     * name and date are used.
+     *
+     * @param name the name of the configuration template to retrieve
+     * @return a 200 OK response containing the ConfigurationTemplate object
+     */
     @GetMapping("/templates/vieworload/{name}")
     public ResponseEntity<ConfigurationTemplate> viewOrLoadConfigTemplate(@PathVariable String name) {
         return ResponseEntity.ok(simulationService.getConfigurationTemplate(name));
     }
 
+    /**
+     * Deletes the saved configuration template with the given name.
+     *
+     * @param name the name of the configuration template to delete
+     * @return a 200 OK response confirming the template was deleted
+     */
     @DeleteMapping("/templates/delete/{name}")
     public ResponseEntity<String> deleteConfigTemplate(@PathVariable String name) {
         simulationService.deleteConfigurationTemplate(name);
@@ -61,6 +87,12 @@ public class ConfigurationController {
 
 
 
+    /**
+     * Saves a new configuration template with the details provided in the request body.
+     *
+     * @param configTemplate the configuration template to save
+     * @return a 200 OK response confirming the template was saved
+     */
     @PostMapping("/save")
     public ResponseEntity<String> saveConfigTemplate(@Valid @RequestBody ConfigurationTemplate configTemplate) {
         simulationService.saveConfigurationTemplate(configTemplate);
