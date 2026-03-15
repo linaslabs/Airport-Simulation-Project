@@ -23,7 +23,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
 
-// Spring Boot automatically instantiates this Service as a Singleton upon application startup and injects it into the Controllers.
+/**
+ * Spring Boot service that manages the airport simulation lifecycle.
+ * Automatically instantiated as a singleton on application startup and injected into controllers.
+ */
 @Service
 public class SimulationService {
 
@@ -31,16 +34,23 @@ public class SimulationService {
 
     private SimulationEngine engine;
     private int currentTickDelay;
+
+    /** Tracks whether the simulation is currently paused. Volatile for cross-thread visibility. */
     private volatile boolean isPaused = false;
+
+    /** Tracks whether the simulation has completed naturally. Volatile for cross-thread visibility. */
     private volatile boolean isFinished = false;
+
+    /** Tracks whether the simulation was abruptly stopped, in order to better differentiate between natural finishing and abrupt stopping. Volatile for cross-thread visibility. */
     private volatile boolean isAborted = false; // In order to better differentiate between natural finishing and abrupt stopping
 
-    // The background worker
+    /** The background worker thread that executes simulation ticks. */
     private ScheduledExecutorService executor;
-    // The task the worker will be doing (a controller for it, so we can pause or stop it)
+
+    /** A handle to the scheduled tick task, allowing it to be paused, cancelled, or rescheduled. */
     private ScheduledFuture<?> simulationTask;
 
-    // Inject the messaging template
+    /** The WebSocket messaging template used to push simulation updates to the frontend. */
     private final SimpMessagingTemplate messagingTemplate;
 
     /**
@@ -152,14 +162,21 @@ public class SimulationService {
 
     }
 
-    public void pauseSimulation() { this.isPaused = true; }
+    /**
+     * Pauses the simulation.
+     */
+    public void pauseSimulation() {
+        this.isPaused = true;
+    }
 
+    /**
+     * Resumes a paused simulation by clearing the paused flag and rescheduling ticks,
+     * provided the simulation has not already finished or been aborted.
+     */
     public void resumeSimulation() {
         this.isPaused = false;
         if (!isFinished && !isAborted) scheduleNextTicks(); // Safety checks
     }
-
-    // Pass in 1 for 1x, 5 for 5x, 20 for 20x
 
     /**
      * Method to set the speed of the simulation by changing the time between tick operations
@@ -287,11 +304,21 @@ public class SimulationService {
         return this.engine.getSimulationProgress();
     }
 
-    public boolean isPaused() { return this.isPaused; }
+    /**
+     * Returns whether the simulation is currently paused.
+     * @return true if paused, false otherwise
+     */
+    public boolean isPaused() {
+        return this.isPaused;
+    }
 
-    public boolean isRunning() { return this.engine != null && this.simulationTask != null && !this.simulationTask.isCancelled() && !this.isPaused && !this.isAborted; }
-
-
+    /**
+     * Returns whether the simulation is actively running (not paused, finished, or aborted).
+     * @return true if a tick task is scheduled and executing, false otherwise
+     */
+    public boolean isRunning() {
+        return this.engine != null && this.simulationTask != null && !this.simulationTask.isCancelled() && !this.isPaused && !this.isAborted;
+    }
 
     // The following functions are called by the ConfigurationController when saving/loading configuration JSONs.
     // Business logic checks are performed here, such as you cannot save a configuration template with the same
@@ -299,6 +326,11 @@ public class SimulationService {
     // However, physical logic checks are deferred to the JsonFileHandler, such as a configuration template with
     // a given name must exist if it is to be returned or deleted.
 
+    /**
+     * Returns a list of summaries for all saved configuration templates.
+     * @return a list of ConfigurationTemplateSummary objects
+     * @throws ResponseStatusException with HTTP 500 if an I/O error occurs while reading the files
+     */
     public List<ConfigurationTemplateSummary> listSavedConfigTemplateSummaries() {
         try {
             return JsonFileHandler.listSavedConfigTemplateSummaries();
@@ -307,6 +339,13 @@ public class SimulationService {
         }
     }
 
+    /**
+     * Retrieves a saved configuration template by name.
+     * @param name the name of the configuration template to retrieve
+     * @return the matching ConfigurationTemplate
+     * @throws ResponseStatusException with HTTP 404 if no template with the given name exists,
+     *         or HTTP 500 if an I/O error occurs
+     */
     public ConfigurationTemplate getConfigurationTemplate(String name) {
         try {
             return JsonFileHandler.getConfigTemplate(name);
@@ -317,7 +356,12 @@ public class SimulationService {
         }
     }
 
-    // Deletes the specified saved configuration template.
+    /**
+     * Deletes the specified saved configuration template.
+     * @param name the name of the configuration template to delete
+     * @throws ResponseStatusException with HTTP 404 if no template with the given name exists,
+     *         or HTTP 500 if an I/O error occurs during deletion
+     */
     public void deleteConfigurationTemplate(String name) {
         try {
             JsonFileHandler.deleteConfigTemplate(name);
@@ -328,11 +372,15 @@ public class SimulationService {
         }
     }
 
-    // Saves the user's current configuration.
-    // Note that we perform the check for a template with an existing name here rather than in JsonFileHandler.
-    // This is because this is business logic.
-    // In getConfigurationTemplate, we do a similar check to ensure the file actually exists with a given name,
-    // however checking the file actually exists is physical logic, so it should be in JsonFileHandler and not here.
+    /**
+     * Saves the user's current configuration as a named template.
+     * The template name is sanitised to remove special characters, and the current date is
+     * stamped automatically. Business logic (duplicate name check) is enforced here rather
+     * than in JsonFileHandler, as this is a business concern.
+     * @param configTemplate the configuration template to save, including its chosen name
+     * @throws ResponseStatusException with HTTP 409 if a template with the same name already exists,
+     *         or HTTP 500 if a disk error prevents saving
+     */
     public void saveConfigurationTemplate(ConfigurationTemplate configTemplate) {
         // Sanitise the name to remove spaces and special characters.
         String safeName = configTemplate.getTemplateName().replaceAll("[^a-zA-Z0-9-_\\s]", "");
@@ -357,8 +405,13 @@ public class SimulationService {
 
     // The following functions are called by the ResultsController.
 
-    // This returns the result of the last simulation that was started.
-    // If a simulation is still being run, or none was ever started, this function returns an error.
+    /**
+     * Returns the result of the last completed simulation.
+     * @return a SimulationResult containing the config, statistics, and event log
+     * @throws ResponseStatusException with HTTP 404 if no simulation has been started,
+     *         HTTP 400 if the simulation was manually aborted and has no final results,
+     *         or HTTP 400 if the simulation is still in progress
+     */
     public SimulationResult getLastResult() {
         // First check if a simulation was ever started since the app was opened.
         if (engine == null) {
@@ -379,6 +432,12 @@ public class SimulationService {
         return new SimulationResult(engine.getConfig(), engine.getStatistics(), engine.getEventLog());
     }
 
+    /**
+     * Saves the result of the last completed simulation under the given name.
+     * @param name the name to save the result under; special characters are stripped automatically
+     * @throws ResponseStatusException with HTTP 409 if a result with the same name already exists,
+     *         or HTTP 500 if a disk error prevents saving
+     */
     public void saveSimulationResult(String name) {
         // Sanitise the name to remove spaces and special characters.
         String safeName = name.replaceAll("[^a-zA-Z0-9-_\\s]", "");
@@ -405,6 +464,11 @@ public class SimulationService {
         }
     }
 
+    /**
+     * Returns a list of summaries for all saved simulation results.
+     * @return a list of SimulationResultSummary objects
+     * @throws ResponseStatusException with HTTP 500 if an I/O error occurs while reading the files
+     */
     public List<SimulationResultSummary> listResultSummaries() {
         try {
             return JsonFileHandler.listResultSummaries();
@@ -413,6 +477,13 @@ public class SimulationService {
         }
     }
 
+    /**
+     * Retrieves a saved simulation result by name.
+     * @param name the name of the saved result to retrieve
+     * @return the matching SimulationResultSaved object
+     * @throws ResponseStatusException with HTTP 404 if no result with the given name exists,
+     *         or HTTP 500 if an I/O error occurs
+     */
     public SimulationResultSaved getSimulationResult(String name) {
         try {
             return JsonFileHandler.getSimulationResult(name);
@@ -423,6 +494,12 @@ public class SimulationService {
         }
     }
 
+    /**
+     * Deletes a saved simulation result by name.
+     * @param name the name of the saved result to delete
+     * @throws ResponseStatusException with HTTP 404 if no result with the given name exists,
+     *         or HTTP 500 if an I/O error occurs during deletion
+     */
     public void deleteSimulationResult(String name) {
         try {
             JsonFileHandler.deleteSimulationResult(name);
@@ -433,8 +510,12 @@ public class SimulationService {
         }
     }
 
-
-    // Helper method to print out the full configuration received:
+    /**
+     * Logs a human-readable summary of the simulation configuration to the console.
+     * Covers seed, duration, tick time, traffic rates, runway settings, statistical
+     * multipliers, and all scheduled runway and aircraft events.
+     * @param config the simulation configuration to summarise
+     */
     private void printConfigurationSummary(SimulationConfig config) {
         log.info("==================================================");
         log.info("===     SIMULATION CONFIGURATION RECEIVED      ===");
