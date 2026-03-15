@@ -10,90 +10,120 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.SimulationMode;
 
 import java.util.*;
 
-
+/**
+ * Data transfer object containing all configuration parameters for a simulation.
+ * Includes runway settings, traffic rates, timing, event multipliers, and scheduled events.
+ * Validated using Jakarta Bean Validation annotations.
+ */
 public class SimulationConfig {
 
-    // Note we use Integer and not int, so if the user inputs an empty value, it is turned to null instead of 0.
-    // The default values here are displayed when the configuration view first loads.
-    // Could also provide a reset to defaults button in the configuration screen?
-
-    // We had runway count in the UML class diagram, but since we have a list of the runway DTOs, we don't need this too as we just need to use the size of the list.
-    // @Range(min = 1, max = 10, message = "Number of runways must be between 1 and 10 (inclusive)")
-    // private int runwayCount = 1;
-
-    // This means the UI can allow the user to remove all the runways while they are editing,
-    // however if they start the simulation with no runways, it will return an error.
+    /** List of runway configurations for the simulation */
     @NotNull(message = "At least one runway is required")
     @Size(min = 1, max = 10, message = "Simulation requires between 1 and 10 runways.")
-    @Valid // This runs bean validation on each component of the list.
+    @Valid
     private List<RunwayConfig> runwaySettings = new ArrayList<>(List.of(new RunwayConfig(1, RunwayStatus.AVAILABLE, RunwayMode.MIXED)));
 
+    /** Inbound aircraft rate per hour */
     @NotNull(message = "Inbound rate is required")
     @Range(min = 0, max = 100, message = "Inbound rate must be 0 and 100.")
     private Integer inboundRate = 15;
 
+    /** Outbound aircraft rate per hour */
     @NotNull(message = "Outbound rate is required")
     @Range(min = 0, max = 100, message = "Outbound rate must be 0 and 100.")
     private Integer outboundRate = 15;
 
+    /** Maximum wait time before flight cancellation (minutes) */
     @NotNull(message = "Max wait time is required")
     @Min(value = 1, message = "Max wait time must be greater than 0.")
     private Integer maxWaitTime = 30;
 
-    // This isn't in class diagram, but it would be good to include in configuration page.
+    /** Time between simulation ticks in milliseconds */
     @NotNull(message = "Tick time is required")
     @Min(value = 1, message = "Tick time must be at least 1ms to prevent system overload.")
     @Max(value = 10000, message = "Tick time cannot exceed 10,000ms (10 seconds).")
     private Integer tickTime = 10;
 
+    /** Simulation duration in minutes */
     @NotNull(message = "Simulation duration is required")
     @Range(min = 60, max = 1440, message = "Simulation duration must be between 60 and 1440 minutes.")
     private Integer duration = 420;
 
-    @NotNull(message = "Automatic generation flag is required") // In case front end sends a null explicitly
+    /** Whether random events are automatically generated */
+    @NotNull(message = "Automatic generation flag is required")
     private Boolean automaticGenerationEnabled = false;
 
+    /** Multiplier for mechanical failure event probability */
     @NotNull(message = "Mechanical failure multiplier is required")
     @DecimalMin(value = "0.0", message = "Mechanical failure multiplier cannot be less than 0.0")
     @DecimalMax(value = "10000.0", message = "Mechanical failure multiplier cannot exceed 10000.0")
     private Double mechanicalFailureMultiplier = 1.0;
 
+    /** Multiplier for passenger health issue event probability */
     @NotNull(message = "Passenger health issue multiplier is required")
     @DecimalMin(value = "0.0", message = "Passenger health issue multiplier cannot be less than 0.0")
     @DecimalMax(value = "10000.0", message = "Passenger health issue multiplier cannot exceed 10000.0")
     private Double passengerHealthIssueMultiplier = 1.0;
 
+    /** Multiplier for runway inspection event probability */
     @NotNull(message = "Runway inspection multiplier is required")
     @DecimalMin(value = "0.0", message = "Runway inspection multiplier cannot be less than 0.0")
     @DecimalMax(value = "10000.0", message = "Runway inspection multiplier cannot exceed 10000.0")
     private Double runwayInspectionMultiplier = 1.0;
 
+    /** Multiplier for snow clearance event probability */
     @NotNull(message = "Snow clearance multiplier is required")
     @DecimalMin(value = "0.0", message = "Snow clearance multiplier cannot be less than 0.0")
     @DecimalMax(value = "10000.0", message = "Snow clearance multiplier cannot exceed 10000.0")
     private Double snowClearanceMultiplier = 1.0;
 
+    /** Multiplier for equipment failure event probability */
     @NotNull(message = "Equipment failure multiplier is required")
     @DecimalMin(value = "0.0", message = "Equipment failure multiplier cannot be less than 0.0")
     @DecimalMax(value = "10000.0", message = "Equipment failure multiplier cannot exceed 10000.0")
     private Double equipmentFailureMultiplier = 1.0;
 
-    // Added seed as a Long object.
+    /** Random seed for reproducible simulations */
     @NotNull(message = "A random seed is required. Please enter a value or randomly generate one.")
     private Long seed;
 
+    /** Map of tick to scheduled runway events */
     @Valid
     private Map<Integer, List<RunwayEvent>> scheduledRunwayEvents = new HashMap<>();
 
+    /** Map of tick to scheduled aircraft events */
     @Valid
     private Map<Integer, List<AircraftEvent>> scheduledAircraftEvents = new HashMap<>();
 
+    /** The display mode for the simulation */
     private SimulationMode simulationMode;
 
-    // Default constructor required for Jackson to turn the JSON into this object.
+    /**
+     * Default constructor required for Jackson deserialization.
+     */
     public SimulationConfig() {}
 
-    // Parameterised constructor exclusively used for testing purposes.
+    /**
+     * Constructs a SimulationConfig with all parameters.
+     * Used primarily for testing purposes.
+     *
+     * @param runwaySettings list of runway configurations
+     * @param inboundRate inbound rate per hour
+     * @param outboundRate outbound rate per hour
+     * @param maxWaitTime maximum wait time before cancellation
+     * @param duration simulation duration in minutes
+     * @param tickTime time between ticks in milliseconds
+     * @param automaticGenerationEnabled whether random events are enabled
+     * @param mechanicalFailureMultiplier mechanical failure probability multiplier
+     * @param passengerHealthIssueMultiplier passenger health issue probability multiplier
+     * @param runwayInspectionMultiplier runway inspection probability multiplier
+     * @param snowClearanceMultiplier snow clearance probability multiplier
+     * @param equipmentFailureMultiplier equipment failure probability multiplier
+     * @param seed random seed for reproducibility
+     * @param scheduledRunwayEvents map of scheduled runway events
+     * @param scheduledAircraftEvents map of scheduled aircraft events
+     * @param simulationMode the display mode
+     */
     public SimulationConfig(List<RunwayConfig> runwaySettings, Integer inboundRate, Integer outboundRate, Integer maxWaitTime,
                             Integer duration, Integer tickTime, Boolean automaticGenerationEnabled, Double mechanicalFailureMultiplier, Double passengerHealthIssueMultiplier,
                             Double runwayInspectionMultiplier, Double snowClearanceMultiplier, Double equipmentFailureMultiplier, Long seed,

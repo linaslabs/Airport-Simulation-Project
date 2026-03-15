@@ -1,1 +1,0 @@
-Holds the enums for this project, e.g. runway status etc.

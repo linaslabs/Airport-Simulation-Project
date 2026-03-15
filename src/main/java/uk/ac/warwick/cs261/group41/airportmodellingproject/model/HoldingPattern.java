@@ -7,47 +7,99 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.*;
 
+/**
+ * Represents the holding pattern for arriving aircraft waiting to land.
+ * Implements a priority queue where aircraft are ordered by emergency status,
+ * fuel level, and entry time. Handles fuel consumption, diversions, and altitude management.
+ */
 public class HoldingPattern implements AircraftQueue{
+    /** Priority queue ordering aircraft by emergency status, fuel, and entry time */
     private final PriorityQueue<Aircraft> queue;
+    
+    /** Minimum fuel level before aircraft must divert */
     private final int minFuelLevel = 10;
-    // Maybe add an emergency fuel level, e.g. 20 minutes, below which the plane goes into EmergencyStatus.FUEL.
+    
+    /** Fuel level threshold that triggers a fuel emergency status */
     private final int emergencyFuelLevel = 15;
+    
+    /** Event manager for reporting diversions and emergencies */
     private EventManager eventManager;
 
+    /**
+     * Constructs a new empty HoldingPattern.
+     */
     public HoldingPattern() {
         this.queue = new PriorityQueue<>();
     }
 
+    /**
+     * Adds an aircraft to the holding pattern.
+     * Aircraft is automatically ordered by priority.
+     *
+     * @param aircraft the aircraft to add
+     */
     @Override
     public void addAircraft(Aircraft aircraft) {
         queue.add(aircraft);
     }
 
+    /**
+     * Retrieves and removes the highest priority aircraft from the holding pattern.
+     *
+     * @return an Optional containing the next aircraft, or empty if pattern is empty
+     */
     @Override
     public Optional<Aircraft> getNextAircraft(){
         return Optional.ofNullable(queue.poll());
     }
 
+    /**
+     * Returns the highest priority aircraft without removing it.
+     *
+     * @return an Optional containing the next aircraft, or empty if pattern is empty
+     */
     @Override
     public Optional<Aircraft> peekNextAircraft(){
         return Optional.ofNullable(queue.peek());
     }
 
+    /**
+     * Removes a specific aircraft from the holding pattern.
+     *
+     * @param aircraft the aircraft to remove
+     */
     @Override
     public void removeAircraft(Aircraft aircraft) {
         queue.remove(aircraft);
     }
 
+    /**
+     * Returns the number of aircraft in the holding pattern.
+     *
+     * @return the size of the holding pattern
+     */
     @Override
     public int getSize() {
         return queue.size();
     }
 
+    /**
+     * Checks if the holding pattern is empty.
+     *
+     * @return true if no aircraft are in the pattern, false otherwise
+     */
     @Override
     public boolean isEmpty() {
         return queue.isEmpty();
     }
 
+    /**
+     * Updates all aircraft in the holding pattern for the current tick.
+     * Consumes fuel, triggers diversions for low fuel, and sets fuel emergencies.
+     *
+     * @param currentTick the current simulation tick
+     * @throws IllegalStateException if EventManager has not been set
+     */
     @Override
     public void update(int currentTick) {
         if (eventManager == null) {
@@ -84,6 +136,10 @@ public class HoldingPattern implements AircraftQueue{
         updateAltitudes();
     }
 
+    /**
+     * Updates the altitudes of all aircraft based on their position in the queue.
+     * Higher priority aircraft are assigned lower altitudes (closer to landing).
+     */
     public void updateAltitudes() {
         List<Aircraft> sortedAircraft = new ArrayList<>();
         PriorityQueue<Aircraft> queueCopy = new PriorityQueue<>(this.queue);
@@ -101,8 +157,14 @@ public class HoldingPattern implements AircraftQueue{
         }
     }
 
-    // Note to maintain the order in the priority queue, when we want to change the status of an aircraft,
-    // we must remove it, make changes, then reinsert it, so it is ordered into the correct place.
+    /**
+     * Updates the emergency status of an aircraft in the holding pattern.
+     * Removes and reinserts the aircraft to maintain correct priority ordering.
+     *
+     * @param callsign the callsign of the aircraft to update
+     * @param newStatus the new emergency status
+     * @param emergencySource the source of the emergency event
+     */
     public void updateAircraftStatus(String callsign, EmergencyStatus newStatus, EventSource emergencySource) {
         Aircraft foundAircraft = null;
 
@@ -131,6 +193,12 @@ public class HoldingPattern implements AircraftQueue{
         }
     }
 
+    /**
+     * Gets a random aircraft callsign from those without emergency status.
+     *
+     * @param random the random number generator
+     * @return a random aircraft callsign, or null if none eligible
+     */
     public String getRandomAircraft(Random random) {
         // Filter out aircraft with emergency statuses other than None.
         List<Aircraft> eligibleAircraft = new ArrayList<>();
@@ -150,7 +218,11 @@ public class HoldingPattern implements AircraftQueue{
         return eligibleAircraft.get(index).getCallsign();
     }
 
-    // Returns a list of aircraft, sorted with highest severity first.
+    /**
+     * Gets all aircraft with emergency status, sorted by severity.
+     *
+     * @return list of emergency aircraft, highest severity first
+     */
     public List<Aircraft> getEmergencyAircraft() {
         List<Aircraft> output = new ArrayList<>();
         for (Aircraft aircraft : queue) {
@@ -162,10 +234,20 @@ public class HoldingPattern implements AircraftQueue{
         return output;
     }
 
+    /**
+     * Sets the event manager for reporting diversions and emergencies.
+     *
+     * @param eventManager the event manager to set
+     */
     public void setEventManager(EventManager eventManager) {
         this.eventManager = eventManager;
     }
 
+    /**
+     * Gets all aircraft in the holding pattern in priority order.
+     *
+     * @return list of aircraft sorted by priority
+     */
     public List<Aircraft> getAircraftInQueue() {
         // extract elements using poll() to guarantee priority order (basically pops from the top)
         List<Aircraft> sortedAircraft = new ArrayList<>();
