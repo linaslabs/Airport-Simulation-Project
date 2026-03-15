@@ -14,11 +14,11 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
 import java.util.*;
 
 /**
- * Represents an event manager to handles simulation events (runway events and aircraft emergencies)
+ * Represents an event manager to handle simulation events (runway events and aircraft emergencies).
  *
- * Responsible for initiating manual, scheduled and random events
- * Handles reporting of events and logging to an event logger object to ensure simulation traceability
- * Acts as a central mediator for events to be processed, ensuring single responsibility is maintained
+ * Responsible for initiating manual, scheduled and random events.
+ * Handles reporting of events and logging to an event logger object to ensure simulation traceability.
+ * Acts as a central mediator for events to be processed, ensuring single responsibility is maintained.
  */
 public class EventManager {
 
