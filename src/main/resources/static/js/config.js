@@ -607,7 +607,7 @@ function deleteEvent(idToDelete) {
     (item) => item.id !== idToDelete,
   );
 
-  console.log("Deleted. Remaining Data:", scheduledEventsData);
+  //console.log("Deleted. Remaining Data:", scheduledEventsData);
 
   // find the row by its data-id attribute
   const rowToRemove = document.querySelector(`div[data-id="${idToDelete}"]`);
