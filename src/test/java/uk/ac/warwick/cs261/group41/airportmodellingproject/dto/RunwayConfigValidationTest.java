@@ -30,6 +30,11 @@ class RunwayConfigValidationTest {
         validator = factory.getValidator();
     }
 
+    /**
+     * Builds a fully valid RunwayConfig that satisfies all validation constraints.
+     *
+     * @return a RunwayConfig that should produce zero constraint violations
+     */
     private static RunwayConfig validConfig() {
         return new RunwayConfig(
                 0,
@@ -38,14 +43,34 @@ class RunwayConfigValidationTest {
         );
     }
 
+    /**
+     * Runs Jakarta Bean Validation on the given RunwayConfig.
+     *
+     * @param config the RunwayConfig to validate
+     * @return the set of constraint violations found, or an empty set if the config is valid
+     */
     private static Set<ConstraintViolation<RunwayConfig>> validate(RunwayConfig config) {
         return validator.validate(config);
     }
 
+    /**
+     * Checks whether any of the given violations target the specified property path.
+     *
+     * @param violations the set of violations to search
+     * @param property   the exact property path to look for (e.g. "runwayID")
+     * @return true if at least one violation matches the property path
+     */
     private static boolean hasViolationOn(Set<? extends ConstraintViolation<?>> violations, String property) {
         return violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals(property));
     }
 
+    /**
+     * Concatenates the violation messages for all violations targeting the specified property.
+     *
+     * @param violations the set of violations to filter
+     * @param property   the exact property path to collect messages for
+     * @return a single string of all matching violation messages joined by " | "
+     */
     private static String messagesFor(Set<? extends ConstraintViolation<?>> violations, String property) {
         return violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals(property))

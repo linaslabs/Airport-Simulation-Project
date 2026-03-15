@@ -41,6 +41,8 @@ class JsonFileHandlerTest {
 
     /**
      * Builds a minimal but fully-populated SimulationConfig for use in tests.
+     *
+     * @return a SimulationConfig with a single MIXED runway and fixed parameter values
      */
     private SimulationConfig buildConfig() {
         return new SimulationConfig(
@@ -56,6 +58,8 @@ class JsonFileHandlerTest {
 
     /**
      * Builds a StatisticsSummary with known, assertable field values.
+     *
+     * @return a StatisticsSummary populated with predictable values for use in assertions
      */
     private StatisticsSummary buildStats() {
         return new StatisticsSummary(
@@ -71,6 +75,10 @@ class JsonFileHandlerTest {
 
     /**
      * Builds a ConfigurationTemplate wrapping the given config.
+     *
+     * @param name   the template name to assign
+     * @param config the SimulationConfig to embed in the template
+     * @return a ConfigurationTemplate with the current date as its creation timestamp
      */
     private ConfigurationTemplate buildTemplate(String name, SimulationConfig config) {
         return new ConfigurationTemplate(name, new Date(), config);
@@ -78,6 +86,11 @@ class JsonFileHandlerTest {
 
     /**
      * Builds a SimulationResultSaved with the given name, config, and stats.
+     *
+     * @param name   the simulation name to assign
+     * @param config the SimulationConfig to embed in the result
+     * @param stats  the StatisticsSummary to embed in the result
+     * @return a SimulationResultSaved with the current date as its execution timestamp
      */
     private SimulationResultSaved buildResult(String name, SimulationConfig config, StatisticsSummary stats) {
         return new SimulationResultSaved(config, stats, new EventLogger(), name, new Date());

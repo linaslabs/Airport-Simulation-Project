@@ -17,6 +17,13 @@ import static org.mockito.Mockito.*;
  */
 class TakeOffQueueTest {
 
+    /**
+     * Creates a Mockito mock Aircraft with the given callsign and entry tick stubbed.
+     *
+     * @param callsign  the callsign to stub on getCallsign()
+     * @param entryTick the tick value to stub on getEntryTick()
+     * @return a mocked Aircraft with callsign and entryTick stubbed
+     */
     private static Aircraft mockAircraft(String callsign, int entryTick) {
         Aircraft a = mock(Aircraft.class);
         when(a.getCallsign()).thenReturn(callsign);
