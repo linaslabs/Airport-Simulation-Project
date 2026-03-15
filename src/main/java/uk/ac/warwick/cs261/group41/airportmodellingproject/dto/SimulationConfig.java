@@ -153,99 +153,259 @@ public class SimulationConfig {
         this.simulationMode = simulationMode;
     }
 
+    /**
+     * Gets the runway settings.
+     *
+     * @return the list of runway configurations
+     */
     public List<RunwayConfig> getRunwaySettings() {
         return runwaySettings;
     }
 
+    /**
+     * Sets the runway settings.
+     * Creates a defensive copy to ensure the DTO owns its own data.
+     *
+     * @param runwaySettings the list of runway configurations
+     */
     public void setRunwaySettings(List<RunwayConfig> runwaySettings) {
-        // Defensive copy to ensure the DTO owns its own data
         this.runwaySettings = (runwaySettings != null) ? new ArrayList<>(runwaySettings) : new ArrayList<>();
     }
 
+    /**
+     * Gets the scheduled runway events.
+     *
+     * @return an unmodifiable map of tick to runway events
+     */
     public Map<Integer, List<RunwayEvent>> getScheduledRunwayEvents() { return Collections.unmodifiableMap(this.scheduledRunwayEvents); }
 
+    /**
+     * Sets the scheduled runway events.
+     *
+     * @param scheduledRunwayEvents the map of tick to runway events
+     */
     public void setScheduledRunwayEvents(Map<Integer, List<RunwayEvent>> scheduledRunwayEvents) {
         this.scheduledRunwayEvents = (scheduledRunwayEvents != null) ? new HashMap<>(scheduledRunwayEvents) : new HashMap<>();
     }
 
+    /**
+     * Gets the scheduled aircraft events.
+     *
+     * @return an unmodifiable map of tick to aircraft events
+     */
     public Map<Integer, List<AircraftEvent>> getScheduledAircraftEvents() { return Collections.unmodifiableMap(this.scheduledAircraftEvents); }
 
+    /**
+     * Sets the scheduled aircraft events.
+     *
+     * @param scheduledAircraftEvents the map of tick to aircraft events
+     */
     public void setScheduledAircraftEvents(Map<Integer, List<AircraftEvent>> scheduledAircraftEvents) {
         this.scheduledAircraftEvents = (scheduledAircraftEvents != null) ? new HashMap<>(scheduledAircraftEvents) : new HashMap<>();
     }
 
+    /**
+     * Gets the inbound rate.
+     *
+     * @return the inbound rate per hour
+     */
     public Integer getInboundRate() {
         return inboundRate;
     }
 
+    /**
+     * Sets the inbound rate.
+     *
+     * @param inboundRate the inbound rate per hour
+     */
     public void setInboundRate(Integer inboundRate) {
         this.inboundRate = inboundRate;
     }
 
+    /**
+     * Gets the outbound rate.
+     *
+     * @return the outbound rate per hour
+     */
     public Integer getOutboundRate() {
         return outboundRate;
     }
 
+    /**
+     * Sets the outbound rate.
+     *
+     * @param outboundRate the outbound rate per hour
+     */
     public void setOutboundRate(Integer outboundRate) {
         this.outboundRate = outboundRate;
     }
 
+    /**
+     * Gets the maximum wait time.
+     *
+     * @return the maximum wait time in minutes
+     */
     public Integer getMaxWaitTime() {
         return maxWaitTime;
     }
 
+    /**
+     * Sets the maximum wait time.
+     *
+     * @param maxWaitTime the maximum wait time in minutes
+     */
     public void setMaxWaitTime(Integer maxWaitTime) {
         this.maxWaitTime = maxWaitTime;
     }
 
+    /**
+     * Gets the tick time.
+     *
+     * @return the time between ticks in milliseconds
+     */
     public Integer getTickTime() {
         return tickTime;
     }
 
+    /**
+     * Sets the tick time.
+     *
+     * @param tickTime the time between ticks in milliseconds
+     */
     public void setTickTime(Integer tickTime) {
         this.tickTime = tickTime;
     }
 
+    /**
+     * Gets the simulation duration.
+     *
+     * @return the duration in minutes
+     */
     public Integer getDuration() { return this.duration; }
 
+    /**
+     * Sets the simulation duration.
+     *
+     * @param duration the duration in minutes
+     */
     public void setDuration(Integer duration) { this.duration = duration; }
 
+    /**
+     * Gets whether automatic event generation is enabled.
+     *
+     * @return true if automatic generation is enabled
+     */
     public Boolean getAutomaticGenerationEnabled() { return this.automaticGenerationEnabled; }
 
+    /**
+     * Sets whether automatic event generation is enabled.
+     *
+     * @param automaticGenerationEnabled true to enable automatic generation
+     */
     public void setAutomaticGenerationEnabled(boolean automaticGenerationEnabled) {this.automaticGenerationEnabled = automaticGenerationEnabled; }
 
+    /**
+     * Gets the random seed.
+     *
+     * @return the seed for reproducibility
+     */
     public Long getSeed() {
         return seed;
     }
 
+    /**
+     * Sets the random seed.
+     *
+     * @param seed the seed for reproducibility
+     */
     public void setSeed(Long seed) {
         this.seed = seed;
     }
 
+    /**
+     * Gets the mechanical failure multiplier.
+     *
+     * @return the probability multiplier
+     */
     public Double getMechanicalFailureMultiplier() { return mechanicalFailureMultiplier; }
 
+    /**
+     * Sets the mechanical failure multiplier.
+     *
+     * @param mechanicalFailureMultiplier the probability multiplier
+     */
     public void setMechanicalFailureMultiplier(Double mechanicalFailureMultiplier) { this.mechanicalFailureMultiplier = mechanicalFailureMultiplier; }
 
+    /**
+     * Gets the passenger health issue multiplier.
+     *
+     * @return the probability multiplier
+     */
     public Double getPassengerHealthIssueMultiplier() { return passengerHealthIssueMultiplier; }
 
+    /**
+     * Sets the passenger health issue multiplier.
+     *
+     * @param passengerHealthIssueMultiplier the probability multiplier
+     */
     public void setPassengerHealthIssueMultiplier(Double passengerHealthIssueMultiplier) { this.passengerHealthIssueMultiplier = passengerHealthIssueMultiplier; }
 
+    /**
+     * Gets the runway inspection multiplier.
+     *
+     * @return the probability multiplier
+     */
     public Double getRunwayInspectionMultiplier() { return runwayInspectionMultiplier; }
 
+    /**
+     * Sets the runway inspection multiplier.
+     *
+     * @param runwayInspectionMultiplier the probability multiplier
+     */
     public void setRunwayInspectionMultiplier(Double runwayInspectionMultiplier) { this.runwayInspectionMultiplier = runwayInspectionMultiplier; }
 
+    /**
+     * Gets the snow clearance multiplier.
+     *
+     * @return the probability multiplier
+     */
     public Double getSnowClearanceMultiplier() { return snowClearanceMultiplier; }
 
+    /**
+     * Sets the snow clearance multiplier.
+     *
+     * @param snowClearanceMultiplier the probability multiplier
+     */
     public void setSnowClearanceMultiplier(Double snowClearanceMultiplier) { this.snowClearanceMultiplier = snowClearanceMultiplier; }
 
+    /**
+     * Gets the equipment failure multiplier.
+     *
+     * @return the probability multiplier
+     */
     public Double getEquipmentFailureMultiplier() { return equipmentFailureMultiplier; }
 
+    /**
+     * Sets the equipment failure multiplier.
+     *
+     * @param equipmentFailureMultiplier the probability multiplier
+     */
     public void setEquipmentFailureMultiplier(Double equipmentFailureMultiplier) { this.equipmentFailureMultiplier = equipmentFailureMultiplier; }
 
+    /**
+     * Gets the simulation mode.
+     *
+     * @return the display mode
+     */
     public SimulationMode getSimulationMode() {
         return simulationMode;
     }
 
+    /**
+     * Sets the simulation mode.
+     *
+     * @param simulationMode the display mode
+     */
     public void setSimulationMode(SimulationMode simulationMode) {
         this.simulationMode = simulationMode;
     }
