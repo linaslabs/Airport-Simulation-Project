@@ -11,7 +11,6 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.model.Statistics;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
