@@ -131,6 +131,12 @@ public class JsonFileHandler {
         return mapper.readValue(configtemplateFilePath.toFile(), ConfigurationTemplate.class);
     }
 
+    /**
+     * Deletes a configuration template JSON file from the /data/configtemplates folder.
+     * @param name the name of the configuration template to delete
+     * @throws NoSuchFileException if no template with the given name exists
+     * @throws IOException if the file cannot be deleted due to a disk error
+     */
     public static void deleteConfigTemplate(String name) throws IOException {
         Path configtemplateFilePath = Paths.get(dataDirectory, "configtemplates", name + ".json");
 
@@ -142,6 +148,11 @@ public class JsonFileHandler {
         Files.delete(configtemplateFilePath);
     }
 
+    /**
+     * Checks whether a configuration template with the given name already exists on disk.
+     * @param name the template name to check
+     * @return true if a file with the given name exists, false otherwise
+     */
     public static boolean templateNameExists(String name) {
         Path configtemplateFilePath = Paths.get(dataDirectory, "configtemplates", name + ".json");
         return Files.exists(configtemplateFilePath);
@@ -158,6 +169,11 @@ public class JsonFileHandler {
 
     // The following functions are for the simulation results file handling logic.
 
+    /**
+     * Checks whether a simulation result with the given name already exists on disk.
+     * @param name the result name to check
+     * @return true if a file with the given name exists, false otherwise
+     */
     public static boolean resultNameExists(String name) {
         Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
         return Files.exists(resultPath);
@@ -246,6 +262,12 @@ public class JsonFileHandler {
         return mapper.readValue(resultPath.toFile(), SimulationResultSaved.class);
     }
 
+    /**
+     * Deletes a simulation result JSON file from the /data/results folder.
+     * @param name the name of the simulation result to delete
+     * @throws NoSuchFileException if no result with the given name exists
+     * @throws IOException if the file cannot be deleted due to a disk error
+     */
     public static void deleteSimulationResult(String name) throws IOException {
         Path resultPath = Paths.get(dataDirectory, "results", name + ".json");
 
