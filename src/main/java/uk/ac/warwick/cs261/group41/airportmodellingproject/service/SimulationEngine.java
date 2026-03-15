@@ -12,6 +12,18 @@ import uk.ac.warwick.cs261.group41.airportmodellingproject.model.*;
 
 import java.util.*;
 
+/**
+ * Controls the tick-by-tick execution of the airport simulation.
+ *
+ * Responsible for initialising and coordinating all core simulation components,
+ * including the airport, aircraft generator, event manager, and statistics tracker.
+ * Each tick processes scheduled events, generates inbound and outbound aircraft,
+ * optionally rolls for random events, assigns runways, and updates queues.
+ *
+ * Random event probabilities are calculated by multiplying baseline rates against
+ * user-configured multipliers. See RateReferences.txt in this package for a full
+ * breakdown of how baseline rates were derived.
+ */
 public class SimulationEngine {
 
     private static final Logger log = LoggerFactory.getLogger(SimulationEngine.class);

@@ -67,19 +67,6 @@ public class Airport {
      * @param aircraft the arriving aircraft to add
      */
     public void acceptInboundAircraft(Aircraft aircraft) {
-        // I think this code is not what we need. Instead we should just add them to the queue.
-        // Otherwise, if we have a mixed mode runway, with 1 plane spawning in arrival and departure
-        // each tick + runwayOccupationTime, the runway will only let the landing aircraft use the runway,
-        // so the takeoff queue will just build up.
-//        if (holdingPattern.isEmpty()) {
-//            Runway possibleRunway = getFirstAvailableRunway(currentTick);
-//            if (possibleRunway != null) {
-//                possibleRunway.assignAircraft(aircraft, currentTick + runwayOccupationTime);
-//            }
-//        }
-//        else {
-//            holdingPattern.addAircraft(aircraft);
-//        }
         holdingPattern.addAircraft(aircraft);
 
         stats.recordHoldingSize(holdingPattern.getSize());
