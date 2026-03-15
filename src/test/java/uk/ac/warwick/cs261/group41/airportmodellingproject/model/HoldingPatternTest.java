@@ -24,6 +24,16 @@ import static org.mockito.Mockito.*;
  */
 class HoldingPatternTest {
 
+    /**
+     * Creates an ARRIVAL Aircraft with the given callsign, fuel, scheduled tick, and entry tick.
+     * Uses fixed placeholder values for operator, source, and destination.
+     *
+     * @param callsign      the aircraft callsign
+     * @param fuel          the initial fuel level
+     * @param scheduledTick the tick the aircraft was scheduled to arrive
+     * @param entryTick     the tick the aircraft entered the holding pattern
+     * @return a new ARRIVAL Aircraft
+     */
     private static Aircraft newArrival(String callsign, double fuel, int scheduledTick, int entryTick) {
         // Matches the constructor used by AircraftGenerator in main code
         return new Aircraft(
@@ -38,6 +48,12 @@ class HoldingPatternTest {
         );
     }
 
+    /**
+     * Returns the first non-NONE EmergencyStatus from the enum, used to test emergency
+     * priority logic without hard-coding a specific status value.
+     *
+     * @return a non-NONE EmergencyStatus value, or fails the test if none exist
+     */
     private static EmergencyStatus someNonNoneEmergencyStatus() {
         for (EmergencyStatus s : EmergencyStatus.values()) {
             if (!"NONE".equalsIgnoreCase(s.name())) return s;
@@ -46,6 +62,13 @@ class HoldingPatternTest {
         return EmergencyStatus.NONE;
     }
 
+    /**
+     * Reads the altitude field of an Aircraft via reflection, allowing the test to verify
+     * altitude updates without depending on a public getter in the production API.
+     *
+     * @param aircraft the Aircraft whose altitude to read
+     * @return the current altitude of the aircraft
+     */
     private static int getAltitudeReflective(Aircraft aircraft) {
         try {
             Method m = aircraft.getClass().getMethod("getAltitude");

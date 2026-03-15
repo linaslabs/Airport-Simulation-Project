@@ -23,6 +23,11 @@ class AircraftGeneratorTest {
     /**
      * Helper that sums the number of aircraft returned across all ticks
      * from 0 to duration + 30 (a generous buffer for Gaussian-shifted entry ticks).
+     *
+     * @param gen      the AircraftGenerator to query
+     * @param inbound  true to count inbound aircraft, false to count outbound aircraft
+     * @param duration the simulation duration in ticks
+     * @return the total number of aircraft generated across all ticks
      */
     private static int countAllAircraft(AircraftGenerator gen, boolean inbound, int duration) {
         int total = 0;

@@ -24,18 +24,46 @@ import static org.mockito.Mockito.*;
  */
 class AirportTest {
 
+    /**
+     * Creates a RunwayConfig with AVAILABLE status and the specified ID and mode.
+     *
+     * @param id   the runway ID
+     * @param mode the operating mode for the runway
+     * @return a RunwayConfig with RunwayStatus.AVAILABLE
+     */
     private static RunwayConfig rc(int id, RunwayMode mode) {
         return new RunwayConfig(id, RunwayStatus.AVAILABLE, mode);
     }
 
+    /**
+     * Creates an Airport named "TestAirport" with the given runway configurations,
+     * a maxWaitTime of 10, a landing duration of 3, and a fresh Statistics instance.
+     *
+     * @param configs the runway configurations for the airport
+     * @return a new Airport instance
+     */
     private static Airport makeAirport(RunwayConfig... configs) {
         return new Airport("TestAirport", List.of(configs), 10, 3, new Statistics());
     }
 
+    /**
+     * Creates an ARRIVAL Aircraft with the given callsign and entry tick, and 40 units of fuel.
+     *
+     * @param callsign  the aircraft callsign
+     * @param entryTick the tick the aircraft enters the system
+     * @return a new ARRIVAL Aircraft
+     */
     private static Aircraft arrival(String callsign, int entryTick) {
         return new Aircraft(callsign, "OP", "SRC", "DST", 40.0, entryTick, entryTick, FlightType.ARRIVAL);
     }
 
+    /**
+     * Creates a DEPARTURE Aircraft with the given callsign and entry tick, and 0 units of fuel.
+     *
+     * @param callsign  the aircraft callsign
+     * @param entryTick the tick the aircraft enters the system
+     * @return a new DEPARTURE Aircraft
+     */
     private static Aircraft departure(String callsign, int entryTick) {
         return new Aircraft(callsign, "OP", "SRC", "DST", 0.0, entryTick, entryTick, FlightType.DEPARTURE);
     }

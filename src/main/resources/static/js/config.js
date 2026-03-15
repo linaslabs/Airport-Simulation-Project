@@ -1,12 +1,28 @@
+/**
+ * DOM Elements for Runway Management
+ */
 const runwayCounter = document.getElementById("runway-counter");
 const add1Btn = document.getElementById("add-button");
 const minus1Btn = document.getElementById("minus-button");
 const runwayList = document.getElementById("runway-list");
 const template = document.getElementById("runway-template");
+
+/**
+ * Tracks the IDs of scheduled events that are invalid (e.g., overlapping or out of bounds) - for validation purposes
+ * @type {Set<number>}
+ */
 let invalidEventIds = new Set();
 
+/**
+ * Tracks the current number of active runways.
+ * @type {number}
+ */
 let number = 1;
 
+/**
+ * Increases the runway count by 1 (up to a maximum of 10).
+ * Updates the UI counter, adds a new runway row, and refreshes the event form.
+ */
 function add1() {
   if (number < 10) {
     number++;
@@ -16,6 +32,10 @@ function add1() {
   updateEventForm(); // relays the update to the events section
 }
 
+/**
+ * Decreases the runway count by 1 (down to a minimum of 1).
+ * Updates the UI counter, removes the last runway row, and refreshes the event form.
+ */
 function minus1() {
   if (number > 1) {
     removeRow(number); // removes last runway
@@ -25,7 +45,11 @@ function minus1() {
   runwayCounter.innerHTML = number.toString(); // updates number n in input parameter (- n +)
   updateEventForm(); // relays the update to the events section
 }
-
+/**
+ * Clones the HTML template to create a new runway configuration row.
+ * Updates the IDs and labels to match the newly assigned runway number.
+ * * @param {number} id - The assigned runway number (1-indexed value).
+ */
 function addRunwayRow(id) {
   // clone the HTML template for runway rows
   const clone = template.content.cloneNode(true);
@@ -48,6 +72,10 @@ function addRunwayRow(id) {
   runwayList.appendChild(clone); // add the updated clone to the page
 }
 
+/**
+ * Removes a specific runway row from the DOM.
+ * * @param {number} id - The assigned runway number to remove (1-indexed).
+ */
 function removeRow(id) {
   // find the row with the id (runway number) to be deleted
   const rowToDelete = document.getElementById("runway-row-" + id);
@@ -58,7 +86,7 @@ function removeRow(id) {
   }
 }
 
-// create first row, because default name is 1 for noe
+// create first row, because default number of rows is 1 (formerly 10 - hence the loop)
 for (let i = 1; i <= 1; i++) {
   addRunwayRow(i);
 }
@@ -66,9 +94,11 @@ for (let i = 1; i <= 1; i++) {
 add1Btn.onclick = add1;
 minus1Btn.onclick = minus1;
 
-// INPUT CONFIG
-// format for inputs with text boxes
-// If you DONT want a help icon, you can get rid of the field or set it to null
+/**
+ * Configuration array defining the properties, constraints, and help tips for all input fields.
+ * This array acts as the blueprint for dynamically generating the Input Parameters UI.
+ * @type {Array<Object>}
+ */
 const inputConfig = [
   { label: "Inbound Rate /hr",           name: "inbound_rate",      range: "0 - 100",     min: 0,  max: 100,      step: 1,    val: 15 },
   { label: "Outbound Rate /hr",          name: "outbound_rate",     range: "0 - 100",     min: 0,  max: 100,      step: 1,    val: 15 },
@@ -81,12 +111,18 @@ const inputConfig = [
   { label: "Snow Clearance Multiplier",     name: "snow_rate",         range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance (0.00000951) of a runway temporarily closing for snow clearance each minute." },
   { label: "Equipment Failure Multiplier",  name: "equip_failure_rate",range: "0.0 - 10000", min: 0, max: 10000, step: 0.1, val: "0.0", help: "Multiplies the baseline chance (0.00000278) of runway temporarily closing due to equipment failure each minute." },
 ];
-// generate input params
+
+/**
+ * Dynamically builds the Input Parameters form based on the `inputConfig` array.
+ * Assigns fields to either the main parameters list or the rate multipliers list.
+ * Attaches validation listeners and help tooltips.
+ */
 function generateInputs() {
   const mainContainer = document.getElementById("input-parameters-list");
   const rateContainer = document.getElementById("rate-parameters-list");
   const template = document.getElementById("input-field-template");
 
+  // iterate through the predefined configuration array to build each input field
   inputConfig.forEach((config) => {
     const clone = template.content.cloneNode(true);
     const input = clone.querySelector(".field-input");
@@ -94,6 +130,7 @@ function generateInputs() {
     const labelEl = clone.querySelector(".field-label");
     labelEl.innerText = config.label;
 
+    // if a help description exists, dynamically build and attach a Bootstrap tooltip (?) element
     if (config.help) {
       const helpBubble = document.createElement("span");
       helpBubble.className = "help-bubble";
@@ -106,8 +143,10 @@ function generateInputs() {
       helpBubble.setAttribute("aria-label", config.help);
       labelEl.appendChild(helpBubble);
     }
+    // set the grey subtext showing the valid numerical range
     clone.querySelector(".field-range").innerText = "Range: " + config.range;
 
+    // map the config values to the actual HTML input attributes
     input.id = "input-" + config.name;
     input.name = config.name;
     input.value = config.val;
@@ -116,17 +155,19 @@ function generateInputs() {
     if (config.max !== undefined) input.max = config.max;
     if (config.step !== undefined) input.step = config.step;
 
+    // block any non numbers being input into boxes (including the special case of e)
     input.addEventListener("keydown", function (e) {
       if (["e", "E", "+", "-"].includes(e.key)) {
         e.preventDefault();
       }
     });
 
+    // show the random seed generator button ONLY for the seed parameter
     if (config.name === "seed") {
       clone.querySelector(".dice-btn").style.display = "block";
     }
 
-    // Rate fields go to rate container, everything else to main
+    // rate fields go to rate container, everything else to main
     const rateFields = [
       "mech_failure_rate",
       "health_issue_rate",
@@ -142,6 +183,9 @@ function generateInputs() {
   });
 }
 
+/**
+ * Initialises Bootstrap Tooltips for all dynamically generated help bubbles.
+ */
 function initialiseHelpBubbles() {
   if (!window.bootstrap || !bootstrap.Tooltip) return;
 
@@ -155,7 +199,12 @@ function initialiseHelpBubbles() {
     });
 }
 
-function setupRateToggle() {
+/**
+ * Updates the disabled state and opacity of rate fields based on the checkbox.
+ * Forces values back to 0.0 when disabled.
+ */
+function updateRates() {
+  // array of input ids for the random event multiplier fields
   const rateFields = [
     "input-mech_failure_rate",
     "input-health_issue_rate",
@@ -164,43 +213,65 @@ function setupRateToggle() {
     "input-equip_failure_rate",
   ];
 
+  // grab the checkbox state
   const checkbox = document.getElementById("input-auto_gen");
 
-  function updateRates() {
-    rateFields.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (checkbox.checked) {
-        el.disabled = false;
-        el.style.opacity = "1";
-      } else {
-        el.disabled = true;
-        el.style.opacity = "0.4";
-        el.value = "0.0"; // Forces the value back to 0 when disabled!
-      }
-    });
-  }
+  // safety check in case the checkbox doesn't exist on the page
+  if (!checkbox) return;
 
-  checkbox.addEventListener("change", updateRates);
-  updateRates(); // run on page load
+  // loop through each rate field and toggle its state
+  rateFields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    if (checkbox.checked) {
+      el.disabled = false;
+      el.style.opacity = "1";
+    } else {
+      el.disabled = true;
+      el.style.opacity = "0.4";
+      el.value = "0.0"; // forces the value back to 0.0 when disabled
+    }
+  });
 }
 
+/**
+ * Attaches the toggle logic to the checkbox and runs the initial check on page load.
+ */
+function setupRateToggle() {
+  const checkbox = document.getElementById("input-auto_gen");
+  if (checkbox) {
+    checkbox.addEventListener("change", updateRates);
+    updateRates(); // run on page load
+  }
+}
+
+/**
+ * Opens the save configuration modal.
+ * Clears any previously entered configuration name to ensure a blank form.
+ */
 function openSaveModal() {
-  // Clear the input field for a fresh start
+  // clear the input field for a fresh start
   document.getElementById("new-config-name").value = "";
 
-  // Show the modal using Bootstrap's JS API
+  // show the modal using bootstrap's js api
   const modal = bootstrap.Modal.getOrCreateInstance(
-    document.getElementById("saveConfigModal"),
+      document.getElementById("saveConfigModal"),
   );
   modal.show();
 }
 
+/**
+ * Validates the current UI inputs, compiles all configuration settings into a JSON payload,
+ * and sends it to the backend API.
+ * * If validation is successful, it initializes the simulation and redirects the user
+ * to the appropriate progress page based on the selected simulation mode.
+ */
 function startSimulation() {
   // HALT if validation fails!
   if (!validateInputs()) return;
 
-  // input params data
+  // collect basic input params data
   let inputParams = {};
   const inputs = document.querySelectorAll('input[type="number"]');
 
@@ -211,11 +282,11 @@ function startSimulation() {
     }
   });
 
-  // Runways
+  // process runway configuration
   let runwayData = [];
   const runwayCount = parseInt(runwayCounter.innerText);
 
-  // Note: statusToEnum and modeToEnum are global functions in your file
+
   for (let i = 1; i <= runwayCount; i++) {
     const statusVal = document.getElementById(`status_${i}`).value;
     const modeVal = document.getElementById(`mode_${i}`).value;
@@ -229,19 +300,20 @@ function startSimulation() {
 
   const processedEvents = formatEventsForBackend(scheduledEventsData);
 
+  // compile the final payload object
   const payload = {
     runwaySettings: runwayData,
     scheduledRunwayEvents: processedEvents.runways,
     scheduledAircraftEvents: processedEvents.aircraft,
     simulationID: Date.now().toString(),
 
-    // Logic Configuration
+    // logic configuration
     automaticGenerationEnabled:
       document.getElementById("input-auto_gen")?.checked,
     seed: parseInt(document.getElementById("input-seed")?.value),
     tickTime: 1000,
 
-    // Parameters
+    // parameters
     inboundRate: parseInt(document.getElementById("input-inbound_rate").value),
     outboundRate: parseInt(
       document.getElementById("input-outbound_rate").value,
@@ -249,7 +321,7 @@ function startSimulation() {
     maxWaitTime: parseInt(document.getElementById("input-max_delay").value), // maybe could allow for indefinite wait time
     duration: parseInt(document.getElementById("input-sim_duration").value),
 
-    // Random-event multipliers (backend applies baseline probabilities)
+    // random-event multipliers
     mechanicalFailureMultiplier: parseFloat(
       document.getElementById("input-mech_failure_rate")?.value,
     ),
@@ -266,16 +338,18 @@ function startSimulation() {
       document.getElementById("input-equip_failure_rate")?.value,
     ),
 
-    // Force to uppercase to match the Java Enum perfectly!
+    // force to uppercase to match the java enums
     simulationMode: document
       .getElementById("simulation-mode")
       .value.toUpperCase(),
   };
 
+  // save to session storage so it can be restored if the user aborts
   sessionStorage.setItem("draftConfig", JSON.stringify(payload));
 
-  console.log("Sending Payload:", payload); // Debug check
+  //console.log("Sending Payload:", payload); // Debug check
 
+  // validate configuration via api
   fetch("/api/configuration/validate", {
     method: "POST",
     headers: {
@@ -294,8 +368,8 @@ function startSimulation() {
       return response.text();
     })
     .then((data) => {
-      console.log("Configuration validated:", data);
-      // Now start the simulation
+      //console.log("Configuration validated:", data);
+      // if valid, initialize the simulation
       return fetch("/api/simulation/initialise", {
         method: "POST",
         headers: {
@@ -315,8 +389,8 @@ function startSimulation() {
       return response.text();
     })
     .then((data) => {
-      console.log("Simulation initialised:", data);
-      // Redirect to progress page
+      // console.log("Simulation initialised:", data);
+      // redirect to the correct progress view
       const simMode = payload.simulationMode;
 
       if (simMode == "QUICK_SIM") {
@@ -332,7 +406,7 @@ function startSimulation() {
 }
 
 function generateRandomSeed() {
-  // Generates a random number
+  // generates a random number
   const randomSeed = Math.floor(Math.random() * 10000000);
   document.getElementById("input-seed").value = randomSeed;
 }
@@ -342,7 +416,12 @@ generateInputs();
 initialiseHelpBubbles();
 setupRateToggle();
 
-// EVENTS STUFF - SPRINT 2
+// EVENTS - SPRINT 2
+/**
+ * Defines the available event sub-types based on the primary category (Runway vs Aircraft).
+ * Used to dynamically populate the event name dropdown.
+ * @type {Object<string, string[]>}
+ */
 const eventOptions = {
   Runway: [
     "No Change",
@@ -354,7 +433,16 @@ const eventOptions = {
   Aircraft: ["Mechanical Failure", "Passenger Health"],
 };
 
-// 2. The Event Builder (No Duration gathered or saved)
+/**
+ * Array holding all user-scheduled events before they are sent to the backend.
+ * @type {Array<Object>}
+ */
+let scheduledEventsData = [];
+
+/**
+ * Validates form inputs, checks for time overlaps, and adds a new custom event
+ * to the scheduledEventsData array and the UI list.
+ */
 function addEvent() {
   const typeSelect = document.getElementById("new-event-type");
   const nameSelect = document.getElementById("new-event-name");
@@ -375,7 +463,7 @@ function addEvent() {
   const simLimit =
     simInput && simInput.value !== "" ? parseInt(simInput.value) : 999999;
 
-  // --- 1. TIME VALIDATION ---
+  // validate the start time input
   if (isNaN(startTime) || startTime < 0) {
     alert("Please enter a valid start time (0 or greater).");
     timeInput.focus();
@@ -396,16 +484,15 @@ function addEvent() {
       ? modeSelect.options[modeSelect.selectedIndex].text
       : "";
 
-  // --- 2. DURATION VALIDATION ---
+  // validate the duration input based on event type
   let eventDuration;
   if (eventType === "Aircraft") {
-    eventDuration = -1; // Aircraft events never have a duration
+    eventDuration = -1; // aircraft events automatically indefinite duration
   } else {
-    // If left blank, send -1 (Indefinite)
-    eventDuration =
-      durationInput.value === "" ? -1 : parseInt(durationInput.value);
+    // default to -1 (indefinite) if left blank
+    eventDuration = durationInput.value === "" ? -1 : parseInt(durationInput.value);
 
-    // Prevent 0 or negative typed durations
+    // prevent zero or negative typed durations
     if (eventDuration !== -1 && eventDuration <= 0) {
       alert(
         "Duration must be at least 1 minute, or left blank for Indefinite.",
@@ -414,18 +501,20 @@ function addEvent() {
       return;
     }
 
+    // limits duration to max simulation duration - logical fix
     if (eventDuration !== -1 && eventDuration > 1440) {
       alert("Duration cannot exceed 1440 minutes.");
       durationInput.focus();
       return;
     }
   }
+  // check for overlapping runway events
   if (eventType === "Runway") {
     const newStart = startTime;
     const newEnd = eventDuration === -1 ? Infinity : startTime + eventDuration;
 
     const hasOverlap = scheduledEventsData.some((ev) => {
-      // We only care about events on the EXACT SAME runway
+      // only check for overlaps on the exact same runway
       if (ev.type !== "Runway" || ev.locationId !== eventLocId) return false;
 
       const existingStart = parseInt(ev.time);
@@ -434,7 +523,7 @@ function addEvent() {
           ? Infinity
           : existingStart + parseInt(ev.duration);
 
-      // The absolute mathematical rule for overlapping time ranges:
+      // check if the time ranges intersect
       return newStart < existingEnd && existingStart < newEnd;
     });
 
@@ -442,13 +531,13 @@ function addEvent() {
       alert(
         `Error: This event overlaps with an existing event on ${eventLocText}.`,
       );
-      return; // HALT!
+      return;
     }
   }
 
   const uniqueId = Date.now();
 
-  // Data array gets the Enum for the DTO
+  // push the validated event to the tracking array
   scheduledEventsData.push({
     id: uniqueId,
     type: eventType,
@@ -462,23 +551,20 @@ function addEvent() {
 
   if (emptyMsg) emptyMsg.remove();
 
+  // construct the ui row for the new event
   const row = document.createElement("div");
   row.className =
     "d-flex align-items-center justify-content-between small mb-2 pb-2 border-bottom pe-1";
   row.setAttribute("data-id", uniqueId.toString());
 
-  // --- 3. FORMATTING FOR UI ---
-  // Calculate End Display
-  let durationDisplay =
-    eventDuration === -1 ? "∞" : `${startTime + eventDuration}m`;
+  // calculate how the duration should be displayed
+  let durationDisplay = eventDuration === -1 ? "∞" : `${startTime + eventDuration}m`;
 
-  // Always show badge, default to "No Change"
+  // apply visual badges for runway modes
   let modeBadge =
-    eventType === "Runway"
-      ? `<span class="badge bg-info text-dark ms-1">${eventModeLabel || "No Change"}</span>`
-      : "";
+    eventType === "Runway" ? `<span class="badge bg-info text-dark ms-1">${eventModeLabel || "No Change"}</span>` : "";
 
-  // Shorten Labels
+  // shorten labels to fit
   let shortLabel = displayLabel
     .replace("Equipment Failure", "Equip. Failure")
     .replace("Runway Inspection", "Inspection");
@@ -501,6 +587,7 @@ function addEvent() {
   list.appendChild(row);
   list.scrollTop = list.scrollHeight;
 
+  // reset form inputs after successful submission
   timeInput.value = "";
   durationInput.value = "";
   modeSelect.value = "null";
@@ -509,15 +596,18 @@ function addEvent() {
   modeSelect.disabled = false;
 }
 
-let scheduledEventsData = [];
 
+/**
+ * Removes a scheduled event from both the tracking array and the UI.
+ * @param {number} idToDelete - The unique timestamp ID of the event.
+ */
 function deleteEvent(idToDelete) {
   // keep everything that does not match the ID
   scheduledEventsData = scheduledEventsData.filter(
     (item) => item.id !== idToDelete,
   );
 
-  console.log("Deleted. Remaining Data:", scheduledEventsData);
+  //console.log("Deleted. Remaining Data:", scheduledEventsData);
 
   // find the row by its data-id attribute
   const rowToRemove = document.querySelector(`div[data-id="${idToDelete}"]`);
@@ -538,6 +628,11 @@ function deleteEvent(idToDelete) {
   }
 }
 
+/**
+ * Maps frontend runway status strings to backend Java enums.
+ * @param {string} statusVal - The raw string from the UI.
+ * @returns {string} The formatted enum string.
+ */
 function statusToEnum(statusVal) {
   const mapping = {
     available: "AVAILABLE",
@@ -548,7 +643,11 @@ function statusToEnum(statusVal) {
   return mapping[statusVal.toLowerCase()] || "AVAILABLE";
 }
 
-// Helper function to convert mode dropdown value to enum
+/**
+ * Maps frontend runway mode strings to backend Java enums.
+ * @param {string} modeVal - The raw string from the UI.
+ * @returns {string} The formatted enum string.
+ */
 function modeToEnum(modeVal) {
   const mapping = {
     mixed: "MIXED",
@@ -558,8 +657,10 @@ function modeToEnum(modeVal) {
   return mapping[modeVal.toLowerCase()] || "MIXED";
 }
 
-// HELPER FUNCTION: Turns our frontend UI array into perfect Java Maps
-// Lookup maps at the top level (outside any function, near statusToEnum/modeToEnum)
+/**
+ * Lookup map for converting backend status enums back to frontend HTML values.
+ * @type {Object<string, string>}
+ */
 const backendToStatusHTML = {
   AVAILABLE: "available",
   SNOW_CLEARANCE: "snowclearance",
@@ -567,11 +668,22 @@ const backendToStatusHTML = {
   EQUIPMENT_FAILURE: "failure",
 };
 
+/**
+ * Lookup map for converting backend mode enums back to frontend HTML values.
+ * @type {Object<string, string>}
+ */
 const backendToModeHTML = {
   MIXED: "mixed",
   LANDING: "landing",
   TAKEOFF: "takeoff",
 };
+
+/**
+ * Processes the raw frontend event data into the strict map structure required by the Java backend.
+ * Separates events into runway and aircraft categories, keyed by their execution tick.
+ * @param {Array<Object>} frontendEvents - The array of scheduled events.
+ * @returns {Object} An object containing the formatted `runways` and `aircraft` maps.
+ */
 function formatEventsForBackend(frontendEvents) {
   let runwayMap = {};
   let aircraftMap = {};
@@ -592,6 +704,7 @@ function formatEventsForBackend(frontendEvents) {
         status = "EQUIPMENT_FAILURE"; // UPDATED TO MATCH MAIN
       }
 
+      // initialise the array for this tick if it doesn't exist
       if (!runwayMap[tickTime]) runwayMap[tickTime] = [];
 
       runwayMap[tickTime].push({
@@ -607,6 +720,7 @@ function formatEventsForBackend(frontendEvents) {
       if (ev.name === "Mechanical Failure") status = "MECHANICAL";
       else if (ev.name === "Passenger Health") status = "PASSENGER";
 
+      // initialise the array for this tick if it doesn't exist
       if (!aircraftMap[tickTime]) aircraftMap[tickTime] = [];
       aircraftMap[tickTime].push({
         tick: tickTime,
@@ -619,15 +733,17 @@ function formatEventsForBackend(frontendEvents) {
   return { runways: runwayMap, aircraft: aircraftMap };
 }
 
-// EVENTS STUFF - SPRINT 2
-
+/**
+ * Updates the available options in the event creation form based on the selected event type.
+ * Toggles the visibility of the mode and duration fields (hidden for Aircraft events).
+ */
 function updateEventForm() {
   const typeSelect = document.getElementById("new-event-type");
   const nameSelect = document.getElementById("new-event-name");
   const locSelect = document.getElementById("new-event-loc");
   const selectedType = typeSelect.value;
 
-  // update event names
+  // update event names dropdown
   nameSelect.innerHTML = "";
   eventOptions[selectedType].forEach((eventName) => {
     const option = document.createElement("option");
@@ -636,13 +752,13 @@ function updateEventForm() {
     nameSelect.appendChild(option);
   });
 
-  // update locations
+  // update locations dropdown based on active runways or holding pattern
   locSelect.innerHTML = "";
   if (selectedType === "Runway") {
     const count = parseInt(runwayCounter.innerText);
     for (let i = 1; i <= count; i++) {
       const option = document.createElement("option");
-      option.value = i - 1; // Secret ID for Java (0, 1, 2)
+      option.value = i - 1;
       option.innerText = "Runway " + i;
       locSelect.appendChild(option);
     }
@@ -653,15 +769,17 @@ function updateEventForm() {
     locSelect.appendChild(option);
   }
 
+  // toggle mode container visibility
   const modeContainer = document.getElementById("mode-container");
   if (modeContainer) {
     if (selectedType === "Aircraft") {
-      modeContainer.style.display = "none"; // Hide for Aircraft
+      modeContainer.style.display = "none"; // hide for Aircraft
     } else {
-      modeContainer.style.display = "block"; // Show for Runway
+      modeContainer.style.display = "block"; // show for Runway
     }
   }
 
+  // toggle duration container visibility
   const durationContainer = document.getElementById("duration-container");
   if (durationContainer) {
     if (selectedType === "Aircraft") {
@@ -677,10 +795,10 @@ function updateEventForm() {
   document.getElementById("new-event-mode").value = "null";
 }
 
-// Lock mode if a closure status is selected
-document
-  .getElementById("new-event-name")
-  .addEventListener("change", function () {
+/**
+ * Event listener that locks the runway mode to "No Change" if a closure status is selected.
+ */
+document.getElementById("new-event-name").addEventListener("change", function () {
     const closureStatuses = [
       "Runway Inspection",
       "Snow Clearance",
@@ -688,6 +806,7 @@ document
     ];
     const modeSelect = document.getElementById("new-event-mode");
 
+    // lock the mode dropdown if the runway is being closed
     if (closureStatuses.includes(this.value)) {
       modeSelect.value = "null";
       modeSelect.disabled = true;
@@ -696,10 +815,10 @@ document
     }
   });
 
-// Lock status to "Available" if a mode other than "No Change" is selected
-document
-  .getElementById("new-event-mode")
-  .addEventListener("change", function () {
+/**
+ * Event listener that locks the status to "Available" if a mode other than "No Change" is selected.
+ */
+document.getElementById("new-event-mode").addEventListener("change", function () {
     const nameSelect = document.getElementById("new-event-name");
 
     if (this.value !== "null") {
@@ -710,8 +829,13 @@ document
     }
   });
 
-// 3. The actual LOAD function
+/**
+ * Loads a full configuration object into the UI, updating all inputs,
+ * runway rows, and scheduled events to match the saved data.
+ * @param {Object} data - The configuration data object.
+ */
 function applyConfigToPage(data) {
+  // map json fields to html element ids
   const fieldMapping = {
     "simulation-mode": data.simulationMode,
     "input-inbound_rate": data.inboundRate,
@@ -741,6 +865,7 @@ function applyConfigToPage(data) {
       1.0,
   };
 
+  // update basic inputs
   Object.keys(fieldMapping).forEach((id) => {
     const el = document.getElementById(id);
     const value = fieldMapping[id];
@@ -748,30 +873,29 @@ function applyConfigToPage(data) {
       el.value = value;
     }
   });
-
+  // check the auto generation toggle
   const autoGenCheckbox = document.getElementById("input-auto_gen");
   if (autoGenCheckbox) {
     autoGenCheckbox.checked = data.automaticGenerationEnabled === true;
   }
-
+  // add or remove runways to match the configuration
   const targetRunways = data.runwaySettings ? data.runwaySettings.length : 1;
   while (number > targetRunways) minus1();
   while (number < targetRunways) add1();
-
+  // apply statuses and modes to each runway
   if (data.runwaySettings) {
     data.runwaySettings.forEach((runway, index) => {
       const i = index + 1;
       const statusEl = document.getElementById(`status_${i}`);
       const modeEl = document.getElementById(`mode_${i}`);
 
-      // This is the fixed way!
       if (statusEl)
         statusEl.value = backendToStatusHTML[runway.status] || "available";
       if (modeEl && runway.mode)
         modeEl.value = backendToModeHTML[runway.mode] || "mixed";
     });
   }
-
+  // clear existing events
   scheduledEventsData = [];
 
   const backendToEventName = {
@@ -788,12 +912,10 @@ function applyConfigToPage(data) {
     LANDING: "Landing",
     TAKEOFF: "Take-Off",
   };
-
+  // process scheduled runway events
   if (data.scheduledRunwayEvents) {
-    console.log(
-      "FULL DATA scheduledRunwayEvents:",
-      JSON.stringify(data.scheduledRunwayEvents),
-    );
+    //console.log("FULL DATA scheduledRunwayEvents:", JSON.stringify(data.scheduledRunwayEvents));
+
     Object.keys(data.scheduledRunwayEvents).forEach((tick) => {
       data.scheduledRunwayEvents[tick].forEach((ev) => {
         const rawStatus = ev.status ?? ev.runwayStatus ?? null;
@@ -801,7 +923,7 @@ function applyConfigToPage(data) {
 
         const safeStatus = rawStatus ? rawStatus.toUpperCase() : null;
         const safeMode = rawMode ? rawMode.toUpperCase() : null;
-
+        // push to the frontend tracking array
         scheduledEventsData.push({
           id: Date.now() + Math.floor(Math.random() * 1000),
           type: "Runway",
@@ -819,12 +941,13 @@ function applyConfigToPage(data) {
     });
   }
 
+  // process scheduled aircraft events
   if (data.scheduledAircraftEvents) {
     Object.keys(data.scheduledAircraftEvents).forEach((tick) => {
       data.scheduledAircraftEvents[tick].forEach((ev) => {
         const rawStatus = ev.status || ev.aircraftStatus;
         const safeStatus = rawStatus ? rawStatus.toUpperCase() : null;
-
+        // push to the frontend tracking array
         scheduledEventsData.push({
           id: Date.now() + Math.floor(Math.random() * 1000),
           type: "Aircraft",
@@ -841,10 +964,11 @@ function applyConfigToPage(data) {
       });
     });
   }
-
+  // rebuild the ui list
   rebuildEventListUI();
   document.getElementById("input-auto_gen").dispatchEvent(new Event("change"));
 
+  // hide the load modal
   document.activeElement.blur();
   const modal = bootstrap.Modal.getInstance(
     document.getElementById("loadConfigModal"),
@@ -852,18 +976,22 @@ function applyConfigToPage(data) {
   if (modal) modal.hide();
 }
 
+/**
+ * Fetches a specific configuration template from the backend API and applies it to the page.
+ * @param {string} name - The unique name of the configuration template to load.
+ */
 function loadFullConfig(name) {
-  // API endpoint for fetching a specific configuration
+  // fetch the configuration data
   fetch(`/api/configuration/templates/vieworload/${name}`)
     .then((response) => {
       if (!response.ok) throw new Error("Could not find configuration " + name);
       return response.json();
     })
     .then((fullData) => {
-      // fullData is the full ConfigurationTemplate object
+      // apply the fetched data to the ui
       applyConfigToPage(fullData);
 
-      // Close the modal
+      // close the modal
       const modal = bootstrap.Modal.getInstance(
         document.getElementById("loadConfigModal"),
       );
@@ -872,34 +1000,48 @@ function loadFullConfig(name) {
     .catch((err) => alert(err.message));
 }
 
+/**
+ * Prompts the user to confirm, then clears the current draft configuration
+ * and reloads the page to reset all fields to their defaults.
+ */
 function resetConfig() {
-  if (
-    confirm(
-      "Are you sure you want to reset all configurations to their default values?",
-    )
-  ) {
-    // Destroy the draft so it doesn't try to load it again
+  if (confirm("Are you sure you want to reset all configurations to their default values?")) {
+    // destroy the draft so it doesn't try to load it again
     sessionStorage.removeItem("draftConfig");
-    // Reload the page to reset all HTML elements and JS arrays instantly
+    // reload the page to reset all html elements and js arrays
     window.location.reload();
   }
 }
 
+/**
+ * The field used for sorting configuration summaries.
+ * @type {string|null}
+ */
 let configSortField = null;
+/**
+ * Boolean representing if the current sort order is ascending.
+ * @type {boolean}
+ */
 let configSortAsc = true;
 
+/**
+ * Generates the HTML table rows for the saved configuration summaries in the load modal.
+ * @param {Array<Object>} summaries - The array of configuration summary objects.
+ */
 function renderConfigRows(summaries) {
   const list = document.getElementById("saved-configs-list");
   const emptyMsg = document.getElementById("empty-configs-msg");
 
+  // clear existing rows
   list.querySelectorAll("tr.config-row").forEach((row) => row.remove());
-
+  // show empty message if no data exists
   if (!summaries || summaries.length === 0) {
     emptyMsg.style.display = "";
     return;
   }
   emptyMsg.style.display = "none";
 
+  // build a row for each summary
   summaries.forEach((summary) => {
     const row = document.createElement("tr");
     row.className = "config-row";
@@ -919,6 +1061,7 @@ function renderConfigRows(summaries) {
             </div>
         </td>
         `;
+    // add event listeners
     row.querySelector(".load-btn").onclick = function () {
       loadFullConfig(summary.templateName);
     };
@@ -933,6 +1076,13 @@ function renderConfigRows(summaries) {
   });
 }
 
+/**
+ * Sorts the configuration summaries array based on the specified field and direction.
+ * @param {Array<Object>} summaries - The array to sort.
+ * @param {string} field - The field to sort by ("name" or "date").
+ * @param {boolean} asc - True for ascending, false for descending.
+ * @returns {Array<Object>} The newly sorted array.
+ */
 function sortConfigs(summaries, field, asc) {
   return [...summaries].sort((a, b) => {
     let valA =
@@ -945,6 +1095,10 @@ function sortConfigs(summaries, field, asc) {
   });
 }
 
+/**
+ * Updates the sort indicators (arrows) in the table headers.
+ * @param {string} field - The currently active sort field.
+ */
 function updateSortHeaders(field) {
   document.querySelectorAll(".sort-btn").forEach((btn) => {
     const btnField = btn.getAttribute("data-field");
@@ -956,18 +1110,28 @@ function updateSortHeaders(field) {
   });
 }
 
+/**
+ * Caches the currently loaded configuration summaries to allow for local sorting.
+ * @type {Array<Object>}
+ */
 let currentSummaries = [];
 
+/**
+ * Fetches all saved configuration summaries from the backend and opens the load modal.
+ */
 function openLoadConfigModal() {
+  // reset sorting state
   configSortField = null;
   configSortAsc = true;
 
+  // fetch summaries from the api
   fetch("/api/configuration/templates/summaries")
     .then((response) => response.json())
     .then((summaries) => {
+      // store and render the fetched summaries
       currentSummaries = summaries || [];
       renderConfigRows(currentSummaries);
-
+      // setup sorting buttons
       document.querySelectorAll(".sort-btn").forEach((btn) => {
         btn.innerText = "↑↓";
         btn.onclick = function () {
@@ -987,21 +1151,29 @@ function openLoadConfigModal() {
       console.error("Failed to load summaries:", err);
       document.getElementById("empty-configs-msg").style.display = "";
     });
-
+  // show the modal
   bootstrap.Modal.getOrCreateInstance(
     document.getElementById("loadConfigModal"),
   ).show();
 }
 
+/**
+ * Rebuilds the scheduled events UI list, applying visual warnings for invalid events.
+ * Flags "ghost" events (assigned to runways that no longer exist) and "late" events
+ * (scheduled after the simulation duration ends).
+ */
 function rebuildEventListUI() {
   const list = document.getElementById("scheduled-events-list");
+  // get the current runway count to check for ghost events
   const currentRunwayCount = parseInt(
     document.getElementById("runway-counter").innerText,
   );
   if (!list) return;
 
+  // clear the existing events list
   list.innerHTML = "";
 
+  // show empty message if no events exist
   if (scheduledEventsData.length === 0) {
     const emptyMsg = document.createElement("div");
     emptyMsg.id = "empty-list-msg";
@@ -1011,11 +1183,15 @@ function rebuildEventListUI() {
     return;
   }
 
+  // iterate through scheduled events to build the ui
   scheduledEventsData.forEach((ev) => {
-    const isGhost =
-      ev.type === "Runway" && parseInt(ev.locationId) >= currentRunwayCount;
+    // check if the event is assigned to a removed runway
+    const isGhost = ev.type === "Runway" && parseInt(ev.locationId) >= currentRunwayCount;
+
+    // check if the event is scheduled after simulation duration
     const isLate = !isGhost && invalidEventIds.has(ev.id);
 
+    // construct the html row with appropriate warning classes
     const row = document.createElement("div");
     row.className = `d-flex align-items-center justify-content-between small mb-2 pb-2 border-bottom ${isGhost ? "ghost-event" : ""} ${isLate ? "late-event" : ""}`;
     row.setAttribute("data-id", ev.id.toString());
@@ -1063,30 +1239,31 @@ function rebuildEventListUI() {
   });
 }
 
-// initial run
+/**
+ * Initialises page state when the DOM is fully loaded.
+ * Restores draft configurations, sets up input blockers, and attaches dynamic UI listeners.
+ */
 document.addEventListener("DOMContentLoaded", () => {
-  // Setup the drop downs
+  // setup the drop downs
   updateEventForm();
 
-  // Check if there was a saved draft from local storage (only created when the user starts the simulation)
+  // check if there was a saved draft from local storage
   const savedDraft = sessionStorage.getItem("draftConfig");
-  // Check if the user just aborted from a simulation
+  // check if the user just aborted from a simulation
   const wasAborted = sessionStorage.getItem("wasAborted");
 
-  // Restore their previous configuration only if they've just come after stopping the simulation
+  // restore their previous configuration only if they've just come after stopping the simulation
   if (savedDraft && wasAborted === "true") {
     try {
       const draftData = JSON.parse(savedDraft);
       applyConfigToPage(draftData);
-      console.log(
-        "Restored previous configuration because simulation was aborted.",
-      );
+      //console.log("Restored previous configuration because simulation was aborted.",);
     } catch (e) {
       console.error("Failed to restore draft config", e);
     }
   }
 
-  // Set placeholder and block invalid characters for Event Inputs
+  // set placeholder and block invalid characters for event inputs
   const timeInput = document.getElementById("new-event-time");
   const durationInput = document.getElementById("new-event-duration");
 
@@ -1096,6 +1273,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   [timeInput, durationInput].forEach((input) => {
     if (input) {
+      // block non digit symbols
       input.addEventListener("keydown", function (e) {
         if (["e", "E", "+", "-"].includes(e.key)) {
           e.preventDefault();
@@ -1104,7 +1282,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // NEW: Lock 'Mode' if the Runway is closed
+  // lock 'mode' if the runway is closed
   const nameSelect = document.getElementById("new-event-name");
   const modeSelect = document.getElementById("new-event-mode");
 
@@ -1115,27 +1293,45 @@ document.addEventListener("DOMContentLoaded", () => {
           this.value,
         )
       ) {
-        modeSelect.value = "null"; // Force to "No Change"
-        modeSelect.disabled = true; // Lock the dropdown
+        modeSelect.value = "null"; // force to "no change"
+        modeSelect.disabled = true; // lock the dropdown
       } else {
-        modeSelect.disabled = false; // Unlock it for Available/No Change
+        modeSelect.disabled = false; // Unlock it for available/no change
       }
     });
   }
-
+  // clear the abort flag so it doesn't loop
   sessionStorage.removeItem("wasAborted");
 });
 
-// Attach the logic to the button inside the modal
+/**
+ * Safely parses a value into a base-10 integer.
+ * Returns a specified default value if the parsed result is not a valid number.
+ * @param {string|number} value - The value to parse.
+ * @param {number} defaultValue - The fallback value to return if parsing fails.
+ * @returns {number} The parsed integer or the default value.
+ */
+function parseIntOrDefault(value, defaultValue) {
+  // attempt to parse the value as a base-10 integer
+  const parsed = parseInt(value, 10);
+  // return the fallback if it's not a number, otherwise return the parsed integer
+  return Number.isNaN(parsed) ? defaultValue : parsed;
+}
 
+/**
+ * Gathers all current configuration inputs, formats them into a JSON payload,
+ * and sends a POST request to save the template to the backend database.
+ */
 function saveConfiguration() {
-  // HALT if validation fails!
+  // Stop if validation fails
   if (!validateInputs()) return;
 
+  // get the configuration name
   const nameInput = document.getElementById("new-config-name");
   const configName = nameInput ? nameInput.value.trim() : "";
   if (!configName) return alert("Please enter a name");
 
+  // gather runway settings
   const runwayCount =
     parseInt(document.getElementById("runway-counter").innerText) || 1;
   const runwaySettings = [];
@@ -1149,16 +1345,14 @@ function saveConfiguration() {
     });
   }
 
+  // format scheduled events
   const backendEvents = formatEventsForBackend(scheduledEventsData);
 
-  function parseIntOrDefault(value, defaultValue) {
-    const parsed = parseInt(value, 10);
-    return Number.isNaN(parsed) ? defaultValue : parsed;
-  }
-
+  // parse the seed value
   const seedRaw = document.getElementById("input-seed")?.value;
   const seed = seedRaw !== "" && seedRaw != null ? parseInt(seedRaw) : 0;
 
+  // compile the final payload
   const payload = {
     templateName: configName,
     runwaySettings: runwaySettings,
@@ -1202,8 +1396,8 @@ function saveConfiguration() {
     scheduledAircraftEvents: backendEvents.aircraft || {},
   };
 
-  // Shows exact payload in console before sending - remove once working
-  console.log("Save payload:", JSON.stringify(payload, null, 2));
+  // shows exact payload in console before sending - remove once working
+  //console.log("Save payload:", JSON.stringify(payload, null, 2));
 
   fetch("/api/configuration/save", {
     method: "POST",
@@ -1229,34 +1423,40 @@ function saveConfiguration() {
 }
 
 // VALIDATION
-
+/**
+ * Validates all numerical inputs against their min/max constraints and checks
+ * scheduled events for invalid runway assignments or out-of-bounds times.
+ * @returns {boolean} True if all inputs are valid, false otherwise.
+ */
 function validateInputs() {
   const inputs = document.querySelectorAll(".field-input");
   let isValid = true;
   let errorMessages = [];
   let firstInvalidInput = null;
 
-  // --- Part 1: Box Validation ---
+  // validate input boxes
   for (let input of inputs) {
     const val = parseFloat(input.value);
     const min = parseFloat(input.min);
     const max = parseFloat(input.max);
+    // check if the value is empty, non-numeric, or out of bounds
     if (input.value === "" || isNaN(val) || val < min || val > max) {
-      input.style.border = "2px solid red";
+      input.style.border = "2px solid red"; // highlight invalid box
       isValid = false;
       if (!firstInvalidInput) firstInvalidInput = input;
     } else {
-      input.style.border = "";
+      input.style.border = ""; // remove highlight if valid
     }
   }
+  // add error message for input box validation failures
   if (!isValid) {
     errorMessages.push(
       "Please fix the highlighted fields. Ensure numbers are within specified ranges.",
     );
   }
 
-  // --- Part 2 & 3: Flag bad events ---
-  invalidEventIds.clear();
+  // flagging invalid events
+  invalidEventIds.clear(); // reset invalid events tracker
   const currentRunwayCount = parseInt(
     document.getElementById("runway-counter").innerText,
   );
@@ -1269,6 +1469,7 @@ function validateInputs() {
   let hasGhost = false;
   let hasLate = false;
 
+  // flag ghost and late events
   scheduledEventsData.forEach((ev) => {
     const isGhost =
       ev.type === "Runway" && parseInt(ev.locationId) >= currentRunwayCount;
@@ -1278,6 +1479,7 @@ function validateInputs() {
     if (isLate) hasLate = true;
   });
 
+  // add error messages
   if (hasGhost) {
     errorMessages.push(
       "You have events scheduled for runways that no longer exist. Please adjust the runway count or delete those events.",
@@ -1291,9 +1493,10 @@ function validateInputs() {
     isValid = false;
   }
 
+  // rebuild the ui list to show the event warnings
   rebuildEventListUI();
 
-  // --- Part 4: Single Alert ---
+  // display a single comprehensive alert to the user
   if (!isValid) {
     if (firstInvalidInput) firstInvalidInput.focus();
     alert(errorMessages.join("\n\n"));
@@ -1303,4 +1506,5 @@ function validateInputs() {
   return true;
 }
 
+// attach the save logic to the confirm button
 document.getElementById("confirm-save-btn").onclick = saveConfiguration;

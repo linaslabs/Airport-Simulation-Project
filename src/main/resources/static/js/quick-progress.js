@@ -1,6 +1,10 @@
 let stompClient = null;
 let startTime;
 
+/**
+ * Updates the UI progress bar, percentage text, and elapsed time counter.
+ * @param {number} progressDecimal - The current simulation progress as a decimal (e.g., 0.5 for 50%).
+ */
 function updateProgress(progressDecimal) {
     const progressPercentage = progressDecimal * 100;
 
@@ -18,6 +22,10 @@ function updateProgress(progressDecimal) {
     if (timeText) timeText.textContent = elapsed + 's';
 }
 
+/**
+ * Initialises the WebSocket connection using SockJS and STOMP.
+ * Subscribes to the simulation snapshot and completion streams, then triggers the backend to start.
+ */
 function connectWebSocket() {
     startTime = Date.now();
 
@@ -29,14 +37,14 @@ function connectWebSocket() {
     stompClient.debug = null;
 
     stompClient.connect({}, function (frame) {
-        console.log('Connected to WebSocket: ' + frame);
+        //console.log('Connected to WebSocket: ' + frame);
 
         // Subscribe to snapshot stream
         const snapshotSubscription = stompClient.subscribe('/simulation/snapshot', function (message) {
             // Parse the body into a JS object
             const snapshotData = JSON.parse(message.body);
 
-            console.log("Received Snapshot Data:", snapshotData);
+            //console.log("Received Snapshot Data:", snapshotData);
 
             // Extract the progress and update the UI
             updateProgress(snapshotData.progressPercent);
@@ -50,7 +58,7 @@ function connectWebSocket() {
 
         // Subscribe to the complete stream so we know when the simulation finishes
         const completeSubscription = stompClient.subscribe('/simulation/complete', function () {
-            console.log('Simulation complete. Redirecting to results...');
+            //console.log('Simulation complete. Redirecting to results...');
 
             // Simulation 100 percent completion
             updateProgress(1.0);
@@ -80,6 +88,9 @@ function connectWebSocket() {
     });
 }
 
+/**
+ * Event listener that initiates the WebSocket connection as soon as the DOM is ready.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
 });

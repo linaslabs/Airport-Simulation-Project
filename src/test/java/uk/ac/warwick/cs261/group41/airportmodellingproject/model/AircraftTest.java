@@ -17,6 +17,12 @@ class AircraftTest {
 
     /**
      * Helper to build an ARRIVAL aircraft with the given fuel and entry/scheduled ticks.
+     *
+     * @param callsign      the aircraft callsign
+     * @param fuel          the initial fuel level
+     * @param scheduledTick the tick the aircraft was scheduled to arrive
+     * @param entryTick     the tick the aircraft entered the system
+     * @return a new ARRIVAL Aircraft
      */
     private static Aircraft arrival(String callsign, double fuel, int scheduledTick, int entryTick) {
         return new Aircraft(callsign, "OP", "SRC", "DST", fuel, scheduledTick, entryTick, FlightType.ARRIVAL);
@@ -24,6 +30,12 @@ class AircraftTest {
 
     /**
      * Helper to build a DEPARTURE aircraft with the given fuel and entry/scheduled ticks.
+     *
+     * @param callsign      the aircraft callsign
+     * @param fuel          the initial fuel level
+     * @param scheduledTick the tick the aircraft was scheduled to depart
+     * @param entryTick     the tick the aircraft entered the system
+     * @return a new DEPARTURE Aircraft
      */
     private static Aircraft departure(String callsign, double fuel, int scheduledTick, int entryTick) {
         return new Aircraft(callsign, "OP", "SRC", "DST", fuel, scheduledTick, entryTick, FlightType.DEPARTURE);

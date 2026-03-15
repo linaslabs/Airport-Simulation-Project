@@ -32,19 +32,47 @@ class SimulationConfigValidationTest {
         validator = factory.getValidator();
     }
 
+    /**
+     * Runs Jakarta Bean Validation on the given SimulationConfig.
+     *
+     * @param config the SimulationConfig to validate
+     * @return the set of constraint violations found, or an empty set if the config is valid
+     */
     private static Set<ConstraintViolation<SimulationConfig>> validate(SimulationConfig config) {
         return validator.validate(config);
     }
 
+    /**
+     * Checks whether any of the given violations target the specified property path.
+     *
+     * @param violations the set of violations to search
+     * @param property   the exact property path to look for (e.g. "inboundRate")
+     * @return true if at least one violation matches the property path
+     */
     private static boolean hasViolationOn(Set<? extends ConstraintViolation<?>> violations, String property) {
         return violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals(property));
     }
 
+    /**
+     * Checks whether any violation has a property path that starts with the given prefix,
+     * allowing detection of nested constraint violations (e.g. runwaySettings[0].runwayID).
+     *
+     * @param violations the set of violations to search
+     * @param prefix     the property path prefix to match against
+     * @return true if at least one violation's path starts with the prefix
+     */
     private static boolean hasNestedViolationOn(Set<? extends ConstraintViolation<?>> violations, String prefix) {
         // e.g. "runwaySettings[0].runwayID"
         return violations.stream().anyMatch(v -> v.getPropertyPath().toString().startsWith(prefix));
     }
 
+    /**
+     * Concatenates the violation messages for all violations targeting the specified property.
+     *
+     * @param violations the set of violations to filter
+     * @param property   the exact property path to collect messages for
+     * @return a single string of all matching violation messages joined by " | "
+     */
     private static String messagesFor(Set<? extends ConstraintViolation<?>> violations, String property) {
         return violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals(property))
@@ -52,6 +80,11 @@ class SimulationConfigValidationTest {
                 .collect(Collectors.joining(" | "));
     }
 
+    /**
+     * Builds a fully valid SimulationConfig that satisfies all validation constraints.
+     *
+     * @return a SimulationConfig that should produce zero constraint violations
+     */
     private static SimulationConfig validConfig() {
         SimulationConfig config = new SimulationConfig();
 
