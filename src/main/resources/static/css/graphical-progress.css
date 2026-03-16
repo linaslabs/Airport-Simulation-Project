@@ -1,0 +1,502 @@
+/* graphical-progress.html specific styling */
+
+.sim-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 14px;
+    padding: 14px;
+    height: calc(100vh - 62px);
+    background: #f1f5f9;
+}
+
+.sim-left-panel,
+.sim-right-panel {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.sim-left-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.scene-wrapper {
+    flex: 1;
+    min-height: 0;
+    padding: 12px;
+    position: relative;
+}
+
+.sim-scene {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 1px solid #cbd5e1;
+    border-radius: 0;
+    background: linear-gradient(180deg, #edf3fb 0%, #e4edf8 100%);
+}
+
+.scene-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 14px;
+    border-top: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 800;
+}
+
+.scene-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.scene-progress-percentage {
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #0f172a;
+    width: 55px;
+}
+
+.custom-progress-bar {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 14px;
+}
+
+.custom-progress-fill {
+    height: 100%;
+    background-color: #28a745;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+.scene-progress-bar {
+    margin: 0;
+    flex-grow: 1;
+}
+
+.scene-progress-meta {
+    color: #64748b;
+    font-size: 0.95rem;
+    min-width: 180px;
+    text-align: right;
+}
+
+.scene-progress-meta strong {
+    color: #0f172a;
+}
+
+.scene-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.scene-controls.control-panel {
+    justify-content: center;
+    width: 100%;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    gap: 10px;
+    background: transparent !important;
+    border-top: none;
+    flex-shrink: 0;
+}
+
+.btn-control {
+    min-width: 140px;
+    padding: 12px 20px;
+    font-size: 15px;
+}
+
+.btn-speed {
+    min-width: 60px;
+    padding: 12px 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.btn-speed.speed-active {
+    background: #0f172a;
+    color: #ffffff;
+    border: 1px solid #0f172a;
+}
+
+.btn-speed:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.control-divider {
+    width: 2px;
+    height: 30px;
+    background: #cbd5e1;
+    margin: 0 10px;
+}
+
+.speed-label {
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.scene-big-number {
+    font-size: 72px;
+    font-weight: 900;
+    fill: #0f172a;
+}
+
+.scene-holding-value {
+    font-size: 88px;
+    font-weight: 900;
+    fill: #020617;
+}
+
+.scene-holding-line {
+    font-size: 16px;
+    font-weight: 500;
+    fill: #1e293b;
+}
+
+.scene-sub-label {
+    font-size: 16px;
+    fill: #243447;
+}
+
+.runway-frame {
+    fill: #4b5b74;
+    stroke: #334155;
+    stroke-width: 1.5;
+}
+
+.runway-header-bar {
+    fill: #41506a;
+}
+
+.runway-title {
+    font-size: 16px;
+    font-weight: 900;
+    fill: #f8fafc;
+    letter-spacing: 0.2px;
+}
+
+.scene-queue-count {
+    font-size: 36px;
+    font-weight: 900;
+    fill: #0f172a;
+    dominant-baseline: middle;
+}
+
+.scene-queue-caption {
+    font-size: 15px;
+    font-weight: 800;
+    fill: #1e293b;
+    dominant-baseline: middle;
+}
+
+.scene-runway-count {
+    font-size: 18px;
+    font-weight: 900;
+    fill: #0f172a;
+}
+
+.runway-block {
+    fill: #52617b;
+}
+
+.runway-separator {
+    fill: #334155;
+}
+
+.takeoff-lane {
+    fill: #41506a;
+    stroke: #334155;
+    stroke-width: 1;
+}
+
+.runway-slot {
+    fill: #e9eef5;
+    stroke: rgba(148, 163, 184, 0.55);
+    stroke-width: 1;
+    opacity: 0.99;
+}
+
+.runway-slot-label {
+    font-size: 15px;
+    font-weight: 900;
+    fill: #475569;
+}
+
+.plane-chip {
+    font-size: 24px;
+    font-weight: 900;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    cursor: pointer;
+    transition: x 0.25s linear, y 0.25s linear;
+}
+
+.plane-info-card {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 280px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    box-shadow: none;
+    z-index: 20;
+}
+
+.plane-info-card.is-hidden {
+    display: none;
+}
+
+.plane-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #cbd5e1;
+    background: #f8fafc;
+}
+
+.plane-info-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.plane-info-close {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    width: 26px;
+    height: 26px;
+    line-height: 1;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.plane-info-close:hover {
+    background: #e8f0fb;
+}
+
+.plane-info-body {
+    margin: 0;
+    padding: 10px 12px 12px;
+    list-style: none;
+}
+
+.plane-info-body li {
+    padding: 4px 0;
+    border-bottom: 1px dashed #e5ecf5;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.plane-info-body li:last-child {
+    border-bottom: none;
+}
+
+.runway-plane {
+    fill: #ffffff;
+}
+
+.holding-legend-title {
+    font-size: 10px;
+    font-weight: 700;
+    fill: #1e293b;
+}
+
+.holding-legend-tick {
+    font-size: 8px;
+    font-weight: 700;
+    fill: #334155;
+}
+
+.holding-plane-normal {
+    fill: #f59e0b;
+}
+
+.holding-plane-priority {
+    fill: #ef4444;
+}
+
+.holding-plane-mayday {
+    fill: #dc2626;
+}
+
+.holding-plane-pan {
+    fill: #f97316;
+}
+
+.takeoff-plane {
+    fill: #f8fafc;
+    font-size: 18px;
+}
+
+.holding-plane-altitude {
+    stroke: rgba(15, 23, 42, 0.2);
+    stroke-width: 0.5;
+}
+
+.sim-right-panel {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+}
+
+.stats-box,
+.table-box {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 0;
+    min-height: 0;
+    box-shadow: none;
+}
+
+.table-box {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.stats-title,
+.table-title {
+    padding: 10px 12px;
+    border-bottom: 1px solid #cbd5e1;
+    font-weight: 900;
+    color: #1e293b;
+    background: #f8fafc;
+}
+
+.stats-grid {
+    padding: 8px 12px;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px dashed #e5ecf5;
+    color: #334155;
+    font-size: 13px;
+}
+
+.metric-row:last-child {
+    border-bottom: none;
+}
+
+.metric-row strong {
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.table-scroll {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    overflow: auto;
+}
+
+.live-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.live-table th,
+.live-table td {
+    padding: 7px 9px;
+    border-bottom: 1px solid #e5ecf5;
+    text-align: left;
+    color: #334155;
+}
+
+.live-table th {
+    background: #f1f5f9;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.live-table tbody tr:nth-child(even) {
+    background: #fbfdff;
+}
+
+.table-empty {
+    text-align: center;
+    color: #94a3b8;
+}
+
+.table-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
+    border-radius: 6px;
+    border: 2px solid #f8fafc;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (max-width: 1280px) {
+    .sim-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: calc(100vh - 62px);
+    }
+
+    .sim-left-panel {
+        min-height: 560px;
+    }
+
+    .sim-right-panel {
+        grid-template-rows: auto auto auto auto;
+    }
+
+    .table-scroll {
+        max-height: 240px;
+    }
+
+    .scene-footer {
+        align-items: stretch;
+    }
+
+    .scene-progress-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .scene-progress-percentage,
+    .scene-progress-meta {
+        width: auto;
+        text-align: left;
+    }
+
+    .scene-controls {
+        flex-wrap: wrap;
+    }
+}

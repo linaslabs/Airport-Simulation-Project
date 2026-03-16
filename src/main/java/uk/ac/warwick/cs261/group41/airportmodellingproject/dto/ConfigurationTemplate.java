@@ -14,15 +14,26 @@ import java.util.Date;
  */
 public class ConfigurationTemplate extends SimulationConfig {
 
+    /** The name of the configuration template */
     @NotBlank(message = "Template name is required.")
     private String templateName;
 
+    /** The date when the template was created */
     private Date dateCreated;
 
-    // Default constructor required for Jackson to turn the JSON into this object.
+    /**
+     * Default constructor required for Jackson deserialization.
+     */
     public ConfigurationTemplate() { super(); }
 
-    // Constructor used to create a ConfigurationTemplate from an existing SimulationConfig object, used for testing.
+    /**
+     * Constructs a ConfigurationTemplate from an existing SimulationConfig.
+     * Used for testing and programmatic template creation.
+     *
+     * @param templateName the name for this template
+     * @param dateCreated the creation date
+     * @param config the simulation configuration to copy
+     */
     @JsonIgnore
     public ConfigurationTemplate(String templateName, Date dateCreated, SimulationConfig config) {
         // Pass the data up to the parent's parameterised constructor.
@@ -34,11 +45,11 @@ public class ConfigurationTemplate extends SimulationConfig {
                 config.getDuration(),
                 config.getTickTime(),
                 config.getAutomaticGenerationEnabled(),
-                config.getMechanicalFailureRate(),
-                config.getPassengerHealthIssueRate(),
-                config.getRunwayInspectionRate(),
-                config.getSnowClearanceRate(),
-                config.getEquipmentFailureRate(),
+                config.getMechanicalFailureMultiplier(),
+                config.getPassengerHealthIssueMultiplier(),
+                config.getRunwayInspectionMultiplier(),
+                config.getSnowClearanceMultiplier(),
+                config.getEquipmentFailureMultiplier(),
                 config.getSeed(),
                 config.getScheduledRunwayEvents(),
                 config.getScheduledAircraftEvents(),
@@ -48,18 +59,38 @@ public class ConfigurationTemplate extends SimulationConfig {
         this.dateCreated = dateCreated;
     }
 
+    /**
+     * Gets the template name.
+     *
+     * @return the template name
+     */
     public String getTemplateName() {
         return templateName;
     }
 
+    /**
+     * Sets the template name.
+     *
+     * @param templateName the template name
+     */
     public void setTemplateName(String templateName) {
         this.templateName = templateName;
     }
 
+    /**
+     * Gets the creation date.
+     *
+     * @return the date created
+     */
     public Date getDateCreated() {
         return dateCreated;
     }
 
+    /**
+     * Sets the creation date.
+     *
+     * @param dateCreated the date created
+     */
     public void setDateCreated(Date dateCreated) {
         this.dateCreated = dateCreated;
     }

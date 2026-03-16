@@ -18,6 +18,13 @@ import static org.mockito.Mockito.*;
  */
 class RunwayTest {
 
+    /**
+     * Creates a Runway with ID 1 and the given mode and status.
+     *
+     * @param mode   the operating mode for the runway
+     * @param status the initial status for the runway
+     * @return a Runway instance with ID 1
+     */
     private static Runway newRunway(RunwayMode mode, RunwayStatus status) {
         return new Runway(1, mode, status);
     }

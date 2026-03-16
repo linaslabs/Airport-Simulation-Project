@@ -1,6 +1,10 @@
 let stompClient = null;
 let startTime;
 
+/**
+ * Updates the UI progress bar, percentage text, and elapsed time counter.
+ * @param {number} progressDecimal - The current simulation progress as a decimal (e.g., 0.5 for 50%).
+ */
 function updateProgress(progressDecimal) {
     const progressPercentage = progressDecimal * 100;
 
@@ -18,6 +22,10 @@ function updateProgress(progressDecimal) {
     if (timeText) timeText.textContent = elapsed + 's';
 }
 
+/**
+ * Initialises the WebSocket connection using SockJS and STOMP.
+ * Subscribes to the simulation snapshot and completion streams, then triggers the backend to start.
+ */
 function connectWebSocket() {
     startTime = Date.now();
 
@@ -29,51 +37,60 @@ function connectWebSocket() {
     stompClient.debug = null;
 
     stompClient.connect({}, function (frame) {
-        console.log('Connected to WebSocket: ' + frame);
+        //console.log('Connected to WebSocket: ' + frame);
 
         // Subscribe to snapshot stream
         const snapshotSubscription = stompClient.subscribe('/simulation/snapshot', function (message) {
             // Parse the body into a JS object
             const snapshotData = JSON.parse(message.body);
 
-            console.log("Received Snapshot Data:", snapshotData);
+            //console.log("Received Snapshot Data:", snapshotData);
 
             // Extract the progress and update the UI
             updateProgress(snapshotData.progressPercent);
 
             // Update the current tick count display, if present
             const tickCountElement = document.getElementById('tickCount');
-            if (tickCountElement && typeof snapshotData.currentTick !== 'undefined') {
+            if (tickCountElement && typeof snapshotData.currentTick !== null) {
                 tickCountElement.textContent = snapshotData.currentTick.toString();
             }
-
-            // snapshotData.holdingAircraft and snapshotData.runways can be used here to draw out the real-time simulation
-            // ...
         });
 
         // Subscribe to the complete stream so we know when the simulation finishes
         const completeSubscription = stompClient.subscribe('/simulation/complete', function () {
-            console.log('Simulation complete. Redirecting to results...');
+            //console.log('Simulation complete. Redirecting to results...');
+
+            // Simulation 100 percent completion
+            updateProgress(1.0);
 
             // Close connection
             if (stompClient !== null) {
                 stompClient.disconnect();
             }
 
-            // Wait 2 secs for the user to see the bar hit 100% (for UI) then redirect
+            // Wait half a second for the user to see the bar hit 100% (for UI) then redirect
             setTimeout(() => {
                 window.location.href = '/results.html';
-            }, 2000);
+            }, 500);
         });
 
-        // Tell the backend when we're ready to start.
-        stompClient.send("/app/simulation/ready", {}, "");
+        // Tell the backend to start the simulation once the frontend has finished subscribing to the websockets.
+        fetch('/api/simulation/start', { method: 'POST' })
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to start simulation: ' + res.status);
+            })
+            .catch( error => {
+                console.error('Error: ', error);
+            });
     }, function(error) {
         console.error('WebSocket Error: ', error);
         // Web socket failure handling can happen here if necessary (maybe fallback to polling?)
     });
 }
 
+/**
+ * Event listener that initiates the WebSocket connection as soon as the DOM is ready.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
 });

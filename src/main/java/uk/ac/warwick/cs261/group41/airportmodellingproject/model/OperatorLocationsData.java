@@ -5,16 +5,25 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 
+/**
+ * Holds destination data for airline operators based on London Heathrow routes.
+ * Maps each operator to their typical destinations, used by AircraftGenerator
+ * to create realistic origin/destination pairs for flights.
+ */
 public class OperatorLocationsData {
 
-    // This data is again based on London Heathrow.
-    // The destinations are derived from a table found here: https://en.wikipedia.org/wiki/Heathrow_Airport
-    // For airlines with <= 5 destinations, only these were selected.
-    // For airlines with > 5 destinations, 5 of these were randomly selected.
+    /** Maps operator name to list of their typical destinations */
     private final Map<String, List<String>> operatorLocations = new HashMap<>();
 
+    /** Random number generator for destination selection */
     private final Random random;
 
+    /**
+     * Constructs OperatorLocationsData with destination data based on London Heathrow routes.
+     * Destinations are derived from actual airline route data.
+     *
+     * @param random the random number generator for destination selection
+     */
     public OperatorLocationsData(Random random) {
         operatorLocations.put("British Airways", List.of("Amsterdam", "Berlin", "Istanbul", "Riyadh", "Valencia"));
         operatorLocations.put("Virgin Atlantic", List.of("Atlanta", "Boston", "Miami", "Las Vegas", "New York-JFK"));
@@ -39,7 +48,13 @@ public class OperatorLocationsData {
         this.random = random;
     }
 
-    // Function to pick a location given an operator, throws an IllegalArgumentException if the operator doesn't exist.
+    /**
+     * Selects a random destination for the specified operator.
+     *
+     * @param operator the operator name
+     * @return a random destination from the operator's route network
+     * @throws IllegalArgumentException if the operator is unknown
+     */
     public String getRandomLocationForOperator(String operator) {
         List<String> locations = operatorLocations.get(operator);
 

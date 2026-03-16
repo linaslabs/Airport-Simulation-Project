@@ -1,25 +1,44 @@
 package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 
 import uk.ac.warwick.cs261.group41.airportmodellingproject.dto.RunwayConfig;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayMode;
-import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.RunwayStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.*;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
 import java.util.*;
 
+/**
+ * Represents the airport in the simulation, managing runways, queues, and aircraft operations.
+ * Coordinates landing and takeoff operations, handles runway assignments, and tracks statistics.
+ * Acts as the central hub connecting the holding pattern, takeoff queue, and runways.
+ */
 public class Airport {
+    /** Name of this airport */
     private final String airportName;
+    
+    /** Statistics tracker for simulation metrics */
     private final Statistics stats;
+    
+    /** Map of runway IDs to Runway objects */
     private final Map<Integer, Runway> runways;
+    
+    /** Queue for arriving aircraft waiting to land */
     private final HoldingPattern holdingPattern;
+    
+    /** Queue for departing aircraft waiting to take off */
     private final TakeOffQueue takeOffQueue;
+    
+    /** Time in ticks that a runway is occupied during landing/takeoff */
     private final int runwayOccupationTime;
 
-    // I don't think we can actually use the AircraftQueue abstraction here becuase the take-off queue and
-    // holding pattern have unique methods and require being constructed differently.
-    // So, we would need objects of each type anyway so there's no point in using the Aircraft queue.
+    /**
+     * Constructs a new Airport with the specified configuration.
+     *
+     * @param airportName name of the airport
+     * @param runways list of runway configurations
+     * @param maxWaitTime maximum wait time before aircraft are cancelled
+     * @param runwayOccupationTime time a runway is occupied per operation
+     * @param stats statistics tracker for the simulation
+     */
     public Airport(String airportName, List<RunwayConfig> runways, int maxWaitTime, int runwayOccupationTime, Statistics stats) {
         this.airportName = airportName; // This isn't actually used, but it might in future, and I feel like it should have this attribute.
         this.stats = stats;
@@ -41,36 +60,36 @@ public class Airport {
         }
     }
 
-    // First part of Airport in performTick cycle is to call acceptInbound and acceptOutbound functions.
-    // These assign inbound/outbound aircraft to the queues.
-
+    /**
+     * Accepts an inbound aircraft and adds it to the holding pattern.
+     * Records the holding pattern size for statistics.
+     *
+     * @param aircraft the arriving aircraft to add
+     */
     public void acceptInboundAircraft(Aircraft aircraft) {
-        // I think this code is not what we need. Instead we should just add them to the queue.
-        // Otherwise, if we have a mixed mode runway, with 1 plane spawning in arrival and departure
-        // each tick + runwayOccupationTime, the runway will only let the landing aircraft use the runway,
-        // so the takeoff queue will just build up.
-//        if (holdingPattern.isEmpty()) {
-//            Runway possibleRunway = getFirstAvailableRunway(currentTick);
-//            if (possibleRunway != null) {
-//                possibleRunway.assignAircraft(aircraft, currentTick + runwayOccupationTime);
-//            }
-//        }
-//        else {
-//            holdingPattern.addAircraft(aircraft);
-//        }
         holdingPattern.addAircraft(aircraft);
 
         stats.recordHoldingSize(holdingPattern.getSize());
     }
 
+    /**
+     * Accepts an outbound aircraft and adds it to the takeoff queue.
+     * Records the queue size for statistics.
+     *
+     * @param aircraft the departing aircraft to add
+     */
     public void acceptOutboundAircraft(Aircraft aircraft) {
 
         takeOffQueue.addAircraft(aircraft);
         stats.recordTakeOffQueueSize(takeOffQueue.getSize());
     }
 
-    // Second part of Airport in performTick cycle is to assign aircraft to runways and update the queues.
-
+    /**
+     * Assigns aircraft to available runways based on mode and priority.
+     * Handles emergency aircraft first, then dedicated runways, then mixed mode.
+     *
+     * @param currentTick the current simulation tick
+     */
     public void assignRunways(int currentTick) {
         // Clear all runways where the planes have finished their operations
         for (Runway runway : runways.values()) {
@@ -171,6 +190,12 @@ public class Airport {
         }
     }
 
+    /**
+     * Updates both the holding pattern and takeoff queue for the current tick.
+     * Handles fuel consumption, diversions, and cancellations.
+     *
+     * @param currentTick the current simulation tick
+     */
     public void updateQueues(int currentTick) {
         holdingPattern.update(currentTick);
         stats.recordHoldingSize(holdingPattern.getSize());
@@ -179,7 +204,14 @@ public class Airport {
         stats.recordTakeOffQueueSize(takeOffQueue.getSize());
     }
 
-    // Helper function for process to land aircraft.
+    /**
+     * Processes an aircraft landing on the specified runway.
+     * Updates runway occupation and records landing statistics.
+     *
+     * @param runway the runway to land on
+     * @param aircraft the aircraft landing
+     * @param currentTick the current simulation tick
+     */
     private void landAircraft(Runway runway, Aircraft aircraft, int currentTick) {
         runway.assignAircraft(aircraft, currentTick + runwayOccupationTime);
 
@@ -189,7 +221,14 @@ public class Airport {
         stats.recordArrivalDelay(Math.max(0, currentTick - aircraft.getScheduledTick()));
     }
 
-    // Helper function for process to take-off aircraft.
+    /**
+     * Processes an aircraft takeoff from the specified runway.
+     * Updates runway occupation and records takeoff statistics.
+     *
+     * @param runway the runway to take off from
+     * @param aircraft the aircraft taking off
+     * @param currentTick the current simulation tick
+     */
     private void takeOffAircraft(Runway runway, Aircraft aircraft, int currentTick) {
         runway.assignAircraft(aircraft, currentTick + runwayOccupationTime);
 
@@ -199,7 +238,13 @@ public class Airport {
         stats.recordTakeOffDelay(Math.max(0, currentTick - aircraft.getScheduledTick()));
     }
 
-    // Helper function to get available runways of a certain mode.
+    /**
+     * Gets all available runways of the specified mode.
+     *
+     * @param mode the runway mode to filter by
+     * @param currentTick the current simulation tick
+     * @return list of available runways matching the mode
+     */
     public List<Runway> getAvailableRunwaysOfMode(RunwayMode mode, int currentTick) {
         List<Runway> output = new ArrayList<>();
         for (Runway runway : runways.values()) {
@@ -210,10 +255,17 @@ public class Airport {
         return output;
     }
 
-    // Changes the given runway's status or mode.
-    // Throws exception if runwayID doesn't exist in runways Map.
-    // Only changes status or mode if these parameters are not null in the function call.
-    public void updateRunway(int runwayID, RunwayStatus status, RunwayMode mode) {
+    /**
+     * Updates a runway's status and/or mode.
+     * Only changes values that are not null.
+     *
+     * @param runwayID the ID of the runway to update
+     * @param status the new status, or null to keep current
+     * @param mode the new mode, or null to keep current
+     * @param lockSource the event source locking this runway
+     * @throws IllegalArgumentException if runwayID doesn't exist
+     */
+    public void updateRunway(int runwayID, RunwayStatus status, RunwayMode mode, EventSource lockSource) {
         Runway runway = runways.get(runwayID);
         if (runway != null) {
             if (status != null) {
@@ -222,20 +274,43 @@ public class Airport {
             if (mode != null) {
                 runway.setMode(mode);
             }
+
+            // Set the locked state of the runway (if it is having an event performed on it, lock it so the user can't change it)
+            runway.setLockSource(lockSource);
         }
         else {
             throw new IllegalArgumentException("Unknown runwayID: " + runwayID);
         }
     }
 
-    public void updateAircraftStatus(String callsign, EmergencyStatus status) {
-        holdingPattern.updateAircraftStatus(callsign, status);
+    /**
+     * Updates the emergency status of an aircraft in the holding pattern.
+     *
+     * @param callsign the callsign of the aircraft to update
+     * @param status the new emergency status
+     * @param emergencySource the source of the emergency event
+     */
+    public void updateAircraftStatus(String callsign, EmergencyStatus status, EventSource emergencySource) {
+        holdingPattern.updateAircraftStatus(callsign, status, emergencySource);
     }
 
+    /**
+     * Gets a random aircraft callsign from the holding pattern.
+     *
+     * @param random the random number generator
+     * @return a random aircraft callsign, or null if none available
+     */
     public String getRandomHoldingAircraft(Random random) {
         return holdingPattern.getRandomAircraft(random);
     }
 
+    /**
+     * Gets a snapshot of a runway's current configuration.
+     *
+     * @param runwayID the ID of the runway
+     * @return the runway configuration snapshot
+     * @throws IllegalArgumentException if runwayID doesn't exist
+     */
     public RunwayConfig getRunwaySnapshot(int runwayID) {
         Runway runway = runways.get(runwayID);
         if (runway != null) {
@@ -246,16 +321,34 @@ public class Airport {
         }
     }
 
-    // Used for assigning the event manager to the queues after they are instantiated
+    /**
+     * Sets the event manager for both queues to enable event reporting.
+     *
+     * @param eventManager the event manager to set
+     */
     public void setEventManager(EventManager eventManager) {
         this.holdingPattern.setEventManager(eventManager);
         this.takeOffQueue.setEventManager(eventManager);
     }
 
+    /**
+     * Gets the holding pattern queue.
+     *
+     * @return the holding pattern
+     */
     public HoldingPattern getHoldingPattern() { return this.holdingPattern; }
 
+    /**
+     * Gets the takeoff queue.
+     *
+     * @return the takeoff queue
+     */
     public TakeOffQueue  getTakeOffQueue() { return this.takeOffQueue; }
 
-    // Returns an unmodifiable collection of the runways (to protect the actual map)
+    /**
+     * Gets an unmodifiable collection of all runways.
+     *
+     * @return unmodifiable collection of runways
+     */
     public Collection<Runway> getRunways() { return Collections.unmodifiableCollection(this.runways.values()); }
 }

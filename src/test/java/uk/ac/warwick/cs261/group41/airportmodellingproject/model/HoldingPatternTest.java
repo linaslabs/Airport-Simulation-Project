@@ -3,6 +3,7 @@ package uk.ac.warwick.cs261.group41.airportmodellingproject.model;
 import org.junit.jupiter.api.Test;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.AircraftState;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EmergencyStatus;
+import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.EventSource;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.enums.FlightType;
 import uk.ac.warwick.cs261.group41.airportmodellingproject.service.EventManager;
 
@@ -23,6 +24,16 @@ import static org.mockito.Mockito.*;
  */
 class HoldingPatternTest {
 
+    /**
+     * Creates an ARRIVAL Aircraft with the given callsign, fuel, scheduled tick, and entry tick.
+     * Uses fixed placeholder values for operator, source, and destination.
+     *
+     * @param callsign      the aircraft callsign
+     * @param fuel          the initial fuel level
+     * @param scheduledTick the tick the aircraft was scheduled to arrive
+     * @param entryTick     the tick the aircraft entered the holding pattern
+     * @return a new ARRIVAL Aircraft
+     */
     private static Aircraft newArrival(String callsign, double fuel, int scheduledTick, int entryTick) {
         // Matches the constructor used by AircraftGenerator in main code
         return new Aircraft(
@@ -37,6 +48,12 @@ class HoldingPatternTest {
         );
     }
 
+    /**
+     * Returns the first non-NONE EmergencyStatus from the enum, used to test emergency
+     * priority logic without hard-coding a specific status value.
+     *
+     * @return a non-NONE EmergencyStatus value, or fails the test if none exist
+     */
     private static EmergencyStatus someNonNoneEmergencyStatus() {
         for (EmergencyStatus s : EmergencyStatus.values()) {
             if (!"NONE".equalsIgnoreCase(s.name())) return s;
@@ -45,6 +62,13 @@ class HoldingPatternTest {
         return EmergencyStatus.NONE;
     }
 
+    /**
+     * Reads the altitude field of an Aircraft via reflection, allowing the test to verify
+     * altitude updates without depending on a public getter in the production API.
+     *
+     * @param aircraft the Aircraft whose altitude to read
+     * @return the current altitude of the aircraft
+     */
     private static int getAltitudeReflective(Aircraft aircraft) {
         try {
             Method m = aircraft.getClass().getMethod("getAltitude");
@@ -202,7 +226,7 @@ class HoldingPatternTest {
         hp.updateAltitudes();
 
         EmergencyStatus emergency = someNonNoneEmergencyStatus();
-        hp.updateAircraftStatus("B-1", emergency);
+        hp.updateAircraftStatus("B-1", emergency, EventSource.MANUAL);
 
         Optional<Aircraft> next = hp.peekNextAircraft();
         assertTrue(next.isPresent(), "Expected an aircraft at the front of the queue.");
@@ -247,8 +271,8 @@ class HoldingPatternTest {
         }
 
         // Make all aircraft emergencies -> no eligible aircraft.
-        hp.updateAircraftStatus("N-1", emergency);
-        hp.updateAircraftStatus("N-2", emergency);
+        hp.updateAircraftStatus("N-1", emergency, EventSource.MANUAL);
+        hp.updateAircraftStatus("N-2", emergency, EventSource.MANUAL);
 
         assertNull(hp.getRandomAircraft(new Random(1)),
                 "Expected null when no aircraft with EmergencyStatus.NONE are available.");
@@ -287,5 +311,48 @@ class HoldingPatternTest {
         assertEquals("E-LOWFUEL", emergencies.get(0).getCallsign(),
                 "Expected lower-fuel emergency aircraft to appear first.");
         assertEquals("E-HIGHFUEL", emergencies.get(1).getCallsign());
+    }
+
+    /**
+     * Verifies the 1000ft vertical separation rule (SR-FR-5):
+     * updateAltitudes() assigns altitude = (priorityPosition + 1) * 1000 to each aircraft,
+     * so the highest-priority aircraft occupies 1000ft, second gets 2000ft, third gets 3000ft, etc.
+     * This guarantees the required 1000ft separation between every consecutive pair.
+     *
+     * NONE-status aircraft are ordered by entry tick (earliest = highest priority), so
+     * distinct entry ticks provide a deterministic priority ordering here.
+     */
+    @Test
+    void updateAltitudes_shouldAssign1000ftSeparation_toEachPriorityPosition() {
+        HoldingPattern hp = new HoldingPattern();
+
+        // All NONE status; NONE aircraft compare by entry tick (lower = higher priority).
+        Aircraft first  = newArrival("FIRST",  30.0, 0, 1);  // entryTick=1 → highest priority
+        Aircraft second = newArrival("SECOND", 30.0, 0, 2);  // entryTick=2 → second priority
+        Aircraft third  = newArrival("THIRD",  30.0, 0, 3);  // entryTick=3 → lowest priority
+
+        first.setStatus(EmergencyStatus.NONE);
+        second.setStatus(EmergencyStatus.NONE);
+        third.setStatus(EmergencyStatus.NONE);
+
+        // Add in scrambled order to ensure updateAltitudes relies on priority, not insertion order.
+        hp.addAircraft(third);
+        hp.addAircraft(first);
+        hp.addAircraft(second);
+
+        hp.updateAltitudes();
+
+        // Poll in priority order and verify each altitude slot maintains 1000ft separation.
+        Aircraft a = hp.getNextAircraft().orElseThrow();
+        Aircraft b = hp.getNextAircraft().orElseThrow();
+        Aircraft c = hp.getNextAircraft().orElseThrow();
+
+        assertEquals("FIRST", a.getCallsign(), "Earliest entry-tick aircraft should be served first.");
+        assertEquals(1000, a.getAltitude(),
+                "Highest priority aircraft should occupy the 1000ft slot.");
+        assertEquals(2000, b.getAltitude(),
+                "Second priority aircraft should occupy the 2000ft slot (1000ft above first).");
+        assertEquals(3000, c.getAltitude(),
+                "Third priority aircraft should occupy the 3000ft slot (1000ft above second).");
     }
 }
