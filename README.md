@@ -29,5 +29,6 @@ The application is built on a strict **Model-View-Controller (MVC)** architectur
 
 ## Interface Previews
 <img width="1892" height="985" alt="image" src="https://github.com/user-attachments/assets/ffb97fd6-1887-4154-a829-54d5399e3856" />
-<img width="1849" height="921" alt="image" src="https://github.com/user-attachments/assets/3e47b4af-f351-45c7-b6d2-4f6e0c98c290" />
+<img width="1919" height="994" alt="image" src="https://github.com/user-attachments/assets/41050cf7-19b2-4ef7-b01e-ca96d6a0ef7e" />
+<img width="1919" height="994" alt="image" src="https://github.com/user-attachments/assets/4fc8389b-667c-4c55-87f6-ee21eead9ed0" />
 <img width="1855" height="896" alt="image" src="https://github.com/user-attachments/assets/1ec143a9-63ab-40ab-b5dc-7856cdc146ff" />
