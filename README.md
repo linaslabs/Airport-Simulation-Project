@@ -1,6 +1,6 @@
 # ✈️ Dynamic Airport Operations Modelling System
 
-> **A robust, web-based simulation engine designed to optimise airport throughput, manage air traffic queues, and model complex operational scenarios.** Developed as part of the CS261 Software Engineering module at the University of Warwick, this project addresses a simulated commercial brief provided by Dorset Software. The system allows airport managers to configure runway parameters, inject real-time emergencies, and analyse critical data to maximise revenue, safety, and operational efficiency. 
+A robust, web-based simulation engine designed to optimise airport throughput, manage air traffic queues, and model complex operational scenarios. Developed as part of my CS261 Software Engineering module at the University of Warwick, this project addresses a brief provided by Dorset Software. The system allows airport managers to configure runway parameters, inject real-time emergencies, and analyse critical data to maximise revenue, safety, and operational efficiency. 
 
 ## Key Features
 
